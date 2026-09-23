@@ -2194,7 +2194,8 @@ function svgLabelText(value){
     .replace(/\\sqrt\{([^{}]+)\}/g,(_,radicand)=>`√${radicand.length===1?radicand:`(${radicand})`}`)
     .replace(/\\sqrt([A-Za-z0-9]+)/g,"√$1")
     .replace(/\\pi/g,"π")
-    .replace(/\\cdot/g,"·");
+    .replace(/\\cdot/g,"·")
+    .replace(/_([0-9])/g,(_,digit)=>"₀₁₂₃₄₅₆₇₈₉"[Number(digit)]);
 }
 
 function planSvgText(x,y,text,anchor="middle",size=15,weight=600){
@@ -2415,7 +2416,7 @@ function renderStereoDiagram(d){
 
     const labels=d.labels||{};
     if(labels.AB) body+=txt((P.A.x+P.B.x)/2,(P.A.y+P.B.y)/2+20,labels.AB);
-    if(labels.AD) body+=txt((P.A.x+P.D.x)/2-8,(P.A.y+P.D.y)/2+12,labels.AD);
+    if(labels.AD) body+=txt((P.A.x+P.D.x)/2-22,(P.A.y+P.D.y)/2+2,labels.AD);
     if(labels.AA1) body+=txt((P.A.x+P.A1.x)/2-18,(P.A.y+P.A1.y)/2,labels.AA1);
     if(labels.AC1) body+=txt((P.A.x+P.C1.x)/2+12,(P.A.y+P.C1.y)/2-8,labels.AC1);
     if(labels.AC) body+=txt((P.A.x+P.C.x)/2-6,(P.A.y+P.C.y)/2+18,labels.AC);
@@ -2503,14 +2504,14 @@ function renderStereoDiagram(d){
     if(d.apothem) body+=dot(P.M,"#c13b2a",4);
 
     const labels=d.labels||{};
-    if(labels.a) body+=txt((P.A.x+P.B.x)/2,(P.A.y+P.B.y)/2+20,labels.a);
+    if(labels.a) body+=txt((P.A.x+P.B.x)/2,(P.A.y+P.B.y)/2+30,labels.a);
     if(labels.h) body+=txt((P.S.x+P.O.x)/2-18,(P.S.y+P.O.y)/2,labels.h);
     if(labels.l) body+=txt((P.S.x+P.M.x)/2+18,(P.S.y+P.M.y)/2,labels.l);
     if(labels.OA) body+=txt((P.O.x+P.A.x)/2-10,(P.O.y+P.A.y)/2+12,labels.OA);
-    if(labels.OM) body+=txt((P.O.x+P.M.x)/2+15,(P.O.y+P.M.y)/2,labels.OM);
+    if(labels.OM) body+=txt((P.O.x+P.M.x)/2-4,(P.O.y+P.M.y)/2-10,labels.OM);
     if(labels.SA) body+=txt((P.S.x+P.A.x)/2-18,(P.S.y+P.A.y)/2,labels.SA);
     body+=lab(P.S,"S",8,-8)+lab(P.A,"A",-18,14)+lab(P.B,"B",7,16)+lab(P.C,"C",8,15)+lab(P.D,"D",-18,12)+lab(P.O,"O",7,14);
-    if(d.apothem) body+=lab(P.M,"M",7,14);
+    if(d.apothem) body+=labels.OM?lab(P.M,"M",16,15):lab(P.M,"M",9,-10);
     return wrap(`<svg viewBox="0 0 540 340">${body}</svg>`);
   }
 
@@ -2541,7 +2542,7 @@ function renderStereoDiagram(d){
     body+=ellipseArc(cx,bot,rx,ry,"front","#5668f2",3);
     body+=line({x:cx-rx,y:top},{x:cx-rx,y:bot},"#5668f2",3)+line({x:cx+rx,y:top},{x:cx+rx,y:bot},"#5668f2",3);
     const Otop={x:cx,y:top}, Obot={x:cx,y:bot};
-    body+=dot(Otop,"#26344d",3.8)+dot(Obot,"#26344d",3.8)+txt(cx-10,top+18,"O_1")+txt(cx-10,bot+18,"O");
+    body+=dot(Otop,"#26344d",3.8)+dot(Obot,"#26344d",3.8)+txt(cx-12,top+18,"O₁")+txt(cx-12,bot+18,"O₂");
     body+=line(Otop,Obot,"#9a67ea",2.8,"7 5");
     if(d.axial) body+=`<rect x="${cx-rx}" y="${top}" width="${2*rx}" height="${bot-top}" fill="rgba(154,103,234,.10)" stroke="#9a67ea" stroke-width="3"/>`;
     if(d.parallelSection){
@@ -2736,7 +2737,7 @@ function renderPlanDiagram(d){
       ${sideLabel(A,B,d.legLabel||"",20)}
       ${sideLabel(A,C,d.legLabel||"",20)}
       ${sideLabel(B,C,d.baseLabel||"",22)}
-      ${planSvgText(H.x+24,(A.y+H.y)/2,d.heightLabel||"")}
+      ${planSvgText(H.x-24,(A.y+H.y)/2,d.heightLabel||"","end")}
     </svg>`);
   }
 
@@ -2996,7 +2997,7 @@ function renderPlanDiagram(d){
       };
       const ch1=makeChord(a,b,1), ch2=makeChord(c,dd,-1);
       body += `<line x1="${ch1.L.x}" y1="${ch1.L.y}" x2="${ch1.R.x}" y2="${ch1.R.y}" stroke="#9a67ea" stroke-width="4"/><line x1="${ch2.L.x}" y1="${ch2.L.y}" x2="${ch2.R.x}" y2="${ch2.R.y}" stroke="#9a67ea" stroke-width="4"/>`;
-      body += planSvgText((ch1.L.x+P.x)/2,(ch1.L.y+P.y)/2-18,d.a||"")+planSvgText((P.x+ch1.R.x)/2,(P.y+ch1.R.y)/2-18,d.b||"")+planSvgText((ch2.L.x+P.x)/2,(ch2.L.y+P.y)/2+28,d.c||"")+planSvgText((P.x+ch2.R.x)/2,(P.y+ch2.R.y)/2+28,d.d||"")+planSvgText(P.x+18,P.y+5,"P");
+      body += planSvgText((ch1.L.x+P.x)/2,(ch1.L.y+P.y)/2-28,d.a||"")+planSvgText((P.x+ch1.R.x)/2,(P.y+ch1.R.y)/2-18,d.b||"")+planSvgText((ch2.L.x+P.x)/2-10,(ch2.L.y+P.y)/2+40,d.c||"")+planSvgText((P.x+ch2.R.x)/2,(P.y+ch2.R.y)/2+28,d.d||"")+planSvgText(P.x+34,P.y+14,"P","start");
     } else if(d.mode==="secants"){
       const e1=numberFromLabel(d.ext1)||2,w1=numberFromLabel(d.whole1)||12,e2=numberFromLabel(d.ext2)||4;
       const w2=Number.isFinite(numberFromLabel(d.whole2))?numberFromLabel(d.whole2):(e1*w1/e2);
@@ -3035,7 +3036,7 @@ function renderPlanDiagram(d){
       if(d.arc) body += planSvgText(cx+95,cy-75,"l = ?");
     } else if(d.mode==="cyclic"){
       let actualA=numberFromLabel(d.angleA);
-      if(!Number.isFinite(actualA) && String(d.angleA||"").includes("2x")) actualA=100;
+      if(/[xх]/i.test(String(d.angleA||""))) actualA=100;
       if(!Number.isFinite(actualA)) actualA=70;
       const arcBCD=2*actualA, arcDAB=360-arcBCD;
       const arcAB=Math.min(80,arcDAB*0.4), arcDA=arcDAB-arcAB;
@@ -3043,7 +3044,7 @@ function renderPlanDiagram(d){
       const degA=160,degB=degA-arcAB,degC=degB-arcBC,degD=degC-arcCD;
       const A=point(degA),B=point(degB),C=point(degC),D=point(degD);
       body += `<polyline points="${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y} ${D.x},${D.y} ${A.x},${A.y}" fill="none" stroke="#4f596b" stroke-width="3"/>`;
-      body += planSvgText(A.x-12,A.y,"A")+planSvgText(B.x+12,B.y,"B")+planSvgText(C.x+12,C.y+10,"C")+planSvgText(D.x-12,D.y+10,"D");
+      body += planSvgText(A.x-12,A.y,"A")+planSvgText(B.x+2,B.y-14,"B")+planSvgText(C.x+18,C.y+18,"C")+planSvgText(D.x-12,D.y+10,"D");
       body += planSvgText(A.x+25,A.y+28,d.angleA||"")+planSvgText(C.x-25,C.y-18,d.angleC||"");
     } else if(d.mode==="tangentChord"){
       const phi=numberFromLabel(d.angleLabel)||35;
