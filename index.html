@@ -56,6 +56,12 @@ p{line-height:1.55}.lead{font-size:18px;color:var(--muted);max-width:840px}.mini
 .progressbar span{display:block;height:100%;background:var(--accent)}
 .section-title{display:flex;align-items:end;justify-content:space-between;gap:14px;margin:30px 0 12px}
 .topic-card{min-height:140px;display:flex;flex-direction:column;justify-content:space-between}
+.topic-card h3{margin-bottom:7px}.topic-progress{margin:8px 0 12px}.topic-actions{display:grid;grid-template-columns:1fr;gap:7px}
+.topic-actions .btn{width:100%;padding:10px 12px;font-size:13px}
+.level-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.level-pill{padding:5px 8px;border-radius:999px;background:#f1f3f8;color:#596174;font-size:11px;font-weight:800}
+.teacher-panel{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}.field{display:grid;gap:7px}.field label{font-size:13px;font-weight:800;color:var(--muted)}
+.field select{width:100%;border:1px solid var(--border);border-radius:12px;background:#fff;color:var(--text);padding:12px;font:inherit}
+.teacher-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}.teacher-summary .stat b{font-size:21px}
 .quiz-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
 .step{color:var(--muted);font-weight:750}
 .skill{font-size:13px;color:var(--accent);font-weight:800;background:var(--accent-soft);padding:7px 10px;border-radius:999px}
@@ -89,8 +95,9 @@ svg{width:100%;height:auto;display:block}
 .render-warning{display:none;margin-bottom:14px;padding:12px 14px;border-radius:14px;background:#fff4db;border:1px solid #f0d18c;color:#704b00;font-size:14px}
 .backline{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}
 @media(max-width:820px){
-  .stats,.mode-grid,.module-grid,.topic-grid,.result-grid{grid-template-columns:1fr}
+  .stats,.mode-grid,.module-grid,.topic-grid,.result-grid,.teacher-panel,.teacher-summary{grid-template-columns:1fr}
   .hero,.question-card{padding:19px}.question{font-size:20px}.math-block .katex{font-size:1.7em}
+  .backline,.quiz-head{align-items:flex-start;flex-wrap:wrap}.topbar{align-items:flex-start}.brand{max-width:68%}
 }
 </style>
 </head>
@@ -129,9 +136,9 @@ svg{width:100%;height:auto;display:block}
           <button class="btn btn-secondary" id="allBtn">Тренироваться</button>
         </div>
         <div class="mode">
-          <h3>Решить все задания</h3>
-          <p class="mini">Все 1575 заданий из готовых разделов в случайном порядке — полная тренировка без пропусков.</p>
-          <button class="btn btn-secondary" id="solveAllBtn">Решить все</button>
+          <h3>Освоить весь банк</h3>
+          <p class="mini">Следующие 25 ещё не пройденных заданий. Тренажёр постепенно проведёт по всему банку.</p>
+          <button class="btn btn-secondary" id="solveAllBtn">Продолжить банк</button>
         </div>
         <div class="mode">
           <h3>Высокий балл</h3>
@@ -142,6 +149,11 @@ svg{width:100%;height:auto;display:block}
           <h3>Мои ошибки</h3>
           <p class="mini">Повторить только те конструкции, где раньше были ошибки.</p>
           <button class="btn btn-warn" id="mistakesBtn">Повторить</button>
+        </div>
+        <div class="mode">
+          <h3>Режим учителя</h3>
+          <p class="mini">Собрать тренировку по разделу, теме, уровню и количеству заданий.</p>
+          <button class="btn btn-secondary" id="teacherBtn">Открыть</button>
         </div>
       </div>
 
@@ -307,6 +319,7 @@ svg{width:100%;height:auto;display:block}
 
       <div class="actions" style="margin-top:18px">
         <button class="btn btn-primary" id="nextBtn" style="display:none">Следующее</button>
+        <button class="btn btn-secondary" id="deferBtn">Отложить</button>
         <button class="btn btn-ghost" id="quizBackBtn">Назад</button>
         <button class="btn btn-ghost" id="quizHomeBtn">На главную</button>
       </div>
@@ -330,6 +343,33 @@ svg{width:100%;height:auto;display:block}
         <button class="btn btn-primary" id="retryBtn">Пройти ещё раз</button>
         <button class="btn btn-secondary" id="resultHomeBtn">На главную</button>
       </div>
+    </div>
+  </section>
+
+  <section id="teacherScreen" class="screen">
+    <div class="backline">
+      <button class="btn btn-ghost" id="teacherBackBtn">← На главную</button>
+      <div class="badge">Режим учителя</div>
+    </div>
+    <div class="hero">
+      <h1>Собрать тренировку</h1>
+      <p class="lead">Выберите содержание и уровень. Варианты ответов будут перемешаны, а итог покажет ошибки ученика.</p>
+      <div class="teacher-summary">
+        <div class="stat"><span class="mini">Разделов</span><b>10</b></div>
+        <div class="stat"><span class="mini">Подразделов</span><b>63</b></div>
+        <div class="stat"><span class="mini">Заданий</span><b id="teacherTotal">1575</b></div>
+      </div>
+      <div class="teacher-panel">
+        <div class="field"><label for="teacherModule">Раздел</label><select id="teacherModule"></select></div>
+        <div class="field"><label for="teacherTopic">Подраздел</label><select id="teacherTopic"></select></div>
+        <div class="field"><label for="teacherLevel">Уровень</label><select id="teacherLevel"><option value="all">Все уровни</option><option value="base">Базовый</option><option value="medium">Средний</option><option value="high">Повышенный</option></select></div>
+        <div class="field"><label for="teacherCount">Количество</label><select id="teacherCount"><option value="5">5 заданий</option><option value="10" selected>10 заданий</option><option value="25">25 заданий</option></select></div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="teacherStartBtn">Начать тренировку</button>
+        <button class="btn btn-secondary" id="teacherSequentialBtn">По порядку сложности</button>
+      </div>
+      <p class="mini" id="teacherPoolInfo" style="margin-top:14px"></p>
     </div>
   </section>
 </div>
@@ -1656,6 +1696,189 @@ const EXTENDED_QUESTIONS = (()=>{
 
 QUESTIONS.push(...EXTENDED_QUESTIONS);
 
+// Methodical improvements: remove data collisions, diversify the most repetitive
+// topics, and give every task a stable difficulty for ordered practice.
+(function applyMethodicalImprovements(){
+  const find=uid=>{
+    const q=QUESTIONS.find(item=>item.uid===uid);
+    if(!q) throw new Error("Question not found during methodical improvement: "+uid);
+    return q;
+  };
+  const tex=value=>({kind:"tex",value:String(value)});
+  const setChoices=(q,answer,wrong)=>{
+    q.choices=[answer,...wrong].map(tex);
+    q.correct=0;
+    q.auditAnswer=String(answer);
+  };
+  const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
+  const piFraction=(num,den)=>{
+    const d=gcd(num,den);num/=d;den/=d;
+    if(den===1) return num===1?"\\pi":num+"\\pi";
+    return "\\frac{"+(num===1?"":num)+"\\pi}{"+den+"}";
+  };
+
+  // Replace the one exact duplicate with another domain task.
+  {
+    const q=find("functions:ext_functions_properties_1");
+    q.id="ext_functions_properties_root_linear";
+    q.skill="Свойства • область определения корня";
+    q.prompt="Найдите область определения функции.";
+    q.formula="f(x)=\\sqrt{2x-8}";
+    setChoices(q,"x\\ge4",["x>4","x\\le4","x\\ne4"]);
+    q.explanation="Подкоренное выражение должно быть неотрицательным: 2x−8≥0. Делим обе части на 2 и получаем x≥4.";
+    q.tip="Для квадратного корня сначала составьте неравенство: подкоренное выражение не меньше нуля.";
+    q.audit={type:"sqrt_domain_linear",a:2,b:8};
+  }
+
+  // Raw ids are now unique across the functions and calculus modules.
+  for(const id of ["der_sqrt","der_exp","der_sin","der_cos","der_product","der_quotient"]){
+    const q=QUESTIONS.find(item=>item.module==="calculus"&&item.id===id);
+    if(q) q.id="calculus_"+id;
+  }
+
+  // Five genuinely different recognition patterns instead of one repeated stem.
+  const exp=QUESTIONS.filter(q=>q.module==="equations"&&q.topic==="exponential"&&q.audit?.type==="exponential_same_base");
+  exp.forEach((q,index)=>{
+    const mode=index%5,base=2+(index%3),k=2+Math.floor(index/5);
+    q.prompt="Решите показательное уравнение.";
+    if(mode===0){
+      q.skill="Показательные • одинаковые основания";q.formula=`${base}^x=${base}^{${k}}`;
+      setChoices(q,k,[k+1,k-1,-k]);
+      q.explanation=`Основания одинаковы и допустимы, поэтому приравниваем показатели: x=${k}.`;
+      q.tip="Если обе части удалось представить как степени одного основания, сравните показатели.";
+    }else if(mode===1){
+      q.skill="Показательные • линейный показатель";q.formula=`${base}^{x+1}=${base}^{${k+1}}`;
+      setChoices(q,k,[k+1,k-1,-k]);
+      q.explanation=`При равных основаниях получаем x+1=${k+1}, откуда x=${k}.`;
+      q.tip="Сначала приравняйте показатели, затем решите полученное линейное уравнение.";
+    }else if(mode===2){
+      q.skill="Показательные • удвоенный показатель";q.formula=`${base}^{2x}=${base}^{${2*k}}`;
+      setChoices(q,k,[2*k,k+1,-k]);
+      q.explanation=`Функция ${base}^t строго монотонна, поэтому 2x=${2*k}. После деления на 2 получаем x=${k}.`;
+      q.tip="После сравнения показателей не забудьте решить уравнение относительно x.";
+    }else if(mode===3){
+      q.skill="Показательные • произведение степеней";q.formula=`${base}^x\\cdot${base}^2=${base}^{${k+2}}`;
+      setChoices(q,k,[k+2,k-1,-k]);
+      q.explanation=`Слева складываем показатели: ${base}^{x+2}=${base}^{${k+2}}. Значит, x+2=${k+2} и x=${k}.`;
+      q.tip="При умножении степеней с одинаковым основанием показатели складываются.";
+    }else{
+      q.skill="Показательные • отрицательный показатель";q.formula=`${base}^x=\\frac1{${base}^{${k}}}`;
+      setChoices(q,-k,[k,-k+1,-k-1]);
+      q.explanation=`Записываем правую часть как ${base}^{-${k}}. Основания одинаковы, поэтому x=-${k}.`;
+      q.tip="Дробь 1/a^n удобно заменить степенью a^{-n}.";
+    }
+    q.audit={type:["exp_same_base","exp_linear_power","exp_double_power","exp_product","exp_negative_power"][mode],base,k};
+  });
+
+  const logs=QUESTIONS.filter(q=>q.module==="equations"&&q.topic==="logarithmic"&&q.audit?.type==="log_equation");
+  logs.forEach((q,index)=>{
+    const mode=index%5,base=2+(index%3),k=2+(index%2),c=1+(index%4);
+    q.prompt="Решите логарифмическое уравнение.";
+    if(mode===0){
+      const answer=base**k;q.skill="Логарифмические • переход к степени";q.formula=`\\log_{${base}}x=${k}`;
+      setChoices(q,answer,[answer-1,answer+base,k]);
+      q.explanation=`По определению логарифма x=${base}^{${k}}=${answer}. Полученное значение положительно и входит в ОДЗ.`;
+      q.tip="После перехода к показательному равенству обязательно проверьте положительность аргумента.";
+    }else if(mode===1){
+      const answer=base**k-c;q.skill="Логарифмические • линейный аргумент";q.formula=`\\log_{${base}}(x+${c})=${k}`;
+      setChoices(q,answer,[answer+c,answer+1,answer-base]);
+      q.explanation=`Получаем x+${c}=${base}^{${k}}=${base**k}, поэтому x=${answer}. Аргумент при этом положителен.`;
+      q.tip="Сначала уберите логарифм по определению, затем решите линейное уравнение и проверьте ОДЗ.";
+    }else if(mode===2){
+      const answer=c+base;q.skill="Логарифмические • сдвиг аргумента";q.formula=`\\log_{${base}}(x-${c})=1`;
+      setChoices(q,answer,[answer-1,answer+1,answer+base]);
+      q.explanation=`Из определения логарифма x−${c}=${base}. Следовательно, x=${answer}; условие x>${c} выполнено.`;
+      q.tip="Для log_a u=1 используется равенство u=a.";
+    }else if(mode===3){
+      const answer=base**(k-1);q.skill="Логарифмические • произведение в аргументе";q.formula=`\\log_{${base}}(${base}x)=${k}`;
+      setChoices(q,answer,[answer+base,answer+1,answer-1]);
+      q.explanation=`Имеем ${base}x=${base}^{${k}}. Делим на ${base}: x=${base}^{${k-1}}=${answer}; значение положительно.`;
+      q.tip="После перехода к степени аккуратно разделите обе части на коэффициент при x.";
+    }else{
+      const answer=base+c+2;q.skill="Логарифмические • равенство логарифмов";q.formula=`\\log_{${base}}x=\\log_{${base}}${answer}`;
+      setChoices(q,answer,[answer-1,base,answer+base]);
+      q.explanation=`Логарифмы имеют одинаковое допустимое основание, поэтому их положительные аргументы равны: x=${answer}.`;
+      q.tip="Равенство логарифмов одного основания позволяет приравнять аргументы после проверки ОДЗ.";
+    }
+    q.audit={type:["log_to_power","log_linear_argument","log_shift","log_product_argument","log_equal_arguments"][mode],base,k,c};
+  });
+
+  const trig=QUESTIONS.filter(q=>q.module==="equations"&&q.topic==="trig"&&q.audit?.type==="sin_zero_first_root");
+  trig.forEach((q,index)=>{
+    const mode=index%5,k=2+(index%4);
+    q.prompt="Найдите наименьший положительный корень.";
+    let answer,wrong;
+    if(mode===0){
+      q.skill="Тригонометрические • нули синуса";q.formula=`\\sin(${k}x)=0`;answer=piFraction(1,k);
+      wrong=[piFraction(2,k),piFraction(1,2*k),piFraction(1,k+1)];
+      q.explanation=`Равенство sin(${k}x)=0 выполняется при ${k}x=πn. Первому положительному корню соответствует n=1: x=${answer}.`;
+      q.tip="Для sin t=0 используйте t=πn и выберите наименьшее положительное n.";
+    }else if(mode===1){
+      q.skill="Тригонометрические • максимум косинуса";q.formula=`\\cos(${k}x)=1`;answer=piFraction(2,k);
+      wrong=[piFraction(1,k),piFraction(1,2*k),piFraction(2,k+1)];
+      q.explanation=`Косинус равен 1 при ${k}x=2πn. Для первого положительного корня берём n=1: x=${answer}.`;
+      q.tip="Не путайте: cos t=1 при t=2πn, а cos t=0 при t=π/2+πn.";
+    }else if(mode===2){
+      q.skill="Тригонометрические • максимум синуса";q.formula=`\\sin(${k}x)=1`;answer=piFraction(1,2*k);
+      wrong=[piFraction(1,k),piFraction(2,k),piFraction(1,4*k)];
+      q.explanation=`Синус впервые принимает значение 1 при ${k}x=π/2. Поэтому x=${answer}.`;
+      q.tip="Для наименьшего положительного решения sin t=1 достаточно взять t=π/2.";
+    }else if(mode===3){
+      q.skill="Тригонометрические • нули косинуса";q.formula=`\\cos(${k}x)=0`;answer=piFraction(1,2*k);
+      wrong=[piFraction(1,k),piFraction(2,k),piFraction(1,4*k)];
+      q.explanation=`Первый положительный нуль косинуса соответствует ${k}x=π/2. Отсюда x=${answer}.`;
+      q.tip="Наименьший положительный корень cos t=0 равен t=π/2.";
+    }else{
+      q.skill="Тригонометрические • нули тангенса";q.formula=`\\operatorname{tg}(${k}x)=0`;answer=piFraction(1,k);
+      wrong=[piFraction(1,2*k),piFraction(2,k),piFraction(1,k+1)];
+      q.explanation=`Тангенс равен нулю при ${k}x=πn. Для первого положительного корня n=1, поэтому x=${answer}.`;
+      q.tip="Для tg t=0 используйте t=πn; точка должна входить в область определения тангенса.";
+    }
+    setChoices(q,answer,wrong);
+    q.audit={type:["trig_sin_zero","trig_cos_one","trig_sin_one","trig_cos_zero","trig_tan_zero"][mode],k};
+  });
+
+  const auditSkill={
+    seq_linear:"Последовательности • явная линейная формула",seq_square:"Последовательности • явная квадратичная формула",
+    seq_recurrence_add:"Последовательности • рекуррентная формула",seq_fibonacci_a4:"Последовательности • рекурсия второго порядка",
+    seq_alternating:"Последовательности • чередование знаков",reciprocal_equation:"Рациональные • простейшее дробное уравнение",
+    sqrt_equation:"Иррациональные • изолированный корень"
+  };
+  for(const q of QUESTIONS){
+    if(auditSkill[q.audit?.type]) q.skill=auditSkill[q.audit.type];
+  }
+
+  MODULES.functions.topics.derivative="Производная в задачах о функциях";
+  MODULES.applied.topics.high="Повышенный уровень";
+
+  const teachingNotes={
+    fsu:"После раскрытия скобок приведите подобные слагаемые и сравните полученный многочлен с вариантами ответа.",
+    powers:"Проверьте, что основание осталось прежним, а показатели были обработаны по нужному свойству степеней.",
+    roots:"Выделите под корнем полный квадрат и только затем выносите множитель за знак корня.",
+    trig:"Назовите использованное тождество или табличное значение и проверьте знак результата.",
+    rotation:"Перед подстановкой определите площадь основания тела и убедитесь, что высота взята перпендикулярно основанию.",
+    pyramids:"Сначала найдите произведение площади основания на высоту, затем обязательно разделите результат на 3."
+  };
+  for(const q of QUESTIONS){
+    if(typeof q.explanation==="string"&&q.explanation.length<45&&teachingNotes[q.topic]){
+      q.explanation=q.explanation+" "+teachingNotes[q.topic];
+    }
+    if(q.level==="high") q.difficulty="high";
+    else if(q.topic==="high"&&!q.audit) q.difficulty="high";
+    else if(q.audit) q.difficulty="medium";
+    else q.difficulty="base";
+  }
+
+  const difficultyOrder={base:1,medium:2,high:3};
+  for(const [module,moduleData] of Object.entries(MODULES)){
+    for(const topic of Object.keys(moduleData.topics)){
+      QUESTIONS.filter(q=>q.module===module&&q.topic===topic)
+        .sort((a,b)=>(difficultyOrder[a.difficulty]-difficultyOrder[b.difficulty])||String(a.skill).localeCompare(String(b.skill),"ru"))
+        .forEach((q,index)=>q.sequenceIndex=index);
+    }
+  }
+})();
+
 for(const [module,moduleData] of Object.entries(MODULES)){
   for(const topic of Object.keys(moduleData.topics)){
     const topicCount=QUESTIONS.filter(q=>q.module===module&&q.topic===topic).length;
@@ -1884,6 +2107,23 @@ function moduleAccuracy(module,p){
   return (c+w) ? Math.round(c/(c+w)*100) : null;
 }
 
+function topicProgress(module,topic,p=loadProgress()){
+  const pool=QUESTIONS.filter(q=>q.module===module&&q.topic===topic);
+  let correct=0,wrong=0,seen=0;
+  for(const q of pool){
+    const item=p.weak?.[q.uid];
+    if(!item) continue;
+    seen++;
+    correct+=Number(item.correct)||0;
+    wrong+=Number(item.wrong)||0;
+  }
+  return {total:pool.length,seen,accuracy:(correct+wrong)?Math.round(correct/(correct+wrong)*100):null};
+}
+
+function difficultyLabel(value){
+  return value==="high"?"повышенный":value==="medium"?"средний":"базовый";
+}
+
 function overallAccuracy(p){
   const weak = (p && p.weak && typeof p.weak === "object") ? p.weak : {};
   let c=0,w=0;
@@ -1944,7 +2184,9 @@ function renderHome(){
     const acc=moduleAccuracy(module,p);
     const label=card.querySelector(".module-accuracy");
     const bar=card.querySelector(".progressbar span");
-    if(label) label.textContent=acc==null?"Пока нет результатов":"Точность: "+acc+"%";
+    const modulePool=QUESTIONS.filter(q=>q.module===module);
+    const seen=modulePool.filter(q=>p.weak?.[q.uid]).length;
+    if(label) label.textContent=seen?`Пройдено ${seen} из ${modulePool.length} • точность ${acc}%`:"Пока нет результатов";
     if(bar) bar.style.width=(acc==null?0:acc)+"%";
   }
 
@@ -1961,15 +2203,30 @@ function openModule(module){
   $("moduleDescription").textContent=MODULES[module].desc;
 
   const topics=MODULES[module].topics;
+  const p=loadProgress();
+  const levelRank={base:1,medium:2,high:3};
   $("topicGrid").innerHTML=Object.entries(topics).map(([topic,label])=>{
+    const progress=topicProgress(module,topic,p);
+    const levels=[...new Set(QUESTIONS.filter(q=>q.module===module&&q.topic===topic).map(q=>q.difficulty))]
+      .sort((a,b)=>levelRank[a]-levelRank[b]);
     return `<div class="topic-card">
-      <div><h3>${escapeHtml(label)}</h3></div>
-      <button class="btn btn-ghost topic-open" data-topic="${topic}">Тренировать</button>
+      <div>
+        <h3>${escapeHtml(label)}</h3>
+        <div class="mini topic-progress">Пройдено уникальных: ${progress.seen} из ${progress.total}${progress.accuracy==null?"":` • точность ${progress.accuracy}%`}</div>
+        <div class="level-row">${levels.map(level=>`<span class="level-pill">${difficultyLabel(level)}</span>`).join("")}</div>
+      </div>
+      <div class="topic-actions">
+        <button class="btn btn-ghost topic-open" data-topic="${topic}" data-count="5" data-order="random">5 заданий</button>
+        <button class="btn btn-primary topic-open" data-topic="${topic}" data-count="10" data-order="random">10 случайных</button>
+        <button class="btn btn-secondary topic-open" data-topic="${topic}" data-count="25" data-order="sequential">Все 25 по порядку</button>
+      </div>
     </div>`;
   }).join("");
 
   document.querySelectorAll(".topic-open").forEach(btn=>{
-    btn.addEventListener("click",()=>startQuiz("topic",{module,topic:btn.dataset.topic}));
+    btn.addEventListener("click",()=>startQuiz("topic",{
+      module,topic:btn.dataset.topic,count:Number(btn.dataset.count)||10,order:btn.dataset.order||"random"
+    }));
   });
 
   showScreen("moduleScreen");
@@ -1979,23 +2236,37 @@ function pickQuestions(mode,scope={}){
   const p=loadProgress();
   if(mode==="all") return shuffle(QUESTIONS).slice(0,10);
 
-  if(mode==="solveAll") return shuffle(QUESTIONS);
+  if(mode==="solveAll"){
+    const unseen=QUESTIONS.filter(q=>!p.weak?.[q.uid]);
+    return (unseen.length?unseen:QUESTIONS)
+      .slice()
+      .sort((a,b)=>(a.sequenceIndex-b.sequenceIndex)||a.uid.localeCompare(b.uid))
+      .slice(0,25);
+  }
 
   if(mode==="module"){
     return shuffle(QUESTIONS.filter(q=>q.module===scope.module)).slice(0,10);
   }
 
   if(mode==="topic"){
-    return shuffle(QUESTIONS.filter(q=>q.module===scope.module && q.topic===scope.topic)).slice(0,10);
+    const count=Math.max(1,Math.min(25,Number(scope.count)||10));
+    const pool=QUESTIONS.filter(q=>q.module===scope.module && q.topic===scope.topic);
+    if(scope.order==="sequential") return pool.slice().sort((a,b)=>a.sequenceIndex-b.sequenceIndex).slice(0,count);
+    return shuffle(pool).slice(0,count);
   }
 
   if(mode==="high"){
-    const pool=QUESTIONS.filter(q=>
-      q.topic==="high" ||
-      q.level==="high" ||
-      /80–100|Ловушки/i.test(q.skill||"")
-    );
+    const pool=QUESTIONS.filter(q=>q.difficulty==="high");
     return shuffle(pool).slice(0,10);
+  }
+
+  if(mode==="teacher"){
+    let pool=QUESTIONS.filter(q=>(scope.module==="all"||q.module===scope.module));
+    if(scope.topic&&scope.topic!=="all") pool=pool.filter(q=>q.topic===scope.topic);
+    if(scope.level&&scope.level!=="all") pool=pool.filter(q=>q.difficulty===scope.level);
+    const count=Math.max(1,Math.min(Number(scope.count)||10,pool.length));
+    if(scope.order==="sequential") return pool.slice().sort((a,b)=>(a.sequenceIndex-b.sequenceIndex)||a.uid.localeCompare(b.uid)).slice(0,count);
+    return shuffle(pool).slice(0,count);
   }
 
   if(mode==="mistakes"){
@@ -2036,17 +2307,18 @@ function pickQuestions(mode,scope={}){
 function modeLabel(mode,scope){
   if(mode==="quick") return "5 минут перед уроком";
   if(mode==="all") return "Все разделы";
-  if(mode==="solveAll") return "Решить все задания";
+  if(mode==="solveAll") return "Освоение полного банка";
   if(mode==="high") return "Высокий балл";
   if(mode==="mistakes") return "Мои ошибки";
   if(mode==="module") return "Смешанная по разделу";
   if(mode==="moduleQuick") return "5 минут по разделу";
   if(mode==="topic") return "Тематическая тренировка";
+  if(mode==="teacher") return "Тренировка учителя";
   return "Тренировка";
 }
 
 let state={
-  index:0,score:0,answered:false,mistakes:[],
+  index:0,score:0,answered:false,mistakes:[],deferred:[],
   mode:"all",scope:{},queue:[],modeLabel:"Все разделы"
 };
 
@@ -2065,7 +2337,7 @@ function startQuiz(mode,scope={}){
     return;
   }
   state={
-    index:0,score:0,answered:false,mistakes:[],
+    index:0,score:0,answered:false,mistakes:[],deferred:[],
     mode,scope,queue,modeLabel:modeLabel(mode,scope)
   };
   showScreen("quiz");
@@ -2101,6 +2373,8 @@ function renderQuestion(){
   $("feedbackBody").innerHTML="";
   $("feedbackTip").innerHTML="";
   $("nextBtn").style.display="none";
+  $("deferBtn").style.display="inline-block";
+  $("deferBtn").disabled=state.index>=state.queue.length-1||state.deferred.includes(q.uid);
 
   const shuffled=shuffle(q.choices.map((choice,originalIndex)=>({choice,originalIndex})));
   $("answerArea").innerHTML=`<div class="choices">${
@@ -2152,9 +2426,20 @@ function checkAnswer(originalIndex){
   $("feedbackBody").innerHTML=feedbackHtml(q.explanation);
   $("feedbackTip").innerHTML="<b>Запомни:</b> "+feedbackHtml(q.tip);
   $("nextBtn").style.display="inline-block";
+  $("deferBtn").style.display="none";
   $("nextBtn").textContent=state.index===state.queue.length-1?"Показать результат":"Следующее";
 
   renderMath($("feedback"));
+}
+
+function deferQuestion(){
+  if(state.answered||state.index>=state.queue.length-1) return;
+  const q=state.queue[state.index];
+  if(state.deferred.includes(q.uid)) return;
+  state.queue.splice(state.index,1);
+  state.queue.push(q);
+  state.deferred.push(q.uid);
+  renderQuestion();
 }
 
 function next(){
@@ -2186,6 +2471,56 @@ function finishQuiz(){
       `<div class="weak-item"><b>${escapeHtml(x.skill)}</b><div class="mini">${escapeHtml(moduleLabel(x.module))} • добавлено в общий банк ошибок</div></div>`
     ).join("");
   }
+}
+
+function populateTeacherModules(){
+  $("teacherModule").innerHTML='<option value="all">Все разделы</option>'+Object.entries(MODULES)
+    .map(([key,value])=>`<option value="${key}">${escapeHtml(value.title)}</option>`).join("");
+  populateTeacherTopics();
+}
+
+function populateTeacherTopics(){
+  const module=$("teacherModule").value;
+  if(module==="all"){
+    $("teacherTopic").innerHTML='<option value="all">Все подразделы</option>';
+  }else{
+    $("teacherTopic").innerHTML='<option value="all">Все подразделы раздела</option>'+Object.entries(MODULES[module].topics)
+      .map(([key,value])=>`<option value="${key}">${escapeHtml(value)}</option>`).join("");
+  }
+  updateTeacherPoolInfo();
+}
+
+function teacherScope(order="random"){
+  return {
+    module:$("teacherModule").value,
+    topic:$("teacherTopic").value,
+    level:$("teacherLevel").value,
+    count:Number($("teacherCount").value)||10,
+    order
+  };
+}
+
+function teacherPool(scope=teacherScope()){
+  return QUESTIONS.filter(q=>
+    (scope.module==="all"||q.module===scope.module)&&
+    (scope.topic==="all"||q.topic===scope.topic)&&
+    (scope.level==="all"||q.difficulty===scope.level)
+  );
+}
+
+function updateTeacherPoolInfo(){
+  const pool=teacherPool();
+  const skills=new Set(pool.map(q=>q.skill));
+  $("teacherPoolInfo").textContent=`Доступно заданий: ${pool.length} • проверяемых навыков: ${skills.size}`;
+  $("teacherStartBtn").disabled=!pool.length;
+  $("teacherSequentialBtn").disabled=!pool.length;
+}
+
+function openTeacher(){
+  previousScreenId="home";
+  populateTeacherModules();
+  $("teacherTotal").textContent=QUESTIONS.length;
+  showScreen("teacherScreen");
 }
 
 
@@ -3534,6 +3869,7 @@ $("allBtn").addEventListener("click",()=>startQuiz("all"));
 $("solveAllBtn").addEventListener("click",()=>startQuiz("solveAll"));
 $("highBtn").addEventListener("click",()=>startQuiz("high"));
 $("mistakesBtn").addEventListener("click",()=>startQuiz("mistakes"));
+$("teacherBtn").addEventListener("click",openTeacher);
 
 $("moduleBackBtn").addEventListener("click",()=>{showScreen("home");renderHome();});
 $("moduleMixedBtn").addEventListener("click",()=>startQuiz("module",{module:currentModule}));
@@ -3541,12 +3877,22 @@ $("moduleQuickBtn").addEventListener("click",()=>startQuiz("moduleQuick",{module
 
 $("quizBackBtn").addEventListener("click",()=>{
   if(previousScreenId==="moduleScreen") showScreen("moduleScreen");
+  else if(previousScreenId==="teacherScreen") showScreen("teacherScreen");
   else { showScreen("home"); renderHome(); }
 });
 $("quizHomeBtn").addEventListener("click",()=>{showScreen("home");renderHome();});
 $("resultHomeBtn").addEventListener("click",()=>{showScreen("home");renderHome();});
 $("retryBtn").addEventListener("click",()=>startQuiz(state.mode,state.scope));
 $("nextBtn").addEventListener("click",next);
+$("deferBtn").addEventListener("click",deferQuestion);
+
+$("teacherBackBtn").addEventListener("click",()=>{showScreen("home");renderHome();});
+$("teacherModule").addEventListener("change",populateTeacherTopics);
+$("teacherTopic").addEventListener("change",updateTeacherPoolInfo);
+$("teacherLevel").addEventListener("change",updateTeacherPoolInfo);
+$("teacherCount").addEventListener("change",updateTeacherPoolInfo);
+$("teacherStartBtn").addEventListener("click",()=>startQuiz("teacher",teacherScope("random")));
+$("teacherSequentialBtn").addEventListener("click",()=>startQuiz("teacher",teacherScope("sequential")));
 
 $("resetBtn").addEventListener("click",()=>{
   if(confirm("Сбросить весь сохранённый прогресс тренажёра?")){
