@@ -1744,7 +1744,7 @@ function renderSegments(segments){
   if(!Array.isArray(segments)) return formatRichText(segments);
   return segments.map(seg=>{
     if(seg.kind==="tex") return inlineTex(seg.value);
-    return escapeHtml(seg.value);
+    return formatRichText(seg.value);
   }).join(" ");
 }
 
