@@ -77,6 +77,9 @@ p{line-height:1.55}.lead{font-size:18px;color:var(--muted);max-width:840px}.mini
 .feedback{display:none;margin-top:18px;border-radius:18px;padding:16px}
 .feedback.show{display:block}.feedback.ok{background:var(--green-soft);border:1px solid #b9e2ca}.feedback.bad{background:var(--red-soft);border:1px solid #f0c0bc}
 .feedback .title{font-size:18px;font-weight:900;margin-bottom:7px}.tip{margin-top:9px;color:#394150}
+.feedback #feedbackBody,.feedback #feedbackTip{line-height:1.8;overflow:visible}
+.feedback .katex,.feedback .katex-html{overflow:visible}
+.feedback .katex-html{padding:.12em 0}
 .graph-wrap{margin:16px auto;max-width:640px;background:#fff;border:1px solid var(--border);border-radius:18px;padding:12px}
 svg{width:100%;height:auto;display:block}
 .result-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:18px 0}
@@ -2186,9 +2189,17 @@ function finishQuiz(){
 }
 
 
+function svgLabelText(value){
+  return String(value)
+    .replace(/\\sqrt\{([^{}]+)\}/g,(_,radicand)=>`√${radicand.length===1?radicand:`(${radicand})`}`)
+    .replace(/\\sqrt([A-Za-z0-9]+)/g,"√$1")
+    .replace(/\\pi/g,"π")
+    .replace(/\\cdot/g,"·");
+}
+
 function planSvgText(x,y,text,anchor="middle",size=15,weight=600){
   if(text===undefined || text===null || String(text)==="") return "";
-  return `<text x="${x}" y="${y}" text-anchor="${anchor}" font-size="${size}" font-weight="${weight}" fill="#26344d">${escapeHtml(String(text))}</text>`;
+  return `<text x="${x}" y="${y}" text-anchor="${anchor}" font-size="${size}" font-weight="${weight}" fill="#26344d">${escapeHtml(svgLabelText(text))}</text>`;
 }
 
 function mid(P,Q){ return {x:(P.x+Q.x)/2, y:(P.y+Q.y)/2}; }
@@ -2274,7 +2285,7 @@ function renderCalculusDiagram(d){
     const roots=d.roots||[-1,2], down=d.orientation==="down";
     const g=graphBase(-4,4,-3,3,340,220),pts=[];
     for(let i=0;i<=240;i++){const x=-4+8*i/240;let y=(x-roots[0])*(x-roots[1]);if(down)y=-y;y*=0.25;pts.push(`${g.X(x)},${g.Y(y)}`);}
-    return wrap(`<svg viewBox="0 0 455 305">${g.defs}${g.grid}${g.axes}${polyline(pts,"#5668f2",4,g.clipId)}<circle cx="${g.X(roots[0])}" cy="${g.Y(0)}" r="5" fill="#c13b2a"/><circle cx="${g.X(roots[1])}" cy="${g.Y(0)}" r="5" fill="#c13b2a"/>${planSvgText(g.X(roots[0]),g.Y(0)+22,String(roots[0]))}${planSvgText(g.X(roots[1]),g.Y(0)+22,String(roots[1]))}${planSvgText(394,40,"f′(x)","middle",14,700)}</svg>`);
+    return wrap(`<svg viewBox="0 0 455 305">${g.defs}${g.grid}${g.axes}${polyline(pts,"#5668f2",4,g.clipId)}${planSvgText(g.X(roots[0]),g.Y(0)+22,String(roots[0]))}${planSvgText(g.X(roots[1]),g.Y(0)+22,String(roots[1]))}${planSvgText(394,40,"f′(x)","middle",14,700)}</svg>`);
   }
 
   if(d.type==="derivativeCubic"){
@@ -2287,7 +2298,7 @@ function renderCalculusDiagram(d){
       else y=0.18*(x-roots[0])*(x-roots[1])*(x-roots[2]);
       pts.push(`${g.X(x)},${g.Y(y)}`);
     }
-    let marks="";for(const r of roots) marks+=`<circle cx="${g.X(r)}" cy="${g.Y(0)}" r="5" fill="#c13b2a"/>${planSvgText(g.X(r),g.Y(0)+22,String(r))}`;
+    let marks="";for(const r of roots) marks+=planSvgText(g.X(r),g.Y(0)+22,String(r));
     return wrap(`<svg viewBox="0 0 455 305">${g.defs}${g.grid}${g.axes}${polyline(pts,"#5668f2",4,g.clipId)}${marks}${planSvgText(394,40,"f′(x)","middle",14,700)}</svg>`);
   }
 
@@ -2296,7 +2307,7 @@ function renderCalculusDiagram(d){
   if(d.type==="derivativeTouch"){
     const g=graphBase(-3,4,-1,4,340,220),pts=[],x0=Number(d.x0)||1;
     for(let i=0;i<=220;i++){const x=-3+7*i/220,y=0.35*(x-x0)*(x-x0);pts.push(`${g.X(x)},${g.Y(y)}`);}
-    return wrap(`<svg viewBox="0 0 455 305">${g.defs}${g.grid}${g.axes}${polyline(pts,"#5668f2",4,g.clipId)}<circle cx="${g.X(x0)}" cy="${g.Y(0)}" r="5" fill="#c13b2a"/>${planSvgText(g.X(x0),g.Y(0)+22,String(x0))}${planSvgText(394,40,"f′(x)","middle",14,700)}</svg>`);
+    return wrap(`<svg viewBox="0 0 455 305">${g.defs}${g.grid}${g.axes}${polyline(pts,"#5668f2",4,g.clipId)}${planSvgText(g.X(x0),g.Y(0)+22,String(x0))}${planSvgText(394,40,"f′(x)","middle",14,700)}</svg>`);
   }
 
   if(d.type==="signTable"){
@@ -2576,7 +2587,6 @@ function renderStereoDiagram(d){
     body+=ellipseArc(cx,cy,R,R*.30,"front","#5668f2",2.4);
     if(d.greatCircle){
       body+=`<ellipse cx="${cx}" cy="${cy}" rx="${R}" ry="${R*.30}" fill="rgba(154,103,234,.10)" stroke="#9a67ea" stroke-width="3"/>`;
-      if(d.labels?.greatCircle) body+=txt(cx+R*.55,cy-16,d.labels.greatCircle);
       if(d.labels?.greatCircleArea) body+=txt(cx,cy-R*.42,d.labels.greatCircleArea);
     }
 
@@ -2604,8 +2614,8 @@ function renderStereoDiagram(d){
         body+=line(O,P,"#4f596b",2.2);
         body+=txt((O.x+P.x)/2+4,(O.y+P.y)/2-8,d.labels.R);
       }
-    } else if(d.labels?.r || d.labels?.R){
-      const labv=d.labels?.r || d.labels?.R;
+    } else if(d.labels?.r || d.labels?.R || d.labels?.greatCircle){
+      const labv=d.labels?.greatCircle || d.labels?.r || d.labels?.R;
       body+=line(O,{x:cx+R,y:cy},"#4f596b",2.2);
       body+=txt(cx+R/2,cy-12,labv);
     }
