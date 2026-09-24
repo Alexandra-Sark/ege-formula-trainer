@@ -59,9 +59,23 @@ p{line-height:1.55}.lead{font-size:18px;color:var(--muted);max-width:840px}.mini
 .topic-card h3{margin-bottom:7px}.topic-progress{margin:8px 0 12px}.topic-actions{display:grid;grid-template-columns:1fr;gap:7px}
 .topic-actions .btn{width:100%;padding:10px 12px;font-size:13px}
 .level-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.level-pill{padding:5px 8px;border-radius:999px;background:#f1f3f8;color:#596174;font-size:11px;font-weight:800}
-.teacher-panel{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}.field{display:grid;gap:7px}.field label{font-size:13px;font-weight:800;color:var(--muted)}
+.teacher-panel{display:grid;grid-template-columns:repeat(2,minmax(0,220px));gap:12px;margin:18px 0}.field{display:grid;gap:7px}.field label{font-size:13px;font-weight:800;color:var(--muted)}
 .field select{width:100%;border:1px solid var(--border);border-radius:12px;background:#fff;color:var(--text);padding:12px;font:inherit}
 .teacher-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}.teacher-summary .stat b{font-size:21px}
+.teacher-selection-grid{display:grid;grid-template-columns:1fr 1.35fr;gap:12px;margin:18px 0}
+.teacher-check-card{border:1px solid var(--border);border-radius:18px;background:#fafbff;padding:14px;min-width:0}
+.teacher-check-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.teacher-check-title{font-size:14px;font-weight:850}
+.teacher-check-actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.mini-action{border:0;background:var(--accent-soft);color:var(--accent);border-radius:9px;padding:6px 8px;font-size:10px;font-weight:800;cursor:pointer}
+.mini-action:hover{background:#dfe4ff}
+.teacher-checklist{display:grid;gap:6px;max-height:310px;overflow:auto;padding-right:3px}
+.teacher-check-option{display:flex;align-items:flex-start;gap:9px;border-radius:10px;padding:8px 9px;background:#fff;border:1px solid #edf0f6;cursor:pointer;font-size:12px;font-weight:750;line-height:1.3}
+.teacher-check-option:hover{border-color:#c8ceff;background:#fafaff}
+.teacher-check-option input{margin:2px 0 0;accent-color:var(--accent);flex:0 0 auto}
+.teacher-topic-group{display:grid;gap:5px}.teacher-topic-group+.teacher-topic-group{margin-top:7px;padding-top:9px;border-top:1px solid var(--border)}
+.teacher-topic-group-title{font-size:11px;font-weight:900;color:var(--accent);padding:0 3px}
+.teacher-empty{padding:16px 10px;color:var(--muted);font-size:12px;line-height:1.45;text-align:center}
 .quiz-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
 .step{color:var(--muted);font-weight:750}
 .skill{font-size:13px;color:var(--accent);font-weight:800;background:var(--accent-soft);padding:7px 10px;border-radius:999px}
@@ -132,7 +146,7 @@ svg{width:100%;height:auto;display:block}
 .section-link-all{background:#f4f6fb;color:var(--accent);margin-bottom:3px}
 .section-topic-progress{display:block;margin-top:3px;color:var(--muted);font-size:10px;font-weight:650}
 @media(max-width:820px){
-  .stats,.mode-grid,.module-grid,.topic-grid,.result-grid,.teacher-panel,.teacher-summary,.home-layout{grid-template-columns:1fr}
+  .stats,.mode-grid,.module-grid,.topic-grid,.result-grid,.teacher-panel,.teacher-summary,.teacher-selection-grid,.home-layout{grid-template-columns:1fr}
   .hero,.question-card{padding:19px}.question{font-size:20px}.math-block .katex{font-size:1.7em}
   .backline,.quiz-head{align-items:flex-start;flex-wrap:wrap}.topbar{align-items:flex-start}.brand{max-width:68%}
   .section-sidebar{position:static;order:-1;padding:17px}
@@ -213,27 +227,6 @@ svg{width:100%;height:auto;display:block}
     </div>
   </section>
 
-  <section id="moduleScreen" class="screen">
-    <div class="backline">
-      <button class="btn btn-ghost" id="moduleBackBtn">← На главную</button>
-      <div class="badge" id="moduleBadge">Раздел</div>
-    </div>
-    <div class="hero">
-      <h1 id="moduleTitle"></h1>
-      <p class="lead" id="moduleDescription"></p>
-
-      <div class="actions" style="margin:20px 0">
-        <button class="btn btn-primary" id="moduleMixedBtn">10 заданий по разделу</button>
-        <button class="btn btn-secondary" id="moduleQuickBtn">5 минут</button>
-      </div>
-
-      <div class="section-title">
-        <div><h2>Подтемы</h2><div class="mini">Выберите конкретный навык для отработки</div></div>
-      </div>
-      <div id="topicGrid" class="topic-grid"></div>
-    </div>
-  </section>
-
   <section id="quiz" class="screen">
     <div class="quiz-head">
       <div class="step" id="stepText">1 / 10</div>
@@ -295,13 +288,33 @@ svg{width:100%;height:auto;display:block}
       <h1>Собрать тренировку</h1>
       <p class="lead">Выберите содержание и уровень. Варианты ответов будут перемешаны, а итог покажет ошибки ученика.</p>
       <div class="teacher-summary">
-        <div class="stat"><span class="mini">Разделов</span><b>10</b></div>
-        <div class="stat"><span class="mini">Подразделов</span><b>63</b></div>
-        <div class="stat"><span class="mini">Заданий</span><b id="teacherTotal">1575</b></div>
+        <div class="stat"><span class="mini">Выбрано разделов</span><b id="teacherSelectedModules">10</b></div>
+        <div class="stat"><span class="mini">Выбрано подразделов</span><b id="teacherSelectedTopics">63</b></div>
+        <div class="stat"><span class="mini">Доступно заданий</span><b id="teacherTotal">1575</b></div>
+      </div>
+      <div class="teacher-selection-grid">
+        <div class="teacher-check-card">
+          <div class="teacher-check-head">
+            <div class="teacher-check-title">Разделы</div>
+            <div class="teacher-check-actions">
+              <button class="mini-action" type="button" id="teacherModulesAll">Выбрать все</button>
+              <button class="mini-action" type="button" id="teacherModulesNone">Снять выбор</button>
+            </div>
+          </div>
+          <div class="teacher-checklist" id="teacherModuleList"></div>
+        </div>
+        <div class="teacher-check-card">
+          <div class="teacher-check-head">
+            <div class="teacher-check-title">Подразделы</div>
+            <div class="teacher-check-actions">
+              <button class="mini-action" type="button" id="teacherTopicsAll">Выбрать все</button>
+              <button class="mini-action" type="button" id="teacherTopicsNone">Снять выбор</button>
+            </div>
+          </div>
+          <div class="teacher-checklist" id="teacherTopicList"></div>
+        </div>
       </div>
       <div class="teacher-panel">
-        <div class="field"><label for="teacherModule">Раздел</label><select id="teacherModule"></select></div>
-        <div class="field"><label for="teacherTopic">Подраздел</label><select id="teacherTopic"></select></div>
         <div class="field"><label for="teacherLevel">Уровень</label><select id="teacherLevel"><option value="all">Все уровни</option><option value="base">Базовый</option><option value="medium">Средний</option><option value="high">Повышенный</option></select></div>
         <div class="field"><label for="teacherCount">Количество</label><select id="teacherCount"><option value="5">5 заданий</option><option value="10" selected>10 заданий</option><option value="25">25 заданий</option></select></div>
       </div>
@@ -2177,45 +2190,6 @@ function renderHome(){
   bindSectionMenu(menu);
 }
 
-let currentModule=null;
-
-function openModule(module){
-  previousScreenId = "home";
-  currentModule=module;
-  $("moduleTitle").textContent=MODULES[module].title;
-  $("moduleBadge").textContent=MODULES[module].title;
-  $("moduleDescription").textContent=MODULES[module].desc;
-
-  const topics=MODULES[module].topics;
-  const p=loadProgress();
-  const levelRank={base:1,medium:2,high:3};
-  $("topicGrid").innerHTML=Object.entries(topics).map(([topic,label])=>{
-    const progress=topicProgress(module,topic,p);
-    const levels=[...new Set(QUESTIONS.filter(q=>q.module===module&&q.topic===topic).map(q=>q.difficulty))]
-      .sort((a,b)=>levelRank[a]-levelRank[b]);
-    return `<div class="topic-card">
-      <div>
-        <h3>${escapeHtml(label)}</h3>
-        <div class="mini topic-progress">Пройдено уникальных: ${progress.seen} из ${progress.total}${progress.accuracy==null?"":` • точность ${progress.accuracy}%`}</div>
-        <div class="level-row">${levels.map(level=>`<span class="level-pill">${difficultyLabel(level)}</span>`).join("")}</div>
-      </div>
-      <div class="topic-actions">
-        <button class="btn btn-ghost topic-open" data-topic="${topic}" data-count="5" data-order="random">5 заданий</button>
-        <button class="btn btn-primary topic-open" data-topic="${topic}" data-count="10" data-order="random">10 случайных</button>
-        <button class="btn btn-secondary topic-open" data-topic="${topic}" data-count="25" data-order="sequential">Все 25 по порядку</button>
-      </div>
-    </div>`;
-  }).join("");
-
-  document.querySelectorAll(".topic-open").forEach(btn=>{
-    btn.addEventListener("click",()=>startQuiz("topic",{
-      module,topic:btn.dataset.topic,count:Number(btn.dataset.count)||10,order:btn.dataset.order||"random"
-    }));
-  });
-
-  showScreen("moduleScreen");
-}
-
 function pickQuestions(mode,scope={}){
   const p=loadProgress();
   if(mode==="all") return shuffle(QUESTIONS).slice(0,10);
@@ -2245,9 +2219,7 @@ function pickQuestions(mode,scope={}){
   }
 
   if(mode==="teacher"){
-    let pool=QUESTIONS.filter(q=>(scope.module==="all"||q.module===scope.module));
-    if(scope.topic&&scope.topic!=="all") pool=pool.filter(q=>q.topic===scope.topic);
-    if(scope.level&&scope.level!=="all") pool=pool.filter(q=>q.difficulty===scope.level);
+    const pool=teacherPool(scope);
     const count=Math.max(1,Math.min(Number(scope.count)||10,pool.length));
     if(scope.order==="sequential") return pool.slice().sort((a,b)=>(a.sequenceIndex-b.sequenceIndex)||a.uid.localeCompare(b.uid)).slice(0,count);
     return shuffle(pool).slice(0,count);
@@ -2457,27 +2429,70 @@ function finishQuiz(){
   }
 }
 
+let teacherTopicSelection=new Set();
+
+function teacherTopicKey(module,topic){
+  return `${module}::${topic}`;
+}
+
+function selectedTeacherModules(){
+  return [...document.querySelectorAll('#teacherModuleList input[type="checkbox"]:checked')].map(input=>input.value);
+}
+
+function selectedTeacherTopics(){
+  return [...document.querySelectorAll('#teacherTopicList input[type="checkbox"]:checked')].map(input=>input.value);
+}
+
 function populateTeacherModules(){
-  $("teacherModule").innerHTML='<option value="all">Все разделы</option>'+Object.entries(MODULES)
-    .map(([key,value])=>`<option value="${key}">${escapeHtml(value.title)}</option>`).join("");
+  teacherTopicSelection=new Set();
+  for(const [module,moduleData] of Object.entries(MODULES)){
+    for(const topic of Object.keys(moduleData.topics)) teacherTopicSelection.add(teacherTopicKey(module,topic));
+  }
+  $("teacherModuleList").innerHTML=Object.entries(MODULES).map(([module,moduleData])=>
+    `<label class="teacher-check-option"><input type="checkbox" value="${module}" checked><span>${escapeHtml(moduleData.title)}</span></label>`
+  ).join("");
+  $("teacherModuleList").querySelectorAll('input[type="checkbox"]').forEach(input=>{
+    input.addEventListener("change",()=>{
+      const module=input.value;
+      for(const topic of Object.keys(MODULES[module].topics)){
+        const key=teacherTopicKey(module,topic);
+        if(input.checked) teacherTopicSelection.add(key);
+        else teacherTopicSelection.delete(key);
+      }
+      populateTeacherTopics();
+    });
+  });
   populateTeacherTopics();
 }
 
 function populateTeacherTopics(){
-  const module=$("teacherModule").value;
-  if(module==="all"){
-    $("teacherTopic").innerHTML='<option value="all">Все подразделы</option>';
-  }else{
-    $("teacherTopic").innerHTML='<option value="all">Все подразделы раздела</option>'+Object.entries(MODULES[module].topics)
-      .map(([key,value])=>`<option value="${key}">${escapeHtml(value)}</option>`).join("");
+  const modules=selectedTeacherModules();
+  if(!modules.length){
+    $("teacherTopicList").innerHTML='<div class="teacher-empty">Сначала отметьте один или несколько разделов.</div>';
+    updateTeacherPoolInfo();
+    return;
   }
+  $("teacherTopicList").innerHTML=modules.map(module=>{
+    const links=Object.entries(MODULES[module].topics).map(([topic,label])=>{
+      const key=teacherTopicKey(module,topic);
+      return `<label class="teacher-check-option"><input type="checkbox" value="${key}" ${teacherTopicSelection.has(key)?"checked":""}><span>${escapeHtml(label)}</span></label>`;
+    }).join("");
+    return `<div class="teacher-topic-group"><div class="teacher-topic-group-title">${escapeHtml(MODULES[module].title)}</div>${links}</div>`;
+  }).join("");
+  $("teacherTopicList").querySelectorAll('input[type="checkbox"]').forEach(input=>{
+    input.addEventListener("change",()=>{
+      if(input.checked) teacherTopicSelection.add(input.value);
+      else teacherTopicSelection.delete(input.value);
+      updateTeacherPoolInfo();
+    });
+  });
   updateTeacherPoolInfo();
 }
 
 function teacherScope(order="random"){
   return {
-    module:$("teacherModule").value,
-    topic:$("teacherTopic").value,
+    modules:selectedTeacherModules(),
+    topics:selectedTeacherTopics(),
     level:$("teacherLevel").value,
     count:Number($("teacherCount").value)||10,
     order
@@ -2485,17 +2500,23 @@ function teacherScope(order="random"){
 }
 
 function teacherPool(scope=teacherScope()){
-  return QUESTIONS.filter(q=>
-    (scope.module==="all"||q.module===scope.module)&&
-    (scope.topic==="all"||q.topic===scope.topic)&&
-    (scope.level==="all"||q.difficulty===scope.level)
-  );
+  const modules=new Set(scope.modules||[]);
+  const topics=new Set(scope.topics||[]);
+  if(!modules.size||!topics.size) return [];
+  return QUESTIONS.filter(q=>modules.has(q.module)&&topics.has(teacherTopicKey(q.module,q.topic))&&(scope.level==="all"||q.difficulty===scope.level));
 }
 
 function updateTeacherPoolInfo(){
+  const modules=selectedTeacherModules();
+  const topics=selectedTeacherTopics();
   const pool=teacherPool();
   const skills=new Set(pool.map(q=>q.skill));
-  $("teacherPoolInfo").textContent=`Доступно заданий: ${pool.length} • проверяемых навыков: ${skills.size}`;
+  $("teacherSelectedModules").textContent=modules.length;
+  $("teacherSelectedTopics").textContent=topics.length;
+  $("teacherTotal").textContent=pool.length;
+  $("teacherPoolInfo").textContent=pool.length
+    ? `В тренировку попадут задания из ${modules.length} разделов и ${topics.length} подразделов • проверяемых навыков: ${skills.size}`
+    : "Отметьте хотя бы один раздел и один подраздел с доступными заданиями.";
   $("teacherStartBtn").disabled=!pool.length;
   $("teacherSequentialBtn").disabled=!pool.length;
 }
@@ -2503,7 +2524,6 @@ function updateTeacherPoolInfo(){
 function openTeacher(){
   previousScreenId="home";
   populateTeacherModules();
-  $("teacherTotal").textContent=QUESTIONS.length;
   showScreen("teacherScreen");
 }
 
@@ -3855,13 +3875,8 @@ $("highBtn").addEventListener("click",()=>startQuiz("high"));
 $("mistakesBtn").addEventListener("click",()=>startQuiz("mistakes"));
 $("teacherBtn").addEventListener("click",openTeacher);
 
-$("moduleBackBtn").addEventListener("click",()=>{showScreen("home");renderHome();});
-$("moduleMixedBtn").addEventListener("click",()=>startQuiz("module",{module:currentModule}));
-$("moduleQuickBtn").addEventListener("click",()=>startQuiz("moduleQuick",{module:currentModule}));
-
 $("quizBackBtn").addEventListener("click",()=>{
-  if(previousScreenId==="moduleScreen") showScreen("moduleScreen");
-  else if(previousScreenId==="teacherScreen") showScreen("teacherScreen");
+  if(previousScreenId==="teacherScreen") showScreen("teacherScreen");
   else { showScreen("home"); renderHome(); }
 });
 $("quizHomeBtn").addEventListener("click",()=>{showScreen("home");renderHome();});
@@ -3871,8 +3886,30 @@ $("nextBtn").addEventListener("click",next);
 $("deferBtn").addEventListener("click",deferQuestion);
 
 $("teacherBackBtn").addEventListener("click",()=>{showScreen("home");renderHome();});
-$("teacherModule").addEventListener("change",populateTeacherTopics);
-$("teacherTopic").addEventListener("change",updateTeacherPoolInfo);
+$("teacherModulesAll").addEventListener("click",()=>{
+  $("teacherModuleList").querySelectorAll('input[type="checkbox"]').forEach(input=>input.checked=true);
+  for(const [module,moduleData] of Object.entries(MODULES)){
+    for(const topic of Object.keys(moduleData.topics)) teacherTopicSelection.add(teacherTopicKey(module,topic));
+  }
+  populateTeacherTopics();
+});
+$("teacherModulesNone").addEventListener("click",()=>{
+  $("teacherModuleList").querySelectorAll('input[type="checkbox"]').forEach(input=>input.checked=false);
+  teacherTopicSelection.clear();
+  populateTeacherTopics();
+});
+$("teacherTopicsAll").addEventListener("click",()=>{
+  for(const module of selectedTeacherModules()){
+    for(const topic of Object.keys(MODULES[module].topics)) teacherTopicSelection.add(teacherTopicKey(module,topic));
+  }
+  populateTeacherTopics();
+});
+$("teacherTopicsNone").addEventListener("click",()=>{
+  for(const module of selectedTeacherModules()){
+    for(const topic of Object.keys(MODULES[module].topics)) teacherTopicSelection.delete(teacherTopicKey(module,topic));
+  }
+  populateTeacherTopics();
+});
 $("teacherLevel").addEventListener("change",updateTeacherPoolInfo);
 $("teacherCount").addEventListener("change",updateTeacherPoolInfo);
 $("teacherStartBtn").addEventListener("click",()=>startQuiz("teacher",teacherScope("random")));
