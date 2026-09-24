@@ -24,7 +24,7 @@ body{
   background:linear-gradient(180deg,#f7f9ff 0%,var(--bg) 100%);color:var(--text)
 }
 button{font:inherit}
-.app{max-width:1120px;margin:0 auto;padding:24px 18px 48px}
+.app{max-width:1440px;margin:0 auto;padding:24px 18px 48px}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
 .brand{font-weight:850;font-size:18px;letter-spacing:-.02em}
 .badge{background:var(--accent-soft);color:var(--accent);padding:7px 11px;border-radius:999px;font-size:13px;font-weight:800}
@@ -94,10 +94,50 @@ svg{width:100%;height:auto;display:block}
 .weak-item{background:white;border:1px solid var(--border);border-radius:14px;padding:13px 14px}
 .render-warning{display:none;margin-bottom:14px;padding:12px 14px;border-radius:14px;background:#fff4db;border:1px solid #f0d18c;color:#704b00;font-size:14px}
 .backline{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}
+.home-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+.home-main{min-width:0}
+.section-sidebar{
+  position:sticky;top:18px;background:var(--card);border:1px solid var(--border);
+  border-radius:24px;padding:20px;box-shadow:var(--shadow);z-index:20
+}
+.section-sidebar h2{font-size:24px;margin-bottom:5px}
+.section-menu{display:grid;gap:8px;margin-top:16px}
+.section-item{position:relative}
+.section-trigger{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  border:1px solid var(--border);border-radius:14px;background:#fafbff;color:var(--text);
+  padding:13px 14px;text-align:left;cursor:pointer;transition:.18s border-color,.18s background
+}
+.section-trigger:hover,.section-trigger:focus-visible,.section-item.open .section-trigger{
+  border-color:#b8c1ff;background:var(--accent-soft);outline:none
+}
+.section-trigger-copy{display:grid;gap:3px;min-width:0}
+.section-trigger-title{font-weight:850;line-height:1.25}
+.section-trigger-progress{font-size:11px;color:var(--muted);font-weight:700}
+.section-chevron{font-size:18px;color:var(--accent);transition:.18s transform;flex:0 0 auto}
+.section-item:hover .section-chevron,.section-item:focus-within .section-chevron,.section-item.open .section-chevron{transform:rotate(90deg)}
+.section-submenu{
+  position:absolute;right:calc(100% + 10px);top:0;width:310px;display:none;
+  background:#fff;border:1px solid var(--border);border-radius:18px;padding:10px;
+  box-shadow:0 18px 42px rgba(23,32,51,.16);max-height:min(520px,calc(100vh - 48px));overflow:auto
+}
+.section-item:hover .section-submenu,.section-item:focus-within .section-submenu,.section-item.open .section-submenu{display:grid;gap:5px}
+.section-submenu-title{padding:7px 9px 9px;font-size:12px;color:var(--muted);font-weight:800}
+.section-link{
+  width:100%;border:0;border-radius:11px;background:transparent;color:var(--text);
+  padding:10px 11px;text-align:left;cursor:pointer;font:inherit;font-size:13px;font-weight:750
+}
+.section-link:hover,.section-link:focus-visible{background:var(--accent-soft);color:var(--accent);outline:none}
+.section-link-all{background:#f4f6fb;color:var(--accent);margin-bottom:3px}
+.section-topic-progress{display:block;margin-top:3px;color:var(--muted);font-size:10px;font-weight:650}
 @media(max-width:820px){
-  .stats,.mode-grid,.module-grid,.topic-grid,.result-grid,.teacher-panel,.teacher-summary{grid-template-columns:1fr}
+  .stats,.mode-grid,.module-grid,.topic-grid,.result-grid,.teacher-panel,.teacher-summary,.home-layout{grid-template-columns:1fr}
   .hero,.question-card{padding:19px}.question{font-size:20px}.math-block .katex{font-size:1.7em}
   .backline,.quiz-head{align-items:flex-start;flex-wrap:wrap}.topbar{align-items:flex-start}.brand{max-width:68%}
+  .section-sidebar{position:static;order:-1;padding:17px}
+  .section-submenu{position:static;width:auto;max-height:none;margin-top:6px;box-shadow:none;border-radius:14px}
+  .section-item:hover .section-submenu:not([data-mobile-open="true"]){display:none}
+  .section-item.open .section-submenu{display:grid}
 }
 </style>
 </head>
@@ -113,163 +153,61 @@ svg{width:100%;height:auto;display:block}
   </div>
 
   <section id="home" class="screen active">
-    <div class="hero">
-      <h1>Единый тренажёр ЕГЭ</h1>
-      <p class="lead">Одна точка входа для ежедневной тренировки формул, алгебры, уравнений, геометрии, векторов, производных, вероятности, прогрессий, параметров и прикладных задач. Без регистрации: прогресс хранится в этом браузере.</p>
+    <div class="home-layout">
+      <div class="hero home-main">
+        <h1>Единый тренажёр ЕГЭ</h1>
+        <p class="lead">Одна точка входа для ежедневной тренировки формул, алгебры, уравнений, геометрии, векторов, производных, вероятности, прогрессий, параметров и прикладных задач. Без регистрации: прогресс хранится в этом браузере.</p>
 
-      <div class="stats">
-        <div class="stat"><span class="mini">Заданий в банке</span><b id="totalQuestions">1575</b></div>
-        <div class="stat"><span class="mini">Пройдено тренировок</span><b id="sessions">0</b></div>
-        <div class="stat"><span class="mini">Ошибок для повторения</span><b id="mistakeCount">0</b></div>
-        <div class="stat"><span class="mini">Общая точность</span><b id="overallAccuracy">—</b></div>
-      </div>
-
-      <div class="mode-grid">
-        <div class="mode">
-          <h3>5 минут перед уроком</h3>
-          <p class="mini">6 заданий: ошибки, слабые места и повторение из разных разделов.</p>
-          <button class="btn btn-primary" id="quickBtn">Начать</button>
+        <div class="stats">
+          <div class="stat"><span class="mini">Заданий в банке</span><b id="totalQuestions">1575</b></div>
+          <div class="stat"><span class="mini">Пройдено тренировок</span><b id="sessions">0</b></div>
+          <div class="stat"><span class="mini">Ошибок для повторения</span><b id="mistakeCount">0</b></div>
+          <div class="stat"><span class="mini">Общая точность</span><b id="overallAccuracy">—</b></div>
         </div>
-        <div class="mode">
-          <h3>Все разделы</h3>
-          <p class="mini">10 случайных заданий из всех готовых разделов.</p>
-          <button class="btn btn-secondary" id="allBtn">Тренироваться</button>
+
+        <div class="mode-grid">
+          <div class="mode">
+            <h3>5 минут перед уроком</h3>
+            <p class="mini">6 заданий: ошибки, слабые места и повторение из разных разделов.</p>
+            <button class="btn btn-primary" id="quickBtn">Начать</button>
+          </div>
+          <div class="mode">
+            <h3>Все разделы</h3>
+            <p class="mini">10 случайных заданий из всех готовых разделов.</p>
+            <button class="btn btn-secondary" id="allBtn">Тренироваться</button>
+          </div>
+          <div class="mode">
+            <h3>Освоить весь банк</h3>
+            <p class="mini">Следующие 25 ещё не пройденных заданий. Тренажёр постепенно проведёт по всему банку.</p>
+            <button class="btn btn-secondary" id="solveAllBtn">Продолжить банк</button>
+          </div>
+          <div class="mode">
+            <h3>Высокий балл</h3>
+            <p class="mini">Ловушки и задания уровня 80–100 из всех готовых модулей.</p>
+            <button class="btn btn-secondary" id="highBtn">Начать</button>
+          </div>
+          <div class="mode">
+            <h3>Мои ошибки</h3>
+            <p class="mini">Повторить только те конструкции, где раньше были ошибки.</p>
+            <button class="btn btn-warn" id="mistakesBtn">Повторить</button>
+          </div>
+          <div class="mode">
+            <h3>Режим учителя</h3>
+            <p class="mini">Собрать тренировку по разделу, теме, уровню и количеству заданий.</p>
+            <button class="btn btn-secondary" id="teacherBtn">Открыть</button>
+          </div>
         </div>
-        <div class="mode">
-          <h3>Освоить весь банк</h3>
-          <p class="mini">Следующие 25 ещё не пройденных заданий. Тренажёр постепенно проведёт по всему банку.</p>
-          <button class="btn btn-secondary" id="solveAllBtn">Продолжить банк</button>
-        </div>
-        <div class="mode">
-          <h3>Высокий балл</h3>
-          <p class="mini">Ловушки и задания уровня 80–100 из всех готовых модулей.</p>
-          <button class="btn btn-secondary" id="highBtn">Начать</button>
-        </div>
-        <div class="mode">
-          <h3>Мои ошибки</h3>
-          <p class="mini">Повторить только те конструкции, где раньше были ошибки.</p>
-          <button class="btn btn-warn" id="mistakesBtn">Повторить</button>
-        </div>
-        <div class="mode">
-          <h3>Режим учителя</h3>
-          <p class="mini">Собрать тренировку по разделу, теме, уровню и количеству заданий.</p>
-          <button class="btn btn-secondary" id="teacherBtn">Открыть</button>
+
+        <div class="actions" style="margin-top:20px">
+          <button class="btn btn-ghost" id="resetBtn">Сбросить общий прогресс</button>
         </div>
       </div>
 
-      <div class="section-title">
-        <div><h2>Разделы</h2><div class="mini">Выберите раздел, затем конкретную подтему или смешанную тренировку</div></div>
-      </div>
-
-      
-
-<div id="moduleGrid" class="module-grid">
-  <div class="module-card" data-static-module="functions">
-    <div><h3 style="margin-top:8px">Функции</h3>
-    <p class="mini">Свойства, графики, преобразования, производная и иррациональные функции.</p>
-    <div class="module-progress"><div class="mini module-accuracy">Пока нет результатов</div><div class="progressbar"><span style="width:0%"></span></div></div></div>
-    <button class="btn btn-ghost module-open" data-module="functions">Открыть раздел</button>
-  </div>
-
-  <div class="module-card" data-static-module="algebra">
-    <div><h3 style="margin-top:8px">Алгебра</h3>
-    <p class="mini">ФСУ, степени, корни, дроби, логарифмы и тригонометрия.</p>
-    <div class="module-progress"><div class="mini module-accuracy">Пока нет результатов</div><div class="progressbar"><span style="width:0%"></span></div></div></div>
-    <button class="btn btn-ghost module-open" data-module="algebra">Открыть раздел</button>
-  </div>
-
-  <div class="module-card" data-static-module="equations">
-    <div><h3 style="margin-top:8px">Уравнения и неравенства</h3>
-    <p class="mini">Рациональные, иррациональные, показательные, логарифмические и тригонометрические задачи.</p>
-    <div class="module-progress"><div class="mini module-accuracy">Пока нет результатов</div><div class="progressbar"><span style="width:0%"></span></div></div></div>
-    <button class="btn btn-ghost module-open" data-module="equations">Открыть раздел</button>
-  </div>
-
-  <div class="module-card" data-static-module="planimetry">
-    <div><h3 style="margin-top:8px">Планиметрия</h3>
-    <p class="mini">Треугольники, четырёхугольники, окружность, координаты, площади и задачи 80–100.</p>
-    <div class="module-progress"><div class="mini module-accuracy">Пока нет результатов</div><div class="progressbar"><span style="width:0%"></span></div></div></div>
-    <button class="btn btn-ghost module-open" data-module="planimetry">Открыть раздел</button>
-  </div>
-
-  <div class="module-card" data-static-module="stereometry">
-    <div>
-      <h3 style="margin-top:8px">Стереометрия</h3>
-      <p class="mini">Призмы, пирамиды, тела вращения, углы и расстояния, сечения и задачи 80–100.</p>
-      <div class="module-progress">
-        <div class="mini module-accuracy">Пока нет результатов</div>
-        <div class="progressbar"><span style="width:0%"></span></div>
-      </div>
-    </div>
-    <button class="btn btn-ghost module-open" data-module="stereometry">Открыть раздел</button>
-  </div>
-
-  <div class="module-card" data-static-module="calculus">
-    <div>
-      <h3 style="margin-top:8px">Производная и первообразная</h3>
-      <p class="mini">Производные, касательная, исследование функции, график производной, первообразная, интеграл и уровень 80–100.</p>
-      <div class="module-progress">
-        <div class="mini module-accuracy">Пока нет результатов</div>
-        <div class="progressbar"><span style="width:0%"></span></div>
-      </div>
-    </div>
-    <button class="btn btn-ghost module-open" data-module="calculus">Открыть раздел</button>
-  </div>
-
-  <div class="module-card" data-static-module="probability">
-    <div>
-      <h3 style="margin-top:8px">Вероятность</h3>
-      <p class="mini">Классическая вероятность, комбинаторика, правила сложения и умножения, схема Бернулли и задачи высокого уровня.</p>
-      <div class="module-progress">
-        <div class="mini module-accuracy">Пока нет результатов</div>
-        <div class="progressbar"><span style="width:0%"></span></div>
-      </div>
-    </div>
-    <button class="btn btn-ghost module-open" data-module="probability">Открыть раздел</button>
-  </div>
-
-  <div class="module-card" data-static-module="applied">
-    <div>
-      <h3 style="margin-top:8px">Прогрессии и прикладная математика</h3>
-      <p class="mini">Арифметические и геометрические прогрессии, последовательности, проценты, движение, работа и смеси.</p>
-      <div class="module-progress">
-        <div class="mini module-accuracy">Пока нет результатов</div>
-        <div class="progressbar"><span style="width:0%"></span></div>
-      </div>
-    </div>
-    <button class="btn btn-ghost module-open" data-module="applied">Открыть раздел</button>
-  </div>
-
-  <div class="module-card" data-static-module="vectors">
-    <div>
-      <h3 style="margin-top:8px">Векторы и координаты</h3>
-      <p class="mini">Координаты и длина вектора, действия, скалярное произведение, углы и применение в геометрии.</p>
-      <div class="module-progress">
-        <div class="mini module-accuracy">Пока нет результатов</div>
-        <div class="progressbar"><span style="width:0%"></span></div>
-      </div>
-    </div>
-    <button class="btn btn-ghost module-open" data-module="vectors">Открыть раздел</button>
-  </div>
-
-  <div class="module-card" data-static-module="parameters">
-    <div>
-      <h3 style="margin-top:8px">Параметры и нестандартные методы</h3>
-      <p class="mini">Линейные и квадратные уравнения с параметром, число корней, модуль, неравенства и задачи высокого уровня.</p>
-      <div class="module-progress">
-        <div class="mini module-accuracy">Пока нет результатов</div>
-        <div class="progressbar"><span style="width:0%"></span></div>
-      </div>
-    </div>
-    <button class="btn btn-ghost module-open" data-module="parameters">Открыть раздел</button>
-  </div>
-</div>
-
-
-
-      <div class="actions" style="margin-top:20px">
-        <button class="btn btn-ghost" id="resetBtn">Сбросить общий прогресс</button>
-      </div>
+      <aside class="section-sidebar" aria-label="Разделы тренажёра">
+        <h2>Разделы</h2>
+        <div class="mini">Наведите на раздел и выберите нужную тему</div>
+        <nav id="sectionMenu" class="section-menu"></nav>
+      </aside>
     </div>
   </section>
 
@@ -2135,11 +2073,45 @@ function overallAccuracy(p){
   return (c+w) ? Math.round(c/(c+w)*100) : null;
 }
 
-function bindModuleButtons(){
-  document.querySelectorAll(".module-open").forEach(btn=>{
-    if(btn.dataset.bound === "1") return;
-    btn.dataset.bound = "1";
-    btn.addEventListener("click",()=>openModule(btn.dataset.module));
+function bindSectionMenu(menu){
+  menu.querySelectorAll(".section-trigger").forEach(trigger=>{
+    const item=trigger.closest(".section-item");
+    trigger.addEventListener("click",()=>{
+      const willOpen=!item.classList.contains("open");
+      menu.querySelectorAll(".section-item.open").forEach(other=>{
+        other.classList.remove("open");
+        other.querySelector(".section-trigger")?.setAttribute("aria-expanded","false");
+      });
+      item.classList.toggle("open",willOpen);
+      trigger.setAttribute("aria-expanded",String(willOpen));
+    });
+    item.addEventListener("mouseenter",()=>trigger.setAttribute("aria-expanded","true"));
+    item.addEventListener("mouseleave",()=>{
+      if(!item.classList.contains("open")) trigger.setAttribute("aria-expanded","false");
+    });
+  });
+
+  menu.querySelectorAll(".section-link").forEach(link=>{
+    link.addEventListener("click",()=>{
+      const module=link.dataset.module;
+      const topic=link.dataset.topic;
+      menu.querySelectorAll(".section-item.open").forEach(item=>item.classList.remove("open"));
+      if(topic){
+        startQuiz("topic",{module,topic,count:10,order:"random"});
+      }else{
+        startQuiz("module",{module});
+      }
+    });
+  });
+
+  menu.addEventListener("keydown",event=>{
+    if(event.key!=="Escape") return;
+    const openItem=menu.querySelector(".section-item.open");
+    if(!openItem) return;
+    openItem.classList.remove("open");
+    const trigger=openItem.querySelector(".section-trigger");
+    trigger?.setAttribute("aria-expanded","false");
+    trigger?.focus();
   });
 }
 
@@ -2158,39 +2130,42 @@ function renderHome(){
   const oa=overallAccuracy(p);
   if($("overallAccuracy")) $("overallAccuracy").textContent=oa==null?"—":oa+"%";
 
-  const grid=$("moduleGrid");
-  if(!grid) return;
+  const menu=$("sectionMenu");
+  if(!menu) return;
 
-  // If static fallback cards were somehow removed, rebuild them.
-  if(!grid.querySelector(".module-card")){
-    grid.innerHTML=Object.keys(MODULES).map(module=>{
-      return `<div class="module-card" data-static-module="${module}">
-        <div>
-          <h3 style="margin-top:8px">${escapeHtml(MODULES[module].title)}</h3>
-          <p class="mini">${escapeHtml(MODULES[module].desc)}</p>
-          <div class="module-progress">
-            <div class="mini module-accuracy">Пока нет результатов</div>
-            <div class="progressbar"><span style="width:0%"></span></div>
-          </div>
-        </div>
-        <button class="btn btn-ghost module-open" data-module="${module}">Открыть раздел</button>
-      </div>`;
-    }).join("");
-  }
-
-  for(const module of Object.keys(MODULES)){
-    const card=grid.querySelector(`[data-static-module="${module}"]`);
-    if(!card) continue;
-    const acc=moduleAccuracy(module,p);
-    const label=card.querySelector(".module-accuracy");
-    const bar=card.querySelector(".progressbar span");
+  menu.innerHTML=Object.entries(MODULES).map(([module,moduleData])=>{
     const modulePool=QUESTIONS.filter(q=>q.module===module);
     const seen=modulePool.filter(q=>p.weak?.[q.uid]).length;
-    if(label) label.textContent=seen?`Пройдено ${seen} из ${modulePool.length} • точность ${acc}%`:"Пока нет результатов";
-    if(bar) bar.style.width=(acc==null?0:acc)+"%";
-  }
+    const accuracy=moduleAccuracy(module,p);
+    const progress=seen
+      ? `${seen} из ${modulePool.length} • ${accuracy}%`
+      : `0 из ${modulePool.length}`;
+    const submenuId=`submenu-${module}`;
+    const topicLinks=Object.entries(moduleData.topics).map(([topic,label])=>{
+      const topicState=topicProgress(module,topic,p);
+      const topicAccuracy=topicState.accuracy==null?"":` • ${topicState.accuracy}%`;
+      return `<button class="section-link" type="button" data-module="${module}" data-topic="${topic}">
+        ${escapeHtml(label)}
+        <span class="section-topic-progress">Пройдено ${topicState.seen} из ${topicState.total}${topicAccuracy}</span>
+      </button>`;
+    }).join("");
+    return `<div class="section-item" data-module="${module}">
+      <button class="section-trigger" type="button" aria-expanded="false" aria-controls="${submenuId}">
+        <span class="section-trigger-copy">
+          <span class="section-trigger-title">${escapeHtml(moduleData.title)}</span>
+          <span class="section-trigger-progress">Пройдено ${progress}</span>
+        </span>
+        <span class="section-chevron" aria-hidden="true">›</span>
+      </button>
+      <div class="section-submenu" id="${submenuId}">
+        <div class="section-submenu-title">${escapeHtml(moduleData.title)}</div>
+        <button class="section-link section-link-all" type="button" data-module="${module}">Все темы раздела</button>
+        ${topicLinks}
+      </div>
+    </div>`;
+  }).join("");
 
-  bindModuleButtons();
+  bindSectionMenu(menu);
 }
 
 let currentModule=null;
@@ -3902,7 +3877,7 @@ $("resetBtn").addEventListener("click",()=>{
 });
 
 document.addEventListener("DOMContentLoaded",()=>{
-  bindModuleButtons();
+  renderHome();
 });
 
 window.addEventListener("load",()=>{
@@ -3915,7 +3890,6 @@ window.addEventListener("load",()=>{
     renderHome();
   }catch(e){
     console.error("Home rendering error:", e);
-    bindModuleButtons();
   }
   setTimeout(()=>renderMath(document.body),100);
 });
