@@ -176,10 +176,10 @@ svg{width:100%;height:auto;display:block}
     <div class="home-layout">
       <div class="hero home-main">
         <h1>Единый тренажёр ЕГЭ</h1>
-        <p class="lead">Одна точка входа для ежедневной тренировки формул, алгебры, уравнений, геометрии, векторов, производных, вероятности, прогрессий, параметров и прикладных задач. Без регистрации: прогресс хранится в этом браузере.</p>
+        <p class="lead">Одна точка входа для ежедневной тренировки формул, алгебры, уравнений, геометрии, векторов, производных, вероятности, прогрессий, параметров, тригонометрии и экономических задач. Без регистрации: прогресс хранится в этом браузере.</p>
 
         <div class="stats">
-          <div class="stat"><span class="mini">Заданий в банке</span><b id="totalQuestions">1875</b></div>
+          <div class="stat"><span class="mini">Заданий в банке</span><b id="totalQuestions">2025</b></div>
           <div class="stat"><span class="mini">Пройдено тренировок</span><b id="sessions">0</b></div>
           <div class="stat"><span class="mini">Ошибок для повторения</span><b id="mistakeCount">0</b></div>
           <div class="stat"><span class="mini">Общая точность</span><b id="overallAccuracy">—</b></div>
@@ -294,7 +294,7 @@ svg{width:100%;height:auto;display:block}
       <div class="teacher-summary">
         <div class="stat"><span class="mini">Выбрано разделов</span><b id="teacherSelectedModules">10</b></div>
         <div class="stat"><span class="mini">Выбрано подразделов</span><b id="teacherSelectedTopics">63</b></div>
-        <div class="stat"><span class="mini">Доступно заданий</span><b id="teacherTotal">1875</b></div>
+        <div class="stat"><span class="mini">Доступно заданий</span><b id="teacherTotal">2025</b></div>
       </div>
       <div class="teacher-selection-grid">
         <div class="teacher-check-card">
@@ -459,6 +459,20 @@ MODULES.trigonometry = {
     transformations: "Преобразования выражений",
     graphs: "Графики и свойства",
     equations: "Тригонометрические уравнения",
+    high: "Высокий балл"
+  }
+};
+
+// Economics module: 6 topics × 25 questions are generated and audited below.
+MODULES.economics = {
+  title: "Экономические задачи",
+  desc: "Процентные модели, вклады, кредиты с равными и дифференцированными платежами, доходы, расходы, прибыль и задания высокого уровня.",
+  topics: {
+    percentages: "Процентные модели и инфляция",
+    deposits: "Вклады и капитализация",
+    annuity: "Кредиты с равными платежами",
+    differentiated: "Дифференцированные кредиты",
+    profit: "Доход, расходы и прибыль",
     high: "Высокий балл"
   }
 };
@@ -1869,6 +1883,186 @@ const EXTENDED_QUESTIONS = (()=>{
           add(module,topic,n,"Высокий балл • отбор корней","Сколько корней имеет уравнение sin x+cos x=0 на отрезке [0;"+periods+"π]?",answer,
             [periods+1,2*periods,2*periods+1],"Уравнение равносильно tg x=−1, поскольку при cos x=0 исходное равенство не выполняется. Корни x=−π/4+πn. На данном отрезке их "+answer+".",
             "Получите общую серию корней и отдельно отберите целые n, соответствующие отрезку.",null,{type:"trig_high_root_count_sum",periods});
+        }
+        break;
+      }
+      case "economics/percentages":{
+        const mode=i%5,group=Math.floor(i/5)+1;
+        if(mode===0){
+          const initial=10000*group,percent=5*group,answer=initial*(10000-percent*percent)/10000;
+          add(module,topic,n,"Процентные модели • последовательные изменения","Стоимость "+initial+" рублей сначала увеличили на "+percent+"%, а затем уменьшили на "+percent+"%. Найдите итоговую стоимость.",answer,
+            [initial,initial*(100+percent)/100,initial*(100-percent)/100],"Общий множитель равен (1+"+percent+"/100)(1−"+percent+"/100)=1−"+(percent*percent)+"/10000. Итоговая стоимость равна "+answer+" рублей.",
+            "Равные проценты повышения и снижения применяются к разным значениям и не взаимно уничтожаются.",null,{type:"econ_percent_up_down",initial,percent});
+        }else if(mode===1){
+          const initial=10000*group,rate=10,years=2,answer=initial*121/100;
+          add(module,topic,n,"Инфляция • сложный процент","Цена "+initial+" рублей два года подряд увеличивалась на "+rate+"% в год. Какой стала цена после второго увеличения?",answer,
+            [initial*120/100,initial*110/100,initial+2*rate],"Каждый год цена умножается на 1,1. Поэтому "+initial+"·1,1²="+answer+" рублей.",
+            "При повторяющемся процентном изменении перемножайте процентные множители.",null,{type:"econ_inflation_compound",initial,rate,years});
+        }else if(mode===2){
+          const initial=1000*(group+5),discount=10*group,finalAmount=initial*(100-discount)/100,answer=initial;
+          add(module,topic,n,"Скидки • обратная задача","После скидки "+discount+"% товар стоит "+finalAmount+" рублей. Найдите цену до скидки.",answer,
+            [finalAmount,finalAmount*(100+discount)/100,initial-finalAmount],"После скидки осталось "+(100-discount)+"% исходной цены. Поэтому исходная цена равна "+finalAmount+"·100/"+(100-discount)+"="+answer+" рублей.",
+            "В обратной задаче разделите итоговую цену на оставшуюся долю, а не прибавляйте процент к итоговой цене.",null,{type:"econ_discount_original",finalAmount,discount});
+        }else if(mode===3){
+          const percents=[10,20,25,40,50],percent=percents[group-1],answer=frac(100*percent,100-percent);
+          add(module,topic,n,"Процентные модели • восстановление значения","Цену уменьшили на "+percent+"%. На сколько процентов нужно увеличить новую цену, чтобы вернуться к первоначальной?",answer,
+            [String(percent),String(200-percent),frac(100*percent,100+percent)],"После снижения осталось "+(100-percent)+"% исходной цены. Требуемое увеличение относительно новой цены равно "+percent+"/"+(100-percent)+"·100%="+answer+"%.",
+            "Основанием для второго процента является уже уменьшенная цена.",null,{type:"econ_restore_percent",percent});
+        }else{
+          const gross=1000*(group+2),rate=5*group,answer=gross*(100-rate)/100;
+          add(module,topic,n,"Процентные модели • удержание","Из начисленной суммы "+gross+" рублей удержали "+rate+"%. Сколько рублей осталось после удержания?",answer,
+            [gross*rate/100,gross-rate,gross*(100+rate)/100],"После удержания остаётся "+(100-rate)+"% суммы: "+gross+"·"+(100-rate)+"/100="+answer+" рублей.",
+            "Найдите не величину удержания, а оставшуюся часть суммы.",null,{type:"econ_withholding",gross,rate});
+        }
+        break;
+      }
+      case "economics/deposits":{
+        const mode=i%5,group=Math.floor(i/5)+1;
+        if(mode===0){
+          const initial=10000*group,rate=5*group,years=2,answer=initial*(100+rate*years)/100;
+          add(module,topic,n,"Вклады • простые проценты","В учебной модели вклад "+initial+" рублей размещён на "+years+" года под "+rate+"% годовых без капитализации. Найдите сумму в конце срока.",answer,
+            [initial*(100+rate)/100,initial*(100+2*rate+rate*rate/100)/100,initial+rate*years],"При простых процентах начисление каждый год считают от исходной суммы: A(1+rt/100)="+answer+" рублей.",
+            "Без капитализации годовые проценты складываются.",null,{type:"econ_deposit_simple",initial,rate,years});
+        }else if(mode===1){
+          const initial=10000*group,rate=10,years=2,answer=initial*121/100;
+          add(module,topic,n,"Вклады • ежегодная капитализация","Вклад "+initial+" рублей два года хранится под 10% годовых с ежегодной капитализацией. Найдите итоговую сумму.",answer,
+            [initial*120/100,initial*110/100,initial+2000],"После каждого года сумма умножается на 1,1: "+initial+"·1,1²="+answer+" рублей.",
+            "При капитализации проценты второго года начисляются и на проценты первого года.",null,{type:"econ_deposit_compound",initial,rate,years});
+        }else if(mode===2){
+          const initial=10000*group,finalAmount=initial*121/100,answer=initial;
+          add(module,topic,n,"Вклады • первоначальная сумма","Через два года при ставке 10% годовых с ежегодной капитализацией на счёте стало "+finalAmount+" рублей. Найдите первоначальную сумму.",answer,
+            [finalAmount*80/100,finalAmount*90/100,finalAmount-2000],"За два года сумма умножилась на 1,1²=1,21. Поэтому первоначальная сумма равна "+finalAmount+"/1,21="+answer+" рублей.",
+            "В обратной задаче разделите итоговую сумму на полный коэффициент роста.",null,{type:"econ_deposit_original",finalAmount});
+        }else if(mode===3){
+          const initial=5000*group,rate1=10,rate2=20,answer=initial*132/100;
+          add(module,topic,n,"Вклады • разные ставки","В первый год вклад "+initial+" рублей увеличился на 10%, а во второй — ещё на 20%. Найдите итоговую сумму.",answer,
+            [initial*130/100,initial*120/100,initial+30],"Последовательно применяем множители 1,1 и 1,2: "+initial+"·1,1·1,2="+answer+" рублей.",
+            "Проценты разных лет не складывайте: перемножьте коэффициенты роста.",null,{type:"econ_deposit_variable_rates",initial,rate1,rate2});
+        }else{
+          const initial=40000*group,quarterRate=5,quarters=2,answer=initial*441/400;
+          add(module,topic,n,"Вклады • капитализация по периодам","На вклад "+initial+" рублей два раза подряд начислили по 5% с капитализацией после каждого начисления. Найдите итоговую сумму.",answer,
+            [initial*110/100,initial*105/100,initial+10],"Каждое начисление умножает сумму на 1,05. Поэтому "+initial+"·1,05²="+answer+" рублей.",
+            "Два начисления по 5% дают множитель 1,05², а не 1,10.",null,{type:"econ_deposit_periodic",initial,quarterRate,quarters});
+        }
+        break;
+      }
+      case "economics/annuity":{
+        const mode=i%5,group=Math.floor(i/5)+1;
+        if(mode===0){
+          const price=120000*group,down=20000*group,months=10,answer=(price-down)/months;
+          add(module,topic,n,"Рассрочка • равные платежи","Товар стоит "+price+" рублей. Первоначальный взнос равен "+down+" рублей, остаток выплачивают "+months+" равными ежемесячными платежами без процентов. Найдите один платёж.",answer,
+            [price/months,down/months,(price-down)/(months-1)],"После взноса остаётся "+(price-down)+" рублей. Делим эту сумму на "+months+" и получаем "+answer+" рублей.",
+            "Сначала вычтите первоначальный взнос, затем разделите остаток на число платежей.",null,{type:"econ_installment_payment",price,down,months});
+        }else if(mode===1){
+          const principal=21000*group,rate=10,years=2,answer=12100*group;
+          add(module,topic,n,"Кредиты • два равных платежа","Кредит "+principal+" рублей взят на два года. В конце каждого года долг увеличивается на 10%, затем вносится одинаковый платёж. После второго платежа долг равен нулю. Найдите ежегодный платёж.",answer,
+            [principal/2,11000*group,11550*group],"Пусть платёж равен x. Тогда после двух лет: (1,1·"+principal+"−x)·1,1−x=0. Отсюда x="+answer+" рублей.",
+            "Составляйте рекуррентную модель: начисление процентов происходит до очередного платежа.",null,{type:"econ_annuity_two_year_payment",principal,rate,years});
+        }else if(mode===2){
+          const principal=33100*group,rate=10,years=3,answer=13310*group;
+          add(module,topic,n,"Кредиты • три равных платежа","Кредит "+principal+" рублей погашают тремя равными ежегодными платежами. Перед каждым платежом остаток долга увеличивается на 10%. Найдите размер платежа.",answer,
+            [principal/3,12100*group,11000*group],"Для платежа x выполняется ((1,1·"+principal+"−x)·1,1−x)·1,1−x=0. Коэффициент при x равен 1+1,1+1,1²=3,31, поэтому x="+answer+" рублей.",
+            "Разверните изменение долга по годам и сгруппируйте одинаковые платежи.",null,{type:"econ_annuity_three_year_payment",principal,rate,years});
+        }else if(mode===3){
+          const principal=100000*group,rate=10,payment=30000*group,answer=80000*group;
+          add(module,topic,n,"Кредиты • остаток долга","Долг "+principal+" рублей увеличился на 10%, после чего внесли платёж "+payment+" рублей. Найдите остаток долга.",answer,
+            [70000*group,90000*group,77000*group],"После начисления процентов долг равен "+(principal*110/100)+" рублей. Вычитаем платёж и получаем "+answer+" рублей.",
+            "Соблюдайте порядок операций: сначала начисляются проценты, затем вычитается платёж.",null,{type:"econ_annuity_balance",principal,rate,payment});
+        }else{
+          const principal=21000*group,payment=12100*group,years=2,answer=2*payment-principal;
+          add(module,topic,n,"Кредиты • переплата","Кредит "+principal+" рублей погашается двумя равными ежегодными платежами по "+payment+" рублей. Найдите переплату по кредиту.",answer,
+            [2*payment,principal-payment,payment-principal/2],"Всего выплачено "+(2*payment)+" рублей. Переплата равна "+(2*payment)+"−"+principal+"="+answer+" рублей.",
+            "Переплата — разность между суммой всех платежей и первоначальной суммой кредита.",null,{type:"econ_annuity_overpayment",principal,payment,years});
+        }
+        break;
+      }
+      case "economics/differentiated":{
+        const mode=i%5,group=Math.floor(i/5)+1,nPayments=4+group,principalPart=10000*group,principal=principalPart*nPayments,rate=10;
+        if(mode===0){
+          const answer=principalPart+principal*rate/100;
+          add(module,topic,n,"Дифференцированный кредит • первый платёж","Кредит "+principal+" рублей погашают "+nPayments+" дифференцированными ежегодными платежами. Основной долг уменьшается каждый год на одинаковую сумму, ставка равна 10% от долга до платежа. Найдите первый платёж.",answer,
+            [principalPart,principal*rate/100,principalPart+principalPart*rate/100],"Ежегодная часть основного долга равна "+principal+"/"+nPayments+"="+principalPart+" рублей. Проценты первого года равны "+(principal*rate/100)+" рублей. Первый платёж равен "+answer+" рублей.",
+            "Первый платёж состоит из одинаковой части основного долга и процентов на весь первоначальный долг.",null,{type:"econ_diff_first_payment",principal,nPayments,rate});
+        }else if(mode===1){
+          const answer=principalPart*(100+rate)/100;
+          add(module,topic,n,"Дифференцированный кредит • последний платёж","Кредит "+principal+" рублей погашают "+nPayments+" дифференцированными ежегодными платежами под 10% годовых. Найдите последний платёж.",answer,
+            [principalPart,principalPart+principal*rate/100,principal*rate/100],"Перед последним платежом остаётся одна часть основного долга: "+principalPart+" рублей. Проценты равны "+(principalPart*rate/100)+" рублей, поэтому платёж равен "+answer+" рублей.",
+            "Перед последним платежом проценты начисляются только на последнюю непогашенную часть долга.",null,{type:"econ_diff_last_payment",principal,nPayments,rate});
+        }else if(mode===2){
+          const answer=500*group*nPayments*(nPayments+1);
+          add(module,topic,n,"Дифференцированный кредит • сумма процентов","Кредит "+principal+" рублей погашают "+nPayments+" равными частями основного долга. Проценты составляют 10% от остатка перед каждым платежом. Найдите общую сумму процентов.",answer,
+            [principal*rate/100,answer+principalPart,answer-principalPart/2],"Остатки перед платежами образуют ряд "+principalPart+"·"+nPayments+", …, "+principalPart+". Их сумма равна "+principalPart+"·"+nPayments+"·"+(nPayments+1)+"/2. Берём 10% и получаем "+answer+" рублей.",
+            "Сложите остатки долга перед всеми платежами и умножьте сумму на процентную ставку.",null,{type:"econ_diff_total_interest",principal,nPayments,rate});
+        }else if(mode===3){
+          const paidParts=2,answer=principal-principalPart*paidParts;
+          add(module,topic,n,"Дифференцированный кредит • остаток","Кредит "+principal+" рублей погашают "+nPayments+" равными частями основного долга. Какой основной долг останется сразу после двух платежей?",answer,
+            [principal-principalPart,principal-3*principalPart,2*principalPart],"Одна часть основного долга равна "+principalPart+" рублей. После двух платежей основной долг уменьшится на "+(2*principalPart)+" рублей и составит "+answer+" рублей.",
+            "Проценты влияют на размер платежа, но не меняют установленную величину погашения основного долга.",null,{type:"econ_diff_balance",principal,nPayments,paidParts});
+        }else{
+          const answer=principalPart*rate/100;
+          add(module,topic,n,"Дифференцированный кредит • изменение платежа","Кредит "+principal+" рублей погашают "+nPayments+" дифференцированными платежами под 10% годовых. На сколько рублей каждый следующий платёж меньше предыдущего?",answer,
+            [principalPart,principal*rate/100,answer*nPayments],"Основной долг перед каждым новым периодом уменьшается на "+principalPart+" рублей. Значит, проценты и весь платёж уменьшаются на 10% от этой части: "+answer+" рублей.",
+            "Разность соседних платежей равна процентам на одну равную часть основного долга.",null,{type:"econ_diff_payment_decrease",principal,nPayments,rate});
+        }
+        break;
+      }
+      case "economics/profit":{
+        const mode=i%5,group=Math.floor(i/5)+1;
+        if(mode===0){
+          const quantity=10*group,price=500,fixed=1000*group,variable=200,revenue=quantity*price,cost=fixed+quantity*variable,answer=revenue-cost;
+          add(module,topic,n,"Прибыль • доход и расходы","Предприятие продало "+quantity+" изделий по "+price+" рублей. Постоянные расходы равны "+fixed+" рублей, переменные — "+variable+" рублей на изделие. Найдите прибыль.",answer,
+            [revenue,cost,revenue-fixed],"Доход равен "+quantity+"·"+price+"="+revenue+" рублей. Расходы равны "+fixed+"+"+quantity+"·"+variable+"="+cost+" рублей. Прибыль: "+revenue+"−"+cost+"="+answer+" рублей.",
+            "Прибыль равна доходу за вычетом всех постоянных и переменных расходов.",null,{type:"econ_profit_value",quantity,price,fixed,variable});
+        }else if(mode===1){
+          const fixed=1000*group,price=300+20*group,variable=200+20*group,answer=fixed/(price-variable);
+          add(module,topic,n,"Безубыточность • количество изделий","Постоянные расходы равны "+fixed+" рублей, цена изделия — "+price+" рублей, переменные расходы — "+variable+" рублей на изделие. Сколько изделий нужно продать, чтобы доход сравнялся с расходами?",answer,
+            [fixed/price,fixed/variable,answer+1],"Вклад одного изделия в покрытие постоянных расходов равен "+price+"−"+variable+"="+(price-variable)+" рублей. Точка безубыточности: "+fixed+"/"+(price-variable)+"="+answer+" изделий.",
+            "В точке безубыточности прибыль равна нулю: px=F+vx.",null,{type:"econ_break_even",fixed,price,variable});
+        }else if(mode===2){
+          const center=5*group,maximum=1000*group,answer=maximum;
+          add(module,topic,n,"Прибыль • максимум квадратичной модели","Прибыль P(x) задана формулой. Найдите её наибольшее значение.",answer,
+            [center,maximum-center,maximum+center],"Квадрат со знаком минус не превосходит нуля. Максимум достигается при x="+center+" и равен "+maximum+".",
+            "Форма P(x)=−(x−x₀)²+Pₘₐₓ сразу показывает вершину параболы.","P(x)=-(x-"+center+")^2+"+maximum,{type:"econ_profit_quadratic_max",center,maximum});
+        }else if(mode===3){
+          const fixedA=1000+100*group,rateA=50,fixedB=500,rateB=100,threshold=(fixedA-fixedB)/(rateB-rateA),answer=Math.floor(threshold)+1;
+          add(module,topic,n,"Расходы • сравнение моделей","Расходы по модели A равны "+fixedA+"+"+rateA+"x рублей, а по модели B — "+fixedB+"+"+rateB+"x рублей. Найдите наименьшее целое x, при котором модель A дешевле.",answer,
+            [threshold,answer+1,Math.max(0,answer-1)],"Решаем неравенство "+fixedA+"+"+rateA+"x<"+fixedB+"+"+rateB+"x. Получаем x>"+threshold+", поэтому наименьшее целое x равно "+answer+".",
+            "После решения строгого неравенства выберите первое целое число, строго большее границы.",null,{type:"econ_cost_comparison",fixedA,rateA,fixedB,rateB});
+        }else{
+          const quantity=100*group,variable=200+10*group,fixed=5000*group,target=5000*group,answer=(fixed+target)/quantity+variable;
+          add(module,topic,n,"Прибыль • требуемая цена","Планируется продать "+quantity+" изделий. Переменные расходы равны "+variable+" рублей на изделие, постоянные расходы — "+fixed+" рублей. Какой должна быть цена изделия, чтобы прибыль составила "+target+" рублей?",answer,
+            [variable+fixed/quantity,variable+target/quantity,answer+10],"Из уравнения pq−(F+vq)=P получаем p=(P+F)/q+v. Подстановка даёт "+answer+" рублей.",
+            "К расходам на одно изделие добавьте доли постоянных расходов и целевой прибыли.",null,{type:"econ_target_price",quantity,variable,fixed,target});
+        }
+        break;
+      }
+      case "economics/high":{
+        const mode=i%5,group=Math.floor(i/5)+1;
+        if(mode===0){
+          const initial=10000*group,rate=10,years=2,answer=initial/100;
+          add(module,topic,n,"Высокий балл • простые и сложные проценты","На сколько рублей сумма вклада при ежегодной капитализации под 10% в течение двух лет превысит сумму по простым процентам при той же ставке и сроке? Первоначальный вклад равен "+initial+" рублей.",answer,
+            [initial*20/100,initial*21/100,initial*10/100],"По простым процентам получаем 1,20·"+initial+", по сложным — 1,21·"+initial+". Разность равна 0,01·"+initial+"="+answer+" рублей.",
+            "Различие появляется из-за начисления процентов второго года на проценты первого года.",null,{type:"econ_high_interest_difference",initial,rate,years});
+        }else if(mode===1){
+          const principal=33100*group,payment=13310*group,years=3,answer=years*payment-principal;
+          add(module,topic,n,"Высокий балл • переплата по кредиту","Кредит "+principal+" рублей погашают тремя равными ежегодными платежами по "+payment+" рублей. Найдите переплату.",answer,
+            [years*payment,payment,principal-payment],"Общая сумма платежей равна 3·"+payment+"="+(years*payment)+" рублей. Вычитаем первоначальный долг: переплата равна "+answer+" рублей.",
+            "Сначала найдите сумму всех платежей, затем вычтите тело кредита.",null,{type:"econ_high_annuity_overpayment",principal,payment,years});
+        }else if(mode===2){
+          const nPayments=4+group,principalPart=10000*group,principal=principalPart*nPayments,rate=10,interest=500*group*nPayments*(nPayments+1),answer=principal+interest;
+          add(module,topic,n,"Высокий балл • полная выплата","Кредит "+principal+" рублей погашают "+nPayments+" дифференцированными ежегодными платежами под 10% годовых. Найдите общую сумму всех платежей.",answer,
+            [principal,interest,principal+principal*rate/100],"Сумма процентов равна 10% от суммы остатков долга: "+interest+" рублей. Добавляем основной долг и получаем "+answer+" рублей.",
+            "Полная выплата равна телу кредита плюс сумма процентов по всем периодам.",null,{type:"econ_high_diff_total",principal,nPayments,rate});
+        }else if(mode===3){
+          const optimal=10*group,demandBase=100+20*group,unitCost=100,fixed=50*group,answer=optimal;
+          add(module,topic,n,"Высокий балл • оптимальный выпуск","Цена одного изделия зависит от объёма выпуска x и равна "+demandBase+"−x рублей. Переменные расходы составляют "+unitCost+" рублей на изделие, постоянные — "+fixed+" рублей. При каком x прибыль максимальна?",answer,
+            [2*optimal,optimal-1,optimal+1],"Прибыль P(x)=x("+demandBase+"−x)−("+unitCost+"x+"+fixed+")=−x²+"+(2*optimal)+"x−"+fixed+". Вершина параболы имеет абсциссу "+(2*optimal)+"/2="+answer+".",
+            "Составьте функцию прибыли и найдите абсциссу вершины параболы.",null,{type:"econ_high_optimal_output",demandBase,unitCost,fixed});
+        }else{
+          const principal=10000*group,firstRate=10,firstPayment=2000*group,secondRate=20,answer=10800*group;
+          add(module,topic,n,"Высокий балл • меняющиеся ставки","Долг "+principal+" рублей сначала увеличили на 10% и внесли платёж "+firstPayment+" рублей. Затем остаток увеличили на 20%. Какой платёж полностью погасит долг после второго начисления?",answer,
+            [9000*group,12000*group,11000*group],"После первого начисления и платежа остаётся "+(9000*group)+" рублей. После увеличения на 20% долг равен "+answer+" рублей — таким должен быть последний платёж.",
+            "Выполняйте операции строго по времени: начисление, платёж, новое начисление.",null,{type:"econ_high_variable_loan",principal,firstRate,firstPayment,secondRate});
         }
         break;
       }
