@@ -1746,7 +1746,7 @@ const EXTENDED_QUESTIONS = (()=>{
         const mode=i%5,group=Math.floor(i/5)+1;
         if(mode===0){
           const scale=2+group,mapDistance=3+group,answer=scale*mapDistance;
-          add(module,topic,n,"Практические модели • масштаб","На карте "+mapDistance+" см соответствуют масштабу: 1 см — "+scale+" км. Найдите реальное расстояние.",answer,
+          add(module,topic,n,"Практические модели • масштаб","На карте расстояние между двумя пунктами равно "+mapDistance+" см. Масштаб задан так: 1 см соответствует "+scale+" км. Найдите реальное расстояние.",answer,
             [mapDistance+scale,mapDistance/scale,answer*10],"Каждый сантиметр карты соответствует "+scale+" км, поэтому расстояние равно "+mapDistance+"·"+scale+"="+answer+" км.",
             "При словесно заданном масштабе умножьте длину на карте на расстояние, соответствующее 1 см.",null,{type:"word_practical_scale",scale,mapDistance});
         }else if(mode===1){
