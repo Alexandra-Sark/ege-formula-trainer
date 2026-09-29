@@ -175,7 +175,7 @@ svg{width:100%;height:auto;display:block}
         <p class="lead">Одна точка входа для ежедневной тренировки формул, алгебры, уравнений, геометрии, векторов, производных, вероятности, прогрессий, параметров и прикладных задач. Без регистрации: прогресс хранится в этом браузере.</p>
 
         <div class="stats">
-          <div class="stat"><span class="mini">Заданий в банке</span><b id="totalQuestions">1575</b></div>
+          <div class="stat"><span class="mini">Заданий в банке</span><b id="totalQuestions">1725</b></div>
           <div class="stat"><span class="mini">Пройдено тренировок</span><b id="sessions">0</b></div>
           <div class="stat"><span class="mini">Ошибок для повторения</span><b id="mistakeCount">0</b></div>
           <div class="stat"><span class="mini">Общая точность</span><b id="overallAccuracy">—</b></div>
@@ -290,7 +290,7 @@ svg{width:100%;height:auto;display:block}
       <div class="teacher-summary">
         <div class="stat"><span class="mini">Выбрано разделов</span><b id="teacherSelectedModules">10</b></div>
         <div class="stat"><span class="mini">Выбрано подразделов</span><b id="teacherSelectedTopics">63</b></div>
-        <div class="stat"><span class="mini">Доступно заданий</span><b id="teacherTotal">1575</b></div>
+        <div class="stat"><span class="mini">Доступно заданий</span><b id="teacherTotal">1725</b></div>
       </div>
       <div class="teacher-selection-grid">
         <div class="teacher-check-card">
@@ -427,6 +427,20 @@ MODULES.parameters = {
     root_count: "Количество корней и графический метод",
     modulus: "Модуль и параметр",
     inequalities: "Неравенства и системы",
+    high: "Высокий балл"
+  }
+};
+
+// Text problems module: 6 topics × 25 questions are generated and audited below.
+MODULES.word_tasks = {
+  title: "Текстовые задачи",
+  desc: "Движение, совместная работа, смеси и сплавы, проценты и отношения, практические модели и задачи повышенного уровня.",
+  topics: {
+    motion: "Движение",
+    work: "Работа и производительность",
+    mixtures: "Смеси и сплавы",
+    percentages: "Проценты и отношения",
+    practical: "Практические модели",
     high: "Высокий балл"
   }
 };
@@ -1605,6 +1619,186 @@ const EXTENDED_QUESTIONS = (()=>{
           add(module,topic,n,"Высокий балл • четыре корня","При каком условии уравнение имеет ровно четыре различных действительных корня?",answer,
             ["0<a\\le"+c,"a>"+c,"a=0"],"Получаем x²="+c+"+a и x²="+c+"−a. Чтобы обе ветви дали по два ненулевых корня, нужно a>0 и "+c+"−a>0. Следовательно, 0<a<"+c+".",
             "На границе a=0 пары корней совпадают, а при a=c появляется нулевой корень.","|x^2-"+c+"|=a",{type:"param_high_four_roots",c});
+        }
+        break;
+      }
+      case "word_tasks/motion":{
+        const mode=i%5,group=Math.floor(i/5)+1;
+        if(mode===0){
+          const speed=45+5*group,time=2+group,answer=speed*time;
+          add(module,topic,n,"Движение • путь","Автомобиль двигался со скоростью "+speed+" км/ч в течение "+time+" ч. Какой путь он проехал?",answer,
+            [speed+time,answer+speed,answer-time],"По формуле s=vt получаем s="+speed+"·"+time+"="+answer+" км.",
+            "Перед вычислением проверьте, что скорость и время записаны в согласованных единицах.",null,{type:"word_motion_distance",speed,time});
+        }else if(mode===1){
+          const time=2+group,speed1=40+5*group,speed2=30+5*group,distance=(speed1+speed2)*time,answer=time;
+          add(module,topic,n,"Движение • навстречу","Из двух пунктов навстречу друг другу одновременно выехали два участника со скоростями "+speed1+" км/ч и "+speed2+" км/ч. Расстояние между пунктами равно "+distance+" км. Через сколько часов они встретятся?",answer,
+            [time+1,time-1,distance/(speed1-speed2)],"Скорость сближения равна "+speed1+"+"+speed2+"="+(speed1+speed2)+" км/ч. Поэтому t="+distance+"/"+(speed1+speed2)+"="+answer+" ч.",
+            "При движении навстречу скорости складываются.",null,{type:"word_motion_meeting",speed1,speed2,distance});
+        }else if(mode===2){
+          const time=1+group,slow=30+4*group,gap=8+2*group,fast=slow+gap,lead=gap*time,answer=time;
+          add(module,topic,n,"Движение • вдогонку","Первый автомобиль движется со скоростью "+slow+" км/ч и имеет фору "+lead+" км. Второй автомобиль едет следом со скоростью "+fast+" км/ч. Через сколько часов второй автомобиль догонит первый?",answer,
+            [time+1,time+2,lead],"Скорость сближения равна "+fast+"−"+slow+"="+gap+" км/ч. Время догоняния: "+lead+"/"+gap+"="+answer+" ч.",
+            "При движении в одном направлении используйте разность скоростей.",null,{type:"word_motion_catch",slow,fast,lead});
+        }else if(mode===3){
+          const own=12+2*group,current=2+group,time=2+group,answer=(own-current)*time;
+          add(module,topic,n,"Движение • по реке","Собственная скорость лодки равна "+own+" км/ч, скорость течения — "+current+" км/ч. Какое расстояние лодка пройдёт против течения за "+time+" ч?",answer,
+            [(own+current)*time,own*time,own-current],"Скорость против течения равна "+own+"−"+current+"="+(own-current)+" км/ч. Тогда путь равен "+(own-current)+"·"+time+"="+answer+" км.",
+            "Против течения скорость течения вычитают из собственной скорости лодки.",null,{type:"word_motion_river",own,current,time,direction:"up"});
+        }else{
+          const scale=2+group,speed1=20*scale,speed2=30*scale,answer=24*scale;
+          add(module,topic,n,"Движение • средняя скорость","Первую половину пути автомобиль проехал со скоростью "+speed1+" км/ч, вторую половину — со скоростью "+speed2+" км/ч. Найдите среднюю скорость на всём пути.",answer,
+            [(speed1+speed2)/2,speed2-speed1,speed1+speed2],"Для равных расстояний средняя скорость равна 2v₁v₂/(v₁+v₂). Получаем 2·"+speed1+"·"+speed2+"/("+speed1+"+"+speed2+")="+answer+" км/ч.",
+            "Для равных участков пути нельзя брать обычное среднее арифметическое скоростей.",null,{type:"word_motion_average_equal",speed1,speed2});
+        }
+        break;
+      }
+      case "word_tasks/work":{
+        const mode=i%5,group=Math.floor(i/5)+1;
+        if(mode===0){
+          const answer=2+group,alone=2*answer;
+          add(module,topic,n,"Работа • совместное выполнение","Два одинаково производительных исполнителя выполняют работу по отдельности за "+alone+" ч каждый. За сколько часов они выполнят эту работу вместе?",answer,
+            [alone,answer+1,2*alone],"Производительность каждого равна 1/"+alone+" работы в час. Вместе они выполняют 2/"+alone+"=1/"+answer+" работы в час, поэтому потребуется "+answer+" ч.",
+            "При совместной работе складывают производительности, а не времена.",null,{type:"word_work_equal",alone});
+        }else if(mode===1){
+          const fill=4*group,drain=8*group,answer=8*group;
+          add(module,topic,n,"Работа • трубы","Первая труба наполняет бассейн за "+fill+" ч, а сливная труба опустошает полный бассейн за "+drain+" ч. За сколько часов наполнится пустой бассейн, если открыть обе трубы?",answer,
+            [fill,drain+4*group,12*group],"Скорость наполнения равна 1/"+fill+"−1/"+drain+"=1/"+answer+" бассейна в час. Значит, потребуется "+answer+" ч.",
+            "Скорость слива вычитают из скорости наполнения.",null,{type:"word_work_pipe",fill,drain});
+        }else if(mode===2){
+          const rate=7+group,time=3+group,answer=rate*time;
+          add(module,topic,n,"Работа • производительность","Станок выпускает "+rate+" деталей в час. Сколько деталей он выпустит за "+time+" ч при неизменной производительности?",answer,
+            [rate+time,answer+rate,answer-time],"Объём работы равен произведению производительности на время: "+rate+"·"+time+"="+answer+" деталей.",
+            "Используйте формулу A=pt, где p — производительность.",null,{type:"word_work_output",rate,time});
+        }else if(mode===3){
+          const plannedRate=10+2*group,plannedTime=3*group,actualTime=2*group,actualRate=3*plannedRate/2,total=plannedRate*plannedTime,answer=group;
+          add(module,topic,n,"Работа • повышение производительности","По плану нужно изготовить "+total+" деталей со скоростью "+plannedRate+" деталей в час. Фактическая скорость составила "+actualRate+" деталей в час. На сколько часов раньше завершили работу?",answer,
+            [actualTime,plannedTime,group+1],"По плану требуется "+total+"/"+plannedRate+"="+plannedTime+" ч, фактически — "+total+"/"+actualRate+"="+actualTime+" ч. Экономия времени равна "+plannedTime+"−"+actualTime+"="+answer+" ч.",
+            "Сначала отдельно найдите плановое и фактическое время.",null,{type:"word_work_saved_time",total,plannedRate,actualRate});
+        }else{
+          const first=6*group,second=3*group,answer=2*group;
+          add(module,topic,n,"Работа • разные производительности","Первый исполнитель выполняет работу за "+first+" ч, второй — за "+second+" ч. За сколько часов они выполнят работу вместе?",answer,
+            [3*group,6*group,9*group],"Совместная производительность равна 1/"+first+"+1/"+second+"=1/"+answer+" работы в час. Поэтому время совместной работы равно "+answer+" ч.",
+            "Сложите доли работы, выполняемые за один час, затем найдите обратную величину.",null,{type:"word_work_together",first,second});
+        }
+        break;
+      }
+      case "word_tasks/mixtures":{
+        const mode=i%5,group=Math.floor(i/5)+1;
+        if(mode===0){
+          const mass=200+100*group,percent=10+5*group,answer=mass*percent/100;
+          add(module,topic,n,"Смеси • масса вещества","Раствор массой "+mass+" г содержит "+percent+"% соли. Найдите массу соли в растворе.",answer,
+            [mass-answer,percent,mass/percent],"Масса соли равна "+percent+"% от "+mass+" г: "+mass+"·"+percent+"/100="+answer+" г.",
+            "Масса вещества равна массе смеси, умноженной на долю вещества.",null,{type:"word_mix_component",mass,percent});
+        }else if(mode===1){
+          const mass=200+100*group,percent=20+4*group,water=mass,answer=percent/2;
+          add(module,topic,n,"Смеси • добавление воды","К "+mass+" г раствора с концентрацией "+percent+"% добавили "+water+" г воды. Какой стала концентрация вещества?",answer,
+            [percent,percent+answer,100-percent],"Количество вещества не изменилось, а масса раствора удвоилась. Поэтому концентрация уменьшилась вдвое: "+percent+"/2="+answer+"%.",
+            "При добавлении воды масса растворённого вещества сохраняется.",null,{type:"word_mix_add_water",mass,percent,water});
+        }else if(mode===2){
+          const percent1=10+2*group,percent2=30+4*group,answer=(percent1+percent2)/2;
+          add(module,topic,n,"Смеси • смешивание растворов","Смешали равные массы растворов с концентрациями "+percent1+"% и "+percent2+"%. Найдите концентрацию полученной смеси.",answer,
+            [percent2-percent1,percent1+percent2,answer+2],"При равных массах итоговая концентрация равна среднему арифметическому: ("+percent1+"+"+percent2+")/2="+answer+"%.",
+            "Среднее арифметическое концентраций допустимо только при равных массах растворов.",null,{type:"word_mix_equal_masses",percent1,percent2});
+        }else if(mode===3){
+          const mass=100*group,percent=10+10*group,pure=mass,answer=(percent+100)/2;
+          add(module,topic,n,"Смеси • добавление чистого вещества","К "+mass+" г сплава, содержащего "+percent+"% металла, добавили "+pure+" г чистого металла. Каков процент металла в новом сплаве?",answer,
+            [percent/2,100-percent,percent+10],"Изначально металла было "+(mass*percent/100)+" г, добавили ещё "+pure+" г. В массе "+(mass+pure)+" г содержится "+(mass*percent/100+pure)+" г металла, то есть "+answer+"%.",
+            "При добавлении чистого вещества увеличиваются и масса смеси, и масса нужного компонента.",null,{type:"word_mix_add_pure",mass,percent,pure});
+        }else{
+          const mass=200*group,percent=5+2*group,evaporated=mass/2,answer=2*percent;
+          add(module,topic,n,"Смеси • выпаривание","Раствор массой "+mass+" г содержит "+percent+"% соли. Из него выпарили "+evaporated+" г воды. Какой стала концентрация соли?",answer,
+            [percent,percent/2,100-percent],"Масса соли остаётся равной "+(mass*percent/100)+" г, а масса раствора уменьшается до "+(mass-evaporated)+" г. Концентрация равна "+answer+"%.",
+            "При выпаривании воды масса растворённого вещества не меняется.",null,{type:"word_mix_evaporation",mass,percent,evaporated});
+        }
+        break;
+      }
+      case "word_tasks/percentages":{
+        const mode=i%5,group=Math.floor(i/5)+1;
+        if(mode===0){
+          const whole=200+100*group,percent=5*(group+1),answer=whole*percent/100;
+          add(module,topic,n,"Проценты • часть от целого","Найдите "+percent+"% от числа "+whole+".",answer,
+            [whole-answer,percent,whole/percent],"Переводим процент в дробь: "+whole+"·"+percent+"/100="+answer+".",
+            "Чтобы найти p% от числа, умножьте число на p/100.",null,{type:"word_percent_part",whole,percent});
+        }else if(mode===1){
+          const whole=200,percent=10+5*group,part=whole*percent/100,answer=percent;
+          add(module,topic,n,"Проценты • доля в процентах","Сколько процентов составляет число "+part+" от числа "+whole+"?",answer,
+            [part,100-percent,percent/2],"Отношение части к целому равно "+part+"/"+whole+". Умножаем его на 100% и получаем "+answer+"%.",
+            "Процентное отношение равно части, делённой на целое, и умноженной на 100%.",null,{type:"word_percent_rate",part,whole});
+        }else if(mode===2){
+          const initial=500+100*group,percent=5*(group+1),answer=initial*(100+percent)/100;
+          add(module,topic,n,"Проценты • увеличение","Стоимость "+initial+" рублей увеличили на "+percent+"%. Найдите новую стоимость.",answer,
+            [initial+percent,initial*percent/100,initial*(100-percent)/100],"После увеличения остаётся "+(100+percent)+"% исходной стоимости: "+initial+"·"+(100+percent)+"/100="+answer+" рублей.",
+            "Увеличение на p% соответствует умножению на 1+p/100.",null,{type:"word_percent_increase",initial,percent});
+        }else if(mode===3){
+          const initial=400+100*group,percent=10+5*group,finalAmount=initial*(100-percent)/100,answer=initial;
+          add(module,topic,n,"Проценты • обратная задача","После снижения на "+percent+"% цена стала равна "+finalAmount+" рублей. Найдите первоначальную цену.",answer,
+            [finalAmount,finalAmount*(100+percent)/100,initial-finalAmount],"После снижения осталось "+(100-percent)+"% первоначальной цены. Поэтому исходная цена равна "+finalAmount+"·100/"+(100-percent)+"="+answer+" рублей.",
+            "В обратной задаче разделите итоговое значение на оставшуюся долю.",null,{type:"word_percent_original_after_decrease",finalAmount,percent});
+        }else{
+          const firstPart=1+group,secondPart=2+group,total=(firstPart+secondPart)*20,answer=20*firstPart;
+          add(module,topic,n,"Отношения • деление величины","Число "+total+" разделили на две части в отношении "+firstPart+":"+secondPart+". Найдите меньшую часть.",answer,
+            [20*secondPart,total,20*(secondPart-firstPart)],"Всего в отношении "+(firstPart+secondPart)+" частей. Одна часть равна "+total+"/"+(firstPart+secondPart)+"=20, поэтому меньшая часть равна 20·"+firstPart+"="+answer+".",
+            "Сначала найдите сумму долей отношения и стоимость одной доли.",null,{type:"word_ratio_split",total,firstPart,secondPart});
+        }
+        break;
+      }
+      case "word_tasks/practical":{
+        const mode=i%5,group=Math.floor(i/5)+1;
+        if(mode===0){
+          const scale=2+group,mapDistance=3+group,answer=scale*mapDistance;
+          add(module,topic,n,"Практические модели • масштаб","На карте "+mapDistance+" см соответствуют масштабу: 1 см — "+scale+" км. Найдите реальное расстояние.",answer,
+            [mapDistance+scale,mapDistance/scale,answer*10],"Каждый сантиметр карты соответствует "+scale+" км, поэтому расстояние равно "+mapDistance+"·"+scale+"="+answer+" км.",
+            "При словесно заданном масштабе умножьте длину на карте на расстояние, соответствующее 1 см.",null,{type:"word_practical_scale",scale,mapDistance});
+        }else if(mode===1){
+          const coefficient=1+group,speed=36*coefficient,answer=10*coefficient;
+          add(module,topic,n,"Практические модели • единицы скорости","Выразите скорость "+speed+" км/ч в метрах в секунду.",answer,
+            [speed/10,speed*10,answer+3],"Чтобы перейти от км/ч к м/с, делим на 3,6: "+speed+"/3,6="+answer+" м/с.",
+            "Один километр в час равен 1/3,6 метра в секунду.",null,{type:"word_practical_speed_conversion",speed});
+        }else if(mode===2){
+          const fixed=100+20*group,unitPrice=5+group,units=10+2*group,answer=fixed+unitPrice*units;
+          add(module,topic,n,"Практические модели • тариф","По тарифу взимают фиксированную плату "+fixed+" рублей и "+unitPrice+" рублей за каждую из "+units+" использованных единиц. Найдите общую стоимость.",answer,
+            [unitPrice*units,fixed+units,answer-unitPrice],"Переменная часть равна "+unitPrice+"·"+units+"="+(unitPrice*units)+" рублей. Добавляем фиксированную плату и получаем "+answer+" рублей.",
+            "В линейном тарифе сложите постоянную и переменную части.",null,{type:"word_practical_tariff",fixed,unitPrice,units});
+        }else if(mode===3){
+          const length=10+2*group,width=5,area=length*width,answer=area/10;
+          add(module,topic,n,"Практические модели • расход материала","Прямоугольную поверхность длиной "+length+" м и шириной "+width+" м покрывают составом из расчёта 1 л на 10 м². Сколько литров состава потребуется?",answer,
+            [area,length+width,2*(length+width)],"Площадь поверхности равна "+length+"·"+width+"="+area+" м². Делим на 10 м²/л и получаем "+answer+" л.",
+            "Сначала найдите площадь, затем разделите её на площадь, покрываемую одним литром.",null,{type:"word_practical_material",length,width,coverage:10});
+        }else{
+          const capacity=6+group,answer=5+group,items=capacity*answer-group;
+          add(module,topic,n,"Практические модели • округление вверх","В одну коробку помещается не более "+capacity+" изделий. Какое наименьшее число коробок нужно для "+items+" изделий?",answer,
+            [answer-1,answer+1,capacity],"В "+(answer-1)+" коробках поместится только "+(capacity*(answer-1))+" изделий, этого недостаточно. "+answer+" коробок достаточно, поэтому ответ "+answer+".",
+            "Если после деления остаётся ненулевой остаток, число упаковок округляют вверх.",null,{type:"word_practical_packages",items,capacity});
+        }
+        break;
+      }
+      case "word_tasks/high":{
+        const mode=i%5,group=Math.floor(i/5)+1;
+        if(mode===0){
+          const speed1=30*group,speed2=60*group,answer=40*group;
+          add(module,topic,n,"Высокий балл • средняя скорость","Путь из города A в город B автомобиль прошёл со скоростью "+speed1+" км/ч, а обратный путь той же длины — со скоростью "+speed2+" км/ч. Найдите среднюю скорость за всю поездку.",answer,
+            [45*group,30*group,90*group],"Для равных расстояний средняя скорость равна 2v₁v₂/(v₁+v₂). Получаем 2·"+speed1+"·"+speed2+"/("+speed1+"+"+speed2+")="+answer+" км/ч.",
+            "Среднюю скорость находят как весь путь, делённый на всё время.",null,{type:"word_high_round_trip",speed1,speed2});
+        }else if(mode===1){
+          const first=4*group,second=6*group,answer=frac(12*group,5);
+          add(module,topic,n,"Высокий балл • совместная работа","Первый исполнитель выполняет работу за "+first+" ч, второй — за "+second+" ч. За сколько часов они выполнят работу вместе?",answer,
+            [2*group,frac(24*group,5),5*group],"Совместная производительность равна 1/"+first+"+1/"+second+"=5/"+(12*group)+" работы в час. Время равно обратной величине: "+answer+" ч.",
+            "Приведите производительности к общему знаменателю, затем переверните результат.",null,{type:"word_high_work",first,second});
+        }else if(mode===2){
+          const unit=group+2,total=3*unit,answer=2*unit;
+          add(module,topic,n,"Высокий балл • смеси","Сколько килограммов 10%-го раствора нужно смешать с 40%-м раствором, чтобы получить "+total+" кг 20%-го раствора?",answer,
+            [unit,total,2*total],"Пусть x кг — масса 10%-го раствора. Тогда 0,1x+0,4("+total+"−x)=0,2·"+total+". Отсюда x="+answer+" кг.",
+            "Составьте баланс массы растворённого вещества, а не только общей массы смеси.",null,{type:"word_high_mixture",total,low:10,high:40,target:20});
+        }else if(mode===3){
+          const initial=10000*group,percent=5*group,answer=initial*(10000-percent*percent)/10000;
+          add(module,topic,n,"Высокий балл • последовательные проценты","Сумму "+initial+" рублей сначала увеличили на "+percent+"%, а затем уменьшили на "+percent+"%. Найдите итоговую сумму.",answer,
+            [initial,initial*(100+percent)/100,initial*(100-percent)/100],"Общий множитель равен (1+"+percent+"/100)(1−"+percent+"/100)=1−"+(percent*percent)+"/10000. Итоговая сумма равна "+answer+" рублей.",
+            "Равные проценты повышения и понижения применяются к разным основаниям и не уничтожают друг друга.",null,{type:"word_high_percent_up_down",initial,percent});
+        }else{
+          const fixedA=160+10*group,rateA=20,fixedB=100,rateB=30,answer=7+group;
+          add(module,topic,n,"Высокий балл • сравнение тарифов","Тариф A стоит "+fixedA+" рублей плюс "+rateA+" рублей за единицу, тариф B — "+fixedB+" рублей плюс "+rateB+" рублей за единицу. Какое наименьшее целое число единиц нужно использовать, чтобы тариф A оказался дешевле?",answer,
+            [6+group,5+group,10+group],"Решаем строгое неравенство "+fixedA+"+"+rateA+"x<"+fixedB+"+"+rateB+"x. Получаем x>"+(6+group)+", поэтому наименьшее целое значение равно "+answer+".",
+            "После решения строгого неравенства выберите наименьшее подходящее целое число.",null,{type:"word_high_tariff",fixedA,rateA,fixedB,rateB});
         }
         break;
       }
