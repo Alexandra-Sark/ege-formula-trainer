@@ -179,7 +179,7 @@ svg{width:100%;height:auto;display:block}
         <p class="lead">Одна точка входа для ежедневной тренировки формул, алгебры, уравнений, геометрии, векторов, производных, вероятности, прогрессий, параметров и прикладных задач. Без регистрации: прогресс хранится в этом браузере.</p>
 
         <div class="stats">
-          <div class="stat"><span class="mini">Заданий в банке</span><b id="totalQuestions">1725</b></div>
+          <div class="stat"><span class="mini">Заданий в банке</span><b id="totalQuestions">1875</b></div>
           <div class="stat"><span class="mini">Пройдено тренировок</span><b id="sessions">0</b></div>
           <div class="stat"><span class="mini">Ошибок для повторения</span><b id="mistakeCount">0</b></div>
           <div class="stat"><span class="mini">Общая точность</span><b id="overallAccuracy">—</b></div>
@@ -294,7 +294,7 @@ svg{width:100%;height:auto;display:block}
       <div class="teacher-summary">
         <div class="stat"><span class="mini">Выбрано разделов</span><b id="teacherSelectedModules">10</b></div>
         <div class="stat"><span class="mini">Выбрано подразделов</span><b id="teacherSelectedTopics">63</b></div>
-        <div class="stat"><span class="mini">Доступно заданий</span><b id="teacherTotal">1725</b></div>
+        <div class="stat"><span class="mini">Доступно заданий</span><b id="teacherTotal">1875</b></div>
       </div>
       <div class="teacher-selection-grid">
         <div class="teacher-check-card">
@@ -445,6 +445,20 @@ MODULES.word_tasks = {
     mixtures: "Смеси и сплавы",
     percentages: "Проценты и отношения",
     practical: "Практические модели",
+    high: "Высокий балл"
+  }
+};
+
+// Trigonometry module: 6 topics × 25 questions are generated and audited below.
+MODULES.trigonometry = {
+  title: "Тригонометрия",
+  desc: "Табличные значения, единичная окружность, тождества, преобразования, графики, уравнения и задания повышенного уровня.",
+  topics: {
+    values: "Табличные значения и единичная окружность",
+    identities: "Основные тождества",
+    transformations: "Преобразования выражений",
+    graphs: "Графики и свойства",
+    equations: "Тригонометрические уравнения",
     high: "Высокий балл"
   }
 };
@@ -765,6 +779,15 @@ const EXTENDED_QUESTIONS = (()=>{
   const out=[];
   const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){const r=a%b;a=b;b=r;}return a||1;};
   const frac=(a,b)=>{const g=gcd(a,b);a/=g;b/=g;return b===1?String(a):"\\frac{"+a+"}{"+b+"}";};
+  const piFraction=(a,b)=>{
+    if(b<0){a=-a;b=-b;}
+    const g=gcd(a,b);a/=g;b/=g;
+    if(a===0) return "0";
+    const sign=a<0?"-":"";
+    const abs=Math.abs(a);
+    const numerator=abs===1?"\\pi":abs+"\\pi";
+    return b===1?sign+numerator:sign+"\\frac{"+numerator+"}{"+b+"}";
+  };
   const tex=value=>({kind:"tex",value:String(value)});
   const choices=(answer,wrong)=>{
     const values=[];
@@ -1623,6 +1646,229 @@ const EXTENDED_QUESTIONS = (()=>{
           add(module,topic,n,"Высокий балл • четыре корня","При каком условии уравнение имеет ровно четыре различных действительных корня?",answer,
             ["0<a\\le"+c,"a>"+c,"a=0"],"Получаем x²="+c+"+a и x²="+c+"−a. Чтобы обе ветви дали по два ненулевых корня, нужно a>0 и "+c+"−a>0. Следовательно, 0<a<"+c+".",
             "На границе a=0 пары корней совпадают, а при a=c появляется нулевой корень.","|x^2-"+c+"|=a",{type:"param_high_four_roots",c});
+        }
+        break;
+      }
+      case "trigonometry/values":{
+        const mode=i%5,group=Math.floor(i/5);
+        if(mode===0){
+          const degrees=[30,45,60,120,135][group];
+          const answer=piFraction(degrees,180);
+          add(module,topic,n,"Углы • градусы и радианы","Переведите угол "+degrees+"° в радианы.",answer,
+            [piFraction(degrees,360),piFraction(180,degrees),piFraction(degrees+30,180)],"Умножаем число градусов на π/180: "+degrees+"°="+answer+".",
+            "Чтобы перейти от градусов к радианам, умножьте угол на π/180.",null,{type:"trig_degrees_to_radians",degrees});
+        }else if(mode===1){
+          const numerators=[1,1,2,3,5][group],denominators=[6,4,3,4,6][group];
+          const radians=piFraction(numerators,denominators),answer=180*numerators/denominators;
+          add(module,topic,n,"Углы • радианы и градусы","Переведите угол "+radians+" в градусы.",answer,
+            [answer/2,180-answer,answer+30],"Умножаем коэффициент при π на 180°: "+radians+"="+answer+"°.",
+            "Чтобы перейти от радианов к градусам, умножьте коэффициент при π на 180°.",null,{type:"trig_radians_to_degrees",numerators,denominators});
+        }else if(mode===2){
+          const rows=[
+            ["\\sin30^\\circ","\\frac12",["\\frac{\\sqrt2}{2}","\\frac{\\sqrt3}{2}","1"]],
+            ["\\cos45^\\circ","\\frac{\\sqrt2}{2}",["\\frac12","\\frac{\\sqrt3}{2}","0"]],
+            ["\\operatorname{tg}60^\\circ","\\sqrt3",["\\frac{\\sqrt3}{3}","1","2"]],
+            ["\\sin120^\\circ","\\frac{\\sqrt3}{2}",["-\\frac{\\sqrt3}{2}","\\frac12","-\\frac12"]],
+            ["\\cos135^\\circ","-\\frac{\\sqrt2}{2}",["\\frac{\\sqrt2}{2}","-\\frac12","\\frac12"]]
+          ];
+          const [formula,answer,wrong]=rows[group];
+          add(module,topic,n,"Табличные значения • точное вычисление","Вычислите значение.",answer,wrong,
+            "Определяем опорный угол и знак функции по четверти. Получаем "+formula+"="+answer+".",
+            "Используйте табличное значение для опорного угла и знак функции в нужной четверти.",formula,{type:"trig_table_value",group});
+        }else if(mode===3){
+          const rows=[
+            [120,"\\sin",">0"],[210,"\\cos","<0"],[300,"\\operatorname{tg}","<0"],[135,"\\cos","<0"],[225,"\\operatorname{tg}",">0"]
+          ];
+          const [angle,fn,answer]=rows[group];
+          add(module,topic,n,"Единичная окружность • знак функции","Определите знак выражения.",answer,[answer===">0"?"<0":">0","=0","\\text{не определено}"],
+            "Угол "+angle+"° лежит в соответствующей четверти единичной окружности, где выражение "+fn+angle+"^\\circ имеет знак "+answer+".",
+            "Сначала определите четверть, затем вспомните знаки синуса, косинуса и тангенса.",fn+angle+"^\\circ",{type:"trig_quadrant_sign",group});
+        }else{
+          const rows=[
+            ["\\sin(\\pi-\\alpha)","\\sin\\alpha",["-\\sin\\alpha","\\cos\\alpha","-\\cos\\alpha"]],
+            ["\\cos(\\pi-\\alpha)","-\\cos\\alpha",["\\cos\\alpha","\\sin\\alpha","-\\sin\\alpha"]],
+            ["\\sin(\\frac{\\pi}{2}-\\alpha)","\\cos\\alpha",["\\sin\\alpha","-\\cos\\alpha","-\\sin\\alpha"]],
+            ["\\cos(\\frac{\\pi}{2}+\\alpha)","-\\sin\\alpha",["\\sin\\alpha","\\cos\\alpha","-\\cos\\alpha"]],
+            ["\\operatorname{tg}(\\pi+\\alpha)","\\operatorname{tg}\\alpha",["-\\operatorname{tg}\\alpha","\\operatorname{ctg}\\alpha","-\\operatorname{ctg}\\alpha"]]
+          ];
+          const [formula,answer,wrong]=rows[group];
+          add(module,topic,n,"Формулы приведения • базовые случаи","Упростите выражение при допустимых значениях α.",answer,wrong,
+            "По формуле приведения "+formula+"="+answer+".",
+            "Определите, меняется ли функция на кофункцию, затем установите знак по четверти.",formula,{type:"trig_reduction",group});
+        }
+        break;
+      }
+      case "trigonometry/identities":{
+        const mode=i%5,group=Math.floor(i/5);
+        const triples=[[3,4,5],[5,12,13],[7,24,25],[8,15,17],[20,21,29]];
+        if(mode===0){
+          const [sinNum,cosNum,den]=triples[group],answer=frac(cosNum,den);
+          add(module,topic,n,"Основное тождество • восстановление косинуса","Известно, что угол α лежит в первой четверти и sin α="+frac(sinNum,den)+". Найдите cos α.",answer,
+            [frac(sinNum,den),"-"+answer,frac(cosNum,cosNum+sinNum)],"Из тождества sin²α+cos²α=1 получаем cos²α="+frac(cosNum*cosNum,den*den)+". В первой четверти косинус положителен, поэтому cos α="+answer+".",
+            "После извлечения корня выберите знак с учётом четверти.",null,{type:"trig_identity_cos",sinNum,cosNum,den});
+        }else if(mode===1){
+          const [sinNum,cosNum,den]=triples[group],cosValue="-"+frac(cosNum,den),answer=frac(sinNum,den);
+          add(module,topic,n,"Основное тождество • восстановление синуса","Известно, что угол α лежит во второй четверти и cos α="+cosValue+". Найдите sin α.",answer,
+            ["-"+answer,frac(cosNum,den),cosValue],"По тождеству sin²α+cos²α=1 получаем sin²α="+frac(sinNum*sinNum,den*den)+". Во второй четверти синус положителен, поэтому sin α="+answer+".",
+            "Квадрат функции находим из основного тождества, а знак — по четверти.",null,{type:"trig_identity_sin",sinNum,cosNum,den});
+        }else if(mode===2){
+          const tg=group+2,answer=frac(1,tg);
+          add(module,topic,n,"Тангенс и котангенс • взаимная обратность","Известно, что tg α="+tg+". Найдите ctg α.",answer,
+            [String(tg),String(-tg),frac(tg,1+tg)],"При допустимых значениях tg α·ctg α=1, поэтому ctg α=1/"+tg+"="+answer+".",
+            "Тангенс и котангенс одного угла — взаимно обратные величины, если обе функции определены.",null,{type:"trig_tg_ctg",tg});
+        }else if(mode===3){
+          const coefficient=group+2,answer=coefficient;
+          add(module,topic,n,"Основное тождество • упрощение","Упростите выражение.",answer,
+            [coefficient+1,2*coefficient,1],"Выносим множитель: "+coefficient+"(sin²α+cos²α)="+coefficient+"·1="+answer+".",
+            "Используйте основное тождество sin²α+cos²α=1.",coefficient+"\\sin^2\\alpha+"+coefficient+"\\cos^2\\alpha",{type:"trig_identity_scaled",coefficient});
+        }else{
+          const m=group+2,answer=m;
+          add(module,topic,n,"Тождество тангенса • вычисление","Известно, что cos² α="+frac(1,m)+". Найдите 1+tg² α.",answer,
+            [m-1,m+1,frac(1,m)],"По тождеству 1+tg²α=1/cos²α. Следовательно, 1+tg²α="+m+".",
+            "Замените выражение 1+tg²α на 1/cos²α.",null,{type:"trig_identity_tangent",m});
+        }
+        break;
+      }
+      case "trigonometry/transformations":{
+        const mode=i%5,group=Math.floor(i/5);
+        if(mode===0){
+          const rows=[
+            ["\\sin(\\alpha+\\beta)","\\sin\\alpha\\cos\\beta+\\cos\\alpha\\sin\\beta"],
+            ["\\sin(\\alpha-\\beta)","\\sin\\alpha\\cos\\beta-\\cos\\alpha\\sin\\beta"],
+            ["\\cos(\\alpha+\\beta)","\\cos\\alpha\\cos\\beta-\\sin\\alpha\\sin\\beta"],
+            ["\\cos(\\alpha-\\beta)","\\cos\\alpha\\cos\\beta+\\sin\\alpha\\sin\\beta"],
+            ["\\operatorname{tg}(\\alpha+\\beta)","\\frac{\\operatorname{tg}\\alpha+\\operatorname{tg}\\beta}{1-\\operatorname{tg}\\alpha\\operatorname{tg}\\beta}"]
+          ];
+          const [formula,answer]=rows[group];
+          add(module,topic,n,"Формулы сложения • выбор тождества","Выберите верное преобразование при допустимых значениях переменных.",answer,
+            [answer.replace(/\+/g,"#").replace(/-/g,"+").replace(/#/g,"-"),"\\sin\\alpha+\\sin\\beta","\\cos\\alpha+\\cos\\beta"],"Это стандартная формула сложения: "+formula+"="+answer+".",
+            "Особенно внимательно следите за знаками в формулах для косинуса суммы и разности.",formula,{type:"trig_addition_formula",group});
+        }else if(mode===1){
+          const triples=[[3,4,5],[5,12,13],[7,24,25],[8,15,17],[20,21,29]],row=triples[group];
+          const sinNum=row[0],cosNum=row[1],den=row[2],answer=frac(2*sinNum*cosNum,den*den);
+          add(module,topic,n,"Двойной угол • синус","Известно, что sin α="+frac(sinNum,den)+" и cos α="+frac(cosNum,den)+". Найдите sin 2α.",answer,
+            [frac(sinNum*cosNum,den*den),frac(sinNum+cosNum,den),frac(2*sinNum,den)],"По формуле sin2α=2sinαcosα получаем "+answer+".",
+            "Не пропустите множитель 2 в формуле синуса двойного угла.",null,{type:"trig_double_sine",sinNum,cosNum,den});
+        }else if(mode===2){
+          const numerator=group+1,denominator=group+3,cosSquared=frac(numerator,denominator),answer=frac(2*numerator-denominator,denominator);
+          add(module,topic,n,"Двойной угол • косинус","Известно, что cos² α="+cosSquared+". Найдите cos 2α.",answer,
+            [frac(numerator-denominator,denominator),frac(2*numerator,denominator),cosSquared],"Используем формулу cos2α=2cos²α−1: 2·"+cosSquared+"−1="+answer+".",
+            "Выберите форму cos2α=2cos²α−1, если дан квадрат косинуса.",null,{type:"trig_double_cosine",numerator,denominator});
+        }else if(mode===3){
+          const rows=[
+            ["\\sin75^\\circ+\\sin15^\\circ","\\frac{\\sqrt6}{2}"],
+            ["\\sin105^\\circ-\\sin15^\\circ","\\frac{\\sqrt2}{2}"],
+            ["\\cos75^\\circ+\\cos15^\\circ","\\frac{\\sqrt6}{2}"],
+            ["\\cos15^\\circ-\\cos75^\\circ","\\frac{\\sqrt2}{2}"],
+            ["\\sin135^\\circ+\\sin45^\\circ","\\sqrt2"]
+          ];
+          const [formula,answer]=rows[group];
+          add(module,topic,n,"Сумма и разность • точное значение","Вычислите точное значение выражения.",answer,
+            ["-"+answer,"\\frac12","\\frac{\\sqrt3}{2}"],"Применяем формулу преобразования суммы или разности тригонометрических функций и получаем "+answer+".",
+            "Преобразуйте сумму или разность в произведение через полусумму и полуразность углов.",formula,{type:"trig_sum_difference",group});
+        }else{
+          const rows=[
+            ["2\\sin\\alpha\\cos\\beta","\\sin(\\alpha+\\beta)+\\sin(\\alpha-\\beta)"],
+            ["2\\cos\\alpha\\sin\\beta","\\sin(\\alpha+\\beta)-\\sin(\\alpha-\\beta)"],
+            ["2\\cos\\alpha\\cos\\beta","\\cos(\\alpha+\\beta)+\\cos(\\alpha-\\beta)"],
+            ["2\\sin\\alpha\\sin\\beta","\\cos(\\alpha-\\beta)-\\cos(\\alpha+\\beta)"],
+            ["\\sin2\\alpha","2\\sin\\alpha\\cos\\alpha"]
+          ];
+          const [formula,answer]=rows[group];
+          add(module,topic,n,"Произведение и сумма • тождество","Выберите выражение, тождественно равное данному.",answer,
+            ["-"+answer,"\\sin\\alpha\\sin\\beta","\\cos\\alpha\\cos\\beta"],"По формуле преобразования произведения "+formula+"="+answer+".",
+            "Проверьте порядок углов и знак между двумя полученными функциями.",formula,{type:"trig_product_formula",group});
+        }
+        break;
+      }
+      case "trigonometry/graphs":{
+        const mode=i%5,group=Math.floor(i/5)+1;
+        if(mode===0){
+          const amplitude=group+1;
+          add(module,topic,n,"Графики • амплитуда","Найдите амплитуду функции.",amplitude,
+            [1,2*amplitude,amplitude-1],"Для y=A sin x амплитуда равна |A|. Здесь |A|="+amplitude+".",
+            "Амплитуда — модуль коэффициента перед синусом или косинусом.","y=-"+amplitude+"\\sin x",{type:"trig_graph_amplitude",amplitude});
+        }else if(mode===1){
+          const k=group+1,answer=piFraction(2,k);
+          add(module,topic,n,"Графики • период","Найдите наименьший положительный период функции.",answer,
+            [piFraction(1,k),"2\\pi",piFraction(2,k+1)],"Для y=sin(kx) наименьший положительный период равен 2π/|k|. Получаем "+answer+".",
+            "Коэффициент при x во столько же раз уменьшает базовый период 2π.","y=\\sin("+k+"x)",{type:"trig_graph_period",k});
+        }else if(mode===2){
+          const amplitude=group+1,shift=group,answer="[-1;"+(2*group+1)+"]";
+          add(module,topic,n,"Графики • множество значений","Найдите множество значений функции.",answer,
+            ["[-"+amplitude+";"+amplitude+"]","["+shift+";"+(shift+amplitude)+"]","[-1;"+(group+1)+"]"],"Так как sin x∈[−1;1], то "+amplitude+"sin x∈[−"+amplitude+";"+amplitude+"]. После сдвига на "+shift+" получаем "+answer+".",
+            "Сначала учтите вертикальное растяжение, затем вертикальный сдвиг.","y="+amplitude+"\\sin x+"+shift,{type:"trig_graph_range",amplitude,shift});
+        }else if(mode===3){
+          const k=group+1,answer=piFraction(2,k);
+          add(module,topic,n,"Графики • точки максимума","Найдите наименьшее положительное x, при котором функция принимает максимальное значение.",answer,
+            ["0",piFraction(1,k),piFraction(1,2*k)],"Максимум cos(kx) равен 1 и достигается при kx=2πn. Наименьшему положительному значению соответствует n=1: x="+answer+".",
+            "Для косинуса максимум достигается, когда аргумент равен 2πn.","y=\\cos("+k+"x)",{type:"trig_graph_first_max",k});
+        }else{
+          const numerator=group,denominator=group+1,shift=piFraction(numerator,denominator),answer="\\text{вправо на }"+shift;
+          add(module,topic,n,"Графики • горизонтальный сдвиг","Как преобразован график y=sin x?",answer,
+            ["\\text{влево на }"+shift,"\\text{вверх на }"+shift,"\\text{вниз на }"+shift],"Замена x на x−a сдвигает график вправо на a. Здесь a="+shift+".",
+            "Горизонтальный сдвиг имеет знак, противоположный знаку внутри скобок.","y=\\sin(x-"+shift+")",{type:"trig_graph_shift",numerator,denominator});
+        }
+        break;
+      }
+      case "trigonometry/equations":{
+        const mode=i%5,k=Math.floor(i/5)+2;
+        if(mode===0){
+          const answer="x="+piFraction(1,k)+"n,\\quad n\\in\\mathbb Z";
+          add(module,topic,n,"Уравнения • синус равен нулю","Решите уравнение.",answer,
+            ["x="+piFraction(2,k)+"n,\\quad n\\in\\mathbb Z","x="+piFraction(1,2*k)+"+"+piFraction(2,k)+"n,\\quad n\\in\\mathbb Z","x="+piFraction(1,k)+"+"+piFraction(1,k)+"n,\\quad n\\in\\mathbb Z"],"Из sin(kx)=0 следует kx=πn. Делим на "+k+" и получаем "+answer+".",
+            "Для sin t=0 используйте t=πn, затем разделите всё уравнение на коэффициент при x.","\\sin("+k+"x)=0",{type:"trig_equation_sin_zero",k});
+        }else if(mode===1){
+          const answer="x="+piFraction(2,k)+"n,\\quad n\\in\\mathbb Z";
+          add(module,topic,n,"Уравнения • косинус равен единице","Решите уравнение.",answer,
+            ["x="+piFraction(1,k)+"n,\\quad n\\in\\mathbb Z","x="+piFraction(1,2*k)+"+"+piFraction(2,k)+"n,\\quad n\\in\\mathbb Z","x="+piFraction(1,k)+"+"+piFraction(2,k)+"n,\\quad n\\in\\mathbb Z"],"Из cos(kx)=1 следует kx=2πn. Поэтому "+answer+".",
+            "Косинус равен 1 в точках 2πn.","\\cos("+k+"x)=1",{type:"trig_equation_cos_one",k});
+        }else if(mode===2){
+          const answer="x="+piFraction(1,2*k)+"+"+piFraction(2,k)+"n,\\quad n\\in\\mathbb Z";
+          add(module,topic,n,"Уравнения • синус равен единице","Решите уравнение.",answer,
+            ["x="+piFraction(1,k)+"n,\\quad n\\in\\mathbb Z","x="+piFraction(1,k)+"+"+piFraction(2,k)+"n,\\quad n\\in\\mathbb Z","x="+piFraction(1,2*k)+"+"+piFraction(1,k)+"n,\\quad n\\in\\mathbb Z"],"Из sin(kx)=1 следует kx=π/2+2πn. После деления на "+k+" получаем "+answer+".",
+            "Синус равен 1 при аргументе π/2+2πn.","\\sin("+k+"x)=1",{type:"trig_equation_sin_one",k});
+        }else if(mode===3){
+          const answer="x="+piFraction(1,k)+"n,\\quad n\\in\\mathbb Z";
+          add(module,topic,n,"Уравнения • тангенс равен нулю","Решите уравнение.",answer,
+            ["x="+piFraction(2,k)+"n,\\quad n\\in\\mathbb Z","x="+piFraction(1,2*k)+"+"+piFraction(1,k)+"n,\\quad n\\in\\mathbb Z","x="+piFraction(1,k)+"+"+piFraction(2,k)+"n,\\quad n\\in\\mathbb Z"],"Из tg(kx)=0 следует kx=πn. Поэтому "+answer+".",
+            "Тангенс равен нулю при аргументе πn; его период равен π.","\\operatorname{tg}("+k+"x)=0",{type:"trig_equation_tg_zero",k});
+        }else{
+          const answer="x="+piFraction(1,2*k)+"+"+piFraction(1,k)+"n,\\quad n\\in\\mathbb Z";
+          add(module,topic,n,"Уравнения • косинус равен нулю","Решите уравнение.",answer,
+            ["x="+piFraction(1,k)+"n,\\quad n\\in\\mathbb Z","x="+piFraction(1,2*k)+"+"+piFraction(2,k)+"n,\\quad n\\in\\mathbb Z","x="+piFraction(1,k)+"+"+piFraction(1,k)+"n,\\quad n\\in\\mathbb Z"],"Из cos(kx)=0 следует kx=π/2+πn. После деления на "+k+" получаем "+answer+".",
+            "Косинус равен нулю при аргументе π/2+πn.","\\cos("+k+"x)=0",{type:"trig_equation_cos_zero",k});
+        }
+        break;
+      }
+      case "trigonometry/high":{
+        const mode=i%5,group=Math.floor(i/5)+1;
+        if(mode===0){
+          const pairs=[[3,4,5],[5,12,13],[7,24,25],[8,15,17],[20,21,29]],row=pairs[group-1];
+          const a=row[0],b=row[1],answer=row[2];
+          add(module,topic,n,"Высокий балл • амплитуда суммы","Найдите наибольшее значение выражения.",answer,
+            [a+b,Math.max(a,b),answer-1],"Для A sin x+B cos x наибольшее значение равно √(A²+B²). Здесь √("+a+"²+"+b+"²)="+answer+".",
+            "Сверните линейную комбинацию синуса и косинуса в одну синусоиду с амплитудой √(A²+B²).",a+"\\sin x+"+b+"\\cos x",{type:"trig_high_amplitude",a,b});
+        }else if(mode===1){
+          const periods=group+1,answer=periods+1;
+          add(module,topic,n,"Высокий балл • число корней","Сколько корней имеет уравнение sin x=0 на отрезке [0;"+periods+"π]?",answer,
+            [periods,2*periods,2*periods+1],"Корни имеют вид x=πn. На отрезке подходят n=0,1,…,"+periods+", всего "+answer+" значений.",
+            "Включите оба конца отрезка и посчитайте подходящие целые n.",null,{type:"trig_high_root_count_sin",periods});
+        }else if(mode===2){
+          const amplitude=group+1,answer="[-"+amplitude+";"+amplitude+"]";
+          add(module,topic,n,"Высокий балл • параметр","При каких значениях параметра a уравнение имеет хотя бы одно действительное решение?",answer,
+            ["(-"+amplitude+";"+amplitude+")","[-1;1]","(-\\infty;+\\infty)"],"Так как sin x∈[−1;1], левая часть принимает все значения от −"+amplitude+" до "+amplitude+" включительно. Поэтому "+answer+".",
+            "Условие существования корня определяется множеством значений левой части.",amplitude+"\\sin x=a",{type:"trig_high_parameter_range",amplitude});
+        }else if(mode===3){
+          const tg=group+1,answer=tg;
+          add(module,topic,n,"Высокий балл • тождественное преобразование","Известно, что tg x="+tg+" и sin 2x≠0. Найдите значение выражения.",answer,
+            [frac(1,tg),2*tg,tg+1],"Используем 1−cos2x=2sin²x и sin2x=2sinx cosx. Дробь равна sinx/cosx=tg x="+answer+".",
+            "Преобразуйте числитель и знаменатель по формулам двойного угла, затем сократите с учётом условия.","\\frac{1-\\cos2x}{\\sin2x}",{type:"trig_high_identity_value",tg});
+        }else{
+          const periods=group+1,answer=periods;
+          add(module,topic,n,"Высокий балл • отбор корней","Сколько корней имеет уравнение sin x+cos x=0 на отрезке [0;"+periods+"π]?",answer,
+            [periods+1,2*periods,2*periods+1],"Уравнение равносильно tg x=−1, поскольку при cos x=0 исходное равенство не выполняется. Корни x=−π/4+πn. На данном отрезке их "+answer+".",
+            "Получите общую серию корней и отдельно отберите целые n, соответствующие отрезку.",null,{type:"trig_high_root_count_sum",periods});
         }
         break;
       }
