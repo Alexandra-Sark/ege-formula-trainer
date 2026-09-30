@@ -203,7 +203,7 @@ svg{width:100%;height:auto;display:block}
           </div>
           <div class="mode">
             <h3>Высокий балл</h3>
-            <p class="mini">Ловушки и задания уровня 80–100 из всех готовых модулей.</p>
+            <p class="mini">Повышенные задания из разных тем собраны здесь по уровню сложности, а не вынесены в отдельные подтемы.</p>
             <button class="btn btn-secondary" id="highBtn">Начать</button>
           </div>
           <div class="mode">
@@ -290,10 +290,10 @@ svg{width:100%;height:auto;display:block}
     </div>
     <div class="hero">
       <h1>Собрать тренировку</h1>
-      <p class="lead">Выберите содержание и уровень. Варианты ответов будут перемешаны, а итог покажет ошибки ученика.</p>
+      <p class="lead">Выберите содержание и уровень. Повышенные задания подключаются общим фильтром уровня, варианты ответов перемешиваются, а итог показывает ошибки ученика.</p>
       <div class="teacher-summary">
         <div class="stat"><span class="mini">Выбрано разделов</span><b id="teacherSelectedModules">10</b></div>
-        <div class="stat"><span class="mini">Выбрано подразделов</span><b id="teacherSelectedTopics">63</b></div>
+        <div class="stat"><span class="mini">Выбрано подразделов</span><b id="teacherSelectedTopics">68</b></div>
         <div class="stat"><span class="mini">Доступно заданий</span><b id="teacherTotal">2025</b></div>
       </div>
       <div class="teacher-selection-grid">
@@ -2307,6 +2307,7 @@ QUESTIONS.push(...EXTENDED_QUESTIONS);
     if(den===1) return num===1?"\\pi":num+"\\pi";
     return "\\frac{"+(num===1?"":num)+"\\pi}{"+den+"}";
   };
+  const linearFactor=root=>root===0?"x":(root>0?`(x-${root})`:`(x+${-root})`);
 
   // Replace the one exact duplicate with another domain task.
   {
@@ -2325,6 +2326,115 @@ QUESTIONS.push(...EXTENDED_QUESTIONS);
   for(const id of ["der_sqrt","der_exp","der_sin","der_cos","der_product","der_quotient"]){
     const q=QUESTIONS.find(item=>item.module==="calculus"&&item.id===id);
     if(q) q.id="calculus_"+id;
+  }
+
+  // Keep 25 tasks in every topic, but replace cross-module copies with
+  // subject-specific practice. Functions now trains interpretation and use of
+  // the derivative; the calculus module retains the differentiation formulas.
+  for(let n=1;n<=12;n++){
+    const q=find("functions:ext_functions_derivative_"+n);
+    const mode=(n-1)%4,block=Math.floor((n-1)/4);
+    q.prompt="";
+    if(mode===0){
+      const a=-3+block,b=1+block;
+      q.skill="Производная в задачах • промежутки возрастания";
+      q.prompt="На каких промежутках функция возрастает?";
+      q.formula=`f'(x)=${linearFactor(a)}${linearFactor(b)}`;
+      setChoices(q,`(-\\infty;${a})\\cup(${b};+\\infty)`,[`(${a};${b})`,`(-\\infty;${b})`,`(${a};+\\infty)`]);
+      q.explanation=`Производная положительна вне корней ${a} и ${b}. Поэтому функция возрастает на промежутках (-∞;${a}) и (${b};+∞).`;
+      q.tip="Функция возрастает там, где её производная положительна.";
+      q.audit={type:"derivative_positive_intervals",a,b};
+    }else if(mode===1){
+      const x0=block+1,c=block+2,answer=2*x0+c;
+      q.skill="Производная в задачах • угловой коэффициент";
+      q.prompt=`Найдите угловой коэффициент касательной к графику функции в точке с абсциссой x=${x0}.`;
+      q.formula=`f(x)=x^2+${c}x`;
+      setChoices(q,answer,[answer-1,answer+1,c]);
+      q.explanation=`Угловой коэффициент касательной равен f'(${x0}). Имеем f'(x)=2x+${c}, поэтому f'(${x0})=${answer}.`;
+      q.tip="Угловой коэффициент касательной в точке x₀ равен f′(x₀).";
+      q.audit={type:"tangent_slope_quadratic",x0,c};
+    }else if(mode===2){
+      const a=-3+block,b=block,c=3+block;
+      q.skill="Производная в задачах • стационарные точки";
+      q.prompt="Сколько стационарных точек имеет функция?";
+      q.formula=`f'(x)=${linearFactor(a)}${linearFactor(b)}^2${linearFactor(c)}`;
+      setChoices(q,3,[2,1,4]);
+      q.explanation=`Стационарные точки соответствуют нулям производной. У производной три различных корня: ${a}, ${b} и ${c}; кратность корня не создаёт дополнительной точки.`;
+      q.tip="Считайте различные значения x, при которых f′(x)=0.";
+      q.audit={type:"stationary_points_count",roots:[a,b,c]};
+    }else{
+      const a=-2+block,b=2+block;
+      q.skill="Производная в задачах • точка максимума";
+      q.prompt="Найдите абсциссу точки максимума функции.";
+      q.formula=`f'(x)=${linearFactor(a)}${linearFactor(b)}`;
+      setChoices(q,a,[b,a-1,b+1]);
+      q.explanation=`Производная меняет знак с плюса на минус при x=${a}, поэтому здесь функция имеет максимум. При x=${b} знак меняется с минуса на плюс — это минимум.`;
+      q.tip="Максимум соответствует смене знака производной с «+» на «−».";
+      q.audit={type:"maximum_from_derivative_sign",a,b};
+    }
+  }
+
+  // Irrational functions now focuses on graph, domain/range and inequalities;
+  // solving radical equations remains in the equations module.
+  for(let n=1;n<=12;n++){
+    const q=find("functions:ext_functions_irrational_"+n);
+    const mode=(n-1)%4,block=Math.floor((n-1)/4);
+    if(mode===0){
+      const a=block+1,b=block+2;
+      q.skill="Иррациональные функции • начало графика";
+      q.prompt="Укажите начальную точку графика функции.";
+      q.formula=`y=\\sqrt{x-${a}}+${b}`;
+      setChoices(q,`(${a};${b})`,[`(${-a};${b})`,`(${b};${a})`,`(${a};${-b})`]);
+      q.explanation=`График y=√x сдвинут вправо на ${a} и вверх на ${b}, поэтому начинается в точке (${a};${b}).`;
+      q.tip="Для y=√(x−a)+b начальная точка имеет координаты (a;b).";
+      q.audit={type:"sqrt_graph_start",a,b};
+    }else if(mode===1){
+      const a=block+2,b=block+1;
+      q.skill="Иррациональные функции • множество значений";
+      q.prompt="Найдите множество значений функции.";
+      q.formula=`y=\\sqrt{x-${a}}+${b}`;
+      setChoices(q,`y\\ge${b}`,[`y>${b}`,`y\\le${b}`,`y\\ge${a}`]);
+      q.explanation=`Квадратный корень неотрицателен, поэтому наименьшее значение функции равно ${b}. Следовательно, y≥${b}.`;
+      q.tip="Вертикальный сдвиг меняет нижнюю границу множества значений корневой функции.";
+      q.audit={type:"sqrt_range_shift",a,b};
+    }else if(mode===2){
+      const a=block+1,b=block+2,right=a+b*b;
+      q.skill="Иррациональные функции • неравенство";
+      q.prompt="Решите неравенство.";
+      q.formula=`\\sqrt{x-${a}}\\le${b}`;
+      setChoices(q,`[${a};${right}]`,[`(-\\infty;${right}]`,`[${a};+\\infty)`,`(${a};${right})`]);
+      q.explanation=`Сначала учитываем x≥${a}. Обе части неотрицательны, поэтому после возведения в квадрат получаем x−${a}≤${b*b}. Ответ: [${a};${right}].`;
+      q.tip="Совместите область определения с результатом возведения неравенства в квадрат.";
+      q.audit={type:"sqrt_inequality_bounded",a,b};
+    }else{
+      const a=block+1,answer=block+2,x0=a+answer*answer;
+      q.skill="Иррациональные функции • значение функции";
+      q.prompt=`Найдите f(${x0}).`;
+      q.formula=`f(x)=\\sqrt{x-${a}}`;
+      setChoices(q,answer,[answer*answer,answer+1,answer-1]);
+      q.explanation=`Подставляем x=${x0}: f(${x0})=√(${x0}−${a})=√${answer*answer}=${answer}.`;
+      q.tip="Сначала подставьте аргумент, затем упростите подкоренное выражение.";
+      q.audit={type:"sqrt_function_value",a,x0};
+    }
+  }
+
+  // Make superficially similar prompts self-contained and replace the final
+  // repeated parameter task with a different modulus condition.
+  find("functions:der_product").q="Выберите правильную формулу производной произведения f(x)g(x).";
+  find("functions:der_quotient").q="Выберите правильную формулу производной частного f(x)/g(x).";
+  find("algebra:pow_trap").q="Какое равенство со степенями неверно при допустимых значениях переменных?";
+  find("algebra:trig_trap").q="Какое тригонометрическое равенство неверно при допустимых значениях переменных?";
+  find("algebra:trig_sum_sin").q="Выберите формулу синуса суммы двух углов.";
+  find("algebra:trig_sum_cos").q="Выберите формулу косинуса суммы двух углов.";
+  {
+    const q=find("parameters:ext_parameters_modulus_18");
+    q.skill="Модуль • единственный корень";
+    q.prompt="При каком значении параметра уравнение имеет ровно одно решение?";
+    q.formula="|x-2|=a+1";
+    setChoices(q,"a=-1",["a>-1","a<-1","a=1"]);
+    q.explanation="Уравнение |x−2|=c имеет ровно одно решение только при c=0. Поэтому a+1=0 и a=−1.";
+    q.tip="Сравните правую часть с нулём: положительное значение даёт два корня, ноль — один, отрицательное — ни одного.";
+    q.audit={type:"absolute_parameter_one_root",shift:2,offset:1};
   }
 
   // Five genuinely different recognition patterns instead of one repeated stem.
@@ -2480,6 +2590,15 @@ for(const [module,moduleData] of Object.entries(MODULES)){
 
 const $ = id => document.getElementById(id);
 const STORAGE_KEY = "egeUnifiedTrainerProgress1";
+const HIDDEN_TOPIC_KEYS = new Set(["high"]);
+
+function visibleTopicEntries(module){
+  return Object.entries(MODULES[module]?.topics||{}).filter(([topic])=>!HIDDEN_TOPIC_KEYS.has(topic));
+}
+
+function visibleTopicKeys(module){
+  return visibleTopicEntries(module).map(([topic])=>topic);
+}
 
 function escapeHtml(s){
   return String(s)
@@ -2861,7 +2980,7 @@ function renderHome(){
       ? `${seen} из ${modulePool.length} • ${accuracy}%`
       : `0 из ${modulePool.length}`;
     const submenuId=`submenu-${module}`;
-    const topicLinks=Object.entries(moduleData.topics).map(([topic,label])=>{
+    const topicLinks=visibleTopicEntries(module).map(([topic,label])=>{
       const topicState=topicProgress(module,topic,p);
       const topicAccuracy=topicState.accuracy==null?"":` • ${topicState.accuracy}%`;
       return `<button class="section-link" type="button" data-module="${module}" data-topic="${topic}">
@@ -3144,7 +3263,7 @@ function selectedTeacherTopics(){
 function populateTeacherModules(){
   teacherTopicSelection=new Set();
   for(const [module,moduleData] of Object.entries(MODULES)){
-    for(const topic of Object.keys(moduleData.topics)) teacherTopicSelection.add(teacherTopicKey(module,topic));
+    for(const topic of visibleTopicKeys(module)) teacherTopicSelection.add(teacherTopicKey(module,topic));
   }
   $("teacherModuleList").innerHTML=Object.entries(MODULES).map(([module,moduleData])=>
     `<label class="teacher-check-option"><input type="checkbox" value="${module}" checked><span>${escapeHtml(moduleData.title)}</span></label>`
@@ -3152,7 +3271,7 @@ function populateTeacherModules(){
   $("teacherModuleList").querySelectorAll('input[type="checkbox"]').forEach(input=>{
     input.addEventListener("change",()=>{
       const module=input.value;
-      for(const topic of Object.keys(MODULES[module].topics)){
+      for(const topic of visibleTopicKeys(module)){
         const key=teacherTopicKey(module,topic);
         if(input.checked) teacherTopicSelection.add(key);
         else teacherTopicSelection.delete(key);
@@ -3171,7 +3290,7 @@ function populateTeacherTopics(){
     return;
   }
   $("teacherTopicList").innerHTML=modules.map(module=>{
-    const links=Object.entries(MODULES[module].topics).map(([topic,label])=>{
+    const links=visibleTopicEntries(module).map(([topic,label])=>{
       const key=teacherTopicKey(module,topic);
       return `<label class="teacher-check-option"><input type="checkbox" value="${key}" ${teacherTopicSelection.has(key)?"checked":""}><span>${escapeHtml(label)}</span></label>`;
     }).join("");
@@ -3200,8 +3319,14 @@ function teacherScope(order="random"){
 function teacherPool(scope=teacherScope()){
   const modules=new Set(scope.modules||[]);
   const topics=new Set(scope.topics||[]);
-  if(!modules.size||!topics.size) return [];
-  return QUESTIONS.filter(q=>modules.has(q.module)&&topics.has(teacherTopicKey(q.module,q.topic))&&(scope.level==="all"||q.difficulty===scope.level));
+  if(!modules.size) return [];
+  const includeHighBank=scope.level==="all"||scope.level==="high";
+  return QUESTIONS.filter(q=>{
+    if(!modules.has(q.module)) return false;
+    if(scope.level!=="all"&&q.difficulty!==scope.level) return false;
+    if(HIDDEN_TOPIC_KEYS.has(q.topic)) return includeHighBank;
+    return topics.has(teacherTopicKey(q.module,q.topic));
+  });
 }
 
 function updateTeacherPoolInfo(){
@@ -3212,9 +3337,10 @@ function updateTeacherPoolInfo(){
   $("teacherSelectedModules").textContent=modules.length;
   $("teacherSelectedTopics").textContent=topics.length;
   $("teacherTotal").textContent=pool.length;
+  const highBankIncluded=$("teacherLevel").value==="all"||$("teacherLevel").value==="high";
   $("teacherPoolInfo").textContent=pool.length
-    ? `В тренировку попадут задания из ${modules.length} разделов и ${topics.length} подразделов • проверяемых навыков: ${skills.size}`
-    : "Отметьте хотя бы один раздел и один подраздел с доступными заданиями.";
+    ? `В тренировку попадут задания из ${modules.length} разделов и ${topics.length} тематических подразделов • проверяемых навыков: ${skills.size}${highBankIncluded?" • повышенный банк добавлен фильтром уровня":""}`
+    : "Отметьте хотя бы один раздел и один подраздел с доступными заданиями или выберите повышенный уровень.";
   $("teacherStartBtn").disabled=!pool.length;
   $("teacherSequentialBtn").disabled=!pool.length;
 }
@@ -4587,7 +4713,7 @@ $("teacherBackBtn").addEventListener("click",()=>{showScreen("home");renderHome(
 $("teacherModulesAll").addEventListener("click",()=>{
   $("teacherModuleList").querySelectorAll('input[type="checkbox"]').forEach(input=>input.checked=true);
   for(const [module,moduleData] of Object.entries(MODULES)){
-    for(const topic of Object.keys(moduleData.topics)) teacherTopicSelection.add(teacherTopicKey(module,topic));
+    for(const topic of visibleTopicKeys(module)) teacherTopicSelection.add(teacherTopicKey(module,topic));
   }
   populateTeacherTopics();
 });
@@ -4598,13 +4724,13 @@ $("teacherModulesNone").addEventListener("click",()=>{
 });
 $("teacherTopicsAll").addEventListener("click",()=>{
   for(const module of selectedTeacherModules()){
-    for(const topic of Object.keys(MODULES[module].topics)) teacherTopicSelection.add(teacherTopicKey(module,topic));
+    for(const topic of visibleTopicKeys(module)) teacherTopicSelection.add(teacherTopicKey(module,topic));
   }
   populateTeacherTopics();
 });
 $("teacherTopicsNone").addEventListener("click",()=>{
   for(const module of selectedTeacherModules()){
-    for(const topic of Object.keys(MODULES[module].topics)) teacherTopicSelection.delete(teacherTopicKey(module,topic));
+    for(const topic of visibleTopicKeys(module)) teacherTopicSelection.delete(teacherTopicKey(module,topic));
   }
   populateTeacherTopics();
 });
