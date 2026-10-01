@@ -19,6 +19,7 @@
 ```sh
 node tests/check_numeric.cjs
 python tests/check_exam_bank.py
+node tests/check_statistics.cjs
 ```
 
 Подробности состава банка и публикации — в `README_TIMEWEB.txt`.
