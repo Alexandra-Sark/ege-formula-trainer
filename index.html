@@ -51,6 +51,23 @@ p{line-height:1.55}.lead{font-size:18px;color:var(--muted);max-width:840px}.mini
 .category-picker{border:1px solid var(--border);border-radius:18px;padding:16px;margin:20px 0;background:#fafbff}
 .category-picker h3{margin-bottom:12px}
 .category-options{display:flex;gap:8px;flex-wrap:wrap}
+.category-toolbar{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.category-toolbar .category-options{flex:1}
+.statistics-button{flex-shrink:0}
+.statistics-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.statistics-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+.statistics-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}
+.statistics-card{border:1px solid var(--border);border-radius:16px;padding:18px;min-width:0;background:#fafbff}
+.statistics-card.is-weak{border-left:5px solid var(--red);background:#fff7f6}
+.statistics-card.is-strong{border-left:5px solid var(--green);background:#f3fbf7}
+.statistics-card .btn{margin-top:10px;white-space:normal}
+.statistics-card p{margin:8px 0}
+.statistics-status{font-size:12px;font-weight:800;color:var(--muted)}
+.is-weak .statistics-status{color:var(--red)}
+.is-strong .statistics-status{color:var(--green)}
+.statistics-section{margin:28px 0}
+.statistics-section summary{cursor:pointer;font-size:18px;font-weight:800}
+@media(max-width:700px){.statistics-summary,.statistics-grid{grid-template-columns:1fr}.category-toolbar .category-options{flex-basis:100%}}
 .category-choice[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
 .exam-positions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
 .exam-position{white-space:normal;text-align:left}
@@ -207,10 +224,9 @@ svg{width:100%;height:auto;display:block}
           <div class="stat"><span class="mini" id="overallAccuracyLabel">Общая точность</span><b id="overallAccuracy">—</b></div>
         </div>
 
-        <p class="mini" id="assessmentNotice" hidden>В статистике развёрнутых решений учтена ваша самооценка.</p>
-
         <div class="category-picker">
           <h3 id="categoryPickerLabel">Что тренируем</h3>
+          <div class="category-toolbar">
           <div class="category-options" role="group" aria-labelledby="categoryPickerLabel">
             <button type="button" class="btn btn-ghost category-choice" data-category="all" aria-pressed="true">Весь банк</button>
             <button type="button" class="btn btn-ghost category-choice" data-category="formula" aria-pressed="false">Формулы</button>
@@ -218,10 +234,10 @@ svg{width:100%;height:auto;display:block}
             <button type="button" class="btn btn-ghost category-choice" data-category="part1" aria-pressed="false">Первая часть ЕГЭ</button>
             <button type="button" class="btn btn-ghost category-choice" data-category="part2" aria-pressed="false">Вторая часть ЕГЭ</button>
           </div>
+          <button type="button" class="btn btn-secondary statistics-button" id="statisticsBtn">Моя статистика</button>
+          </div>
           <p class="mini" id="categoryDescription" role="status"></p>
         </div>
-        <div id="categoryStats" class="category-stats" aria-label="Прогресс по цели тренировки"></div>
-        <p class="mini">Статистика частей ЕГЭ входит в общую статистику практики.</p>
         <div id="examCoverage" hidden></div>
 
         <div class="mode-grid">
@@ -267,6 +283,26 @@ svg{width:100%;height:auto;display:block}
         <div class="mini"><span class="desktop-hint">Наведите на раздел и выберите нужную тему</span><span class="mobile-hint">Нажмите на раздел и выберите нужную тему</span></div>
         <nav id="sectionMenu" class="section-menu"></nav>
       </aside>
+    </div>
+  </section>
+
+  <section id="statisticsScreen" class="screen" aria-labelledby="statisticsTitle">
+    <div class="hero">
+      <div class="statistics-head">
+        <div><h1 id="statisticsTitle" tabindex="-1">Моя статистика</h1><p class="lead">Общий прогресс, сильные стороны и темы для повторения.</p></div>
+        <button class="btn btn-secondary" type="button" id="statisticsBackBtn">На главную</button>
+      </div>
+      <div id="statisticsSummary" class="stats statistics-summary"></div>
+      <p class="mini" id="statisticsAssessmentNote"></p>
+      <div class="statistics-section">
+        <h2>Рекомендации на повторение</h2>
+        <p class="mini">Оценка раздела появляется после ответов на 5 разных заданий, темы — на 3. Средняя точность считается по каждой карточке отдельно: от 80% — сильная сторона, 60% и ниже — приоритет для повторения.</p>
+        <div id="statisticsRecommendations" class="statistics-grid"></div>
+      </div>
+      <div class="statistics-section"><h2>Сильные стороны</h2><div id="statisticsStrengths" class="statistics-grid"></div></div>
+      <div class="statistics-section"><details><summary>Статистика по всем разделам</summary><div id="statisticsModules" class="statistics-grid"></div></details></div>
+      <div class="statistics-section"><h2>Прогресс по целям</h2><div id="categoryStats" class="category-stats" aria-label="Прогресс по цели тренировки"></div><p class="mini">Первая и вторая части входят в общую практику; их результаты не прибавляются к ней повторно.</p></div>
+      <div class="statistics-section"><h2>Развёрнутые решения</h2><div id="statisticsSelfReview"></div></div>
     </div>
   </section>
 
@@ -319,6 +355,7 @@ svg{width:100%;height:auto;display:block}
 
       <div class="actions" style="margin-top:18px">
         <button class="btn btn-primary" id="retryBtn">Пройти ещё раз</button>
+        <button class="btn btn-secondary" id="resultStatisticsBtn" type="button">Моя статистика</button>
         <button class="btn btn-secondary" id="resultHomeBtn">На главную</button>
       </div>
     </div>
@@ -7195,6 +7232,7 @@ function taskMatches(q,scope={}){
     if(q.examPart!==(category==="part1"?1:2))return false;
   }else if(category!=="all"&&taskCategory(q)!==category)return false;
   if(scope.examNumber&&scope.examNumber!=="all"&&q.examNumber!==Number(scope.examNumber))return false;
+  if(scope.automaticOnly&&isSelfReviewedTask(q))return false;
   if(scope.answerFormat&&scope.answerFormat!=="all"&&answerFormat(q)!==scope.answerFormat)return false;
   if(category==="formula"&&scope.formulaFocus&&scope.formulaFocus!=="all"&&formulaFocus(q)!==scope.formulaFocus)return false;
   return true;
@@ -7210,9 +7248,96 @@ function categorySummary(category,p=loadProgress()){
   }
   return {total:pool.length,seen,correct,wrong,selfReviewed,attempts:correct+wrong,accuracy:correct+wrong?Math.round(100*correct/(correct+wrong)):null};
 }
+
+function isSelfReviewedTask(q){return ["proof","solution"].includes(answerFormat(q));}
+
+function statisticsGroup(tasks,p){
+  const count=value=>Number.isFinite(Number(value))?Math.max(0,Math.floor(Number(value))):0;
+  let answered=0,autoSeen=0,autoSolved=0,autoCorrect=0,autoWrong=0,selfSeen=0,selfCorrect=0,selfWrong=0,rateSum=0;
+  for(const q of tasks){
+    const item=p.weak?.[q.uid],correct=count(item?.correct),wrong=count(item?.wrong),attempts=correct+wrong;
+    if(!attempts)continue;
+    answered++;
+    if(isSelfReviewedTask(q)){
+      selfSeen++;selfCorrect+=correct;selfWrong+=wrong;
+    }else{
+      autoSeen++;autoCorrect+=correct;autoWrong+=wrong;
+      if(correct)autoSolved++;
+      rateSum+=correct/attempts;
+    }
+  }
+  const autoAttempts=autoCorrect+autoWrong,selfAttempts=selfCorrect+selfWrong;
+  return {total:tasks.length,answered,autoSeen,autoSolved,autoCorrect,autoWrong,autoAttempts,selfSeen,selfCorrect,selfWrong,selfAttempts,
+    attempts:autoAttempts+selfAttempts,autoAccuracy:autoAttempts?Math.round(100*autoCorrect/autoAttempts):null,
+    balancedRate:autoSeen?rateSum/autoSeen:null,balancedAccuracy:autoSeen?Math.round(100*rateSum/autoSeen):null};
+}
+
+function evidenceStatus(group,minimum=5){
+  if(group.autoSeen<minimum)return group.autoSeen?"early":"empty";
+  if(group.balancedRate<=0.6+1e-12)return "weak";
+  if(group.balancedRate>=0.8-1e-12)return "strong";
+  return "developing";
+}
+
+function studentStatistics(p=loadProgress()){
+  const overall=statisticsGroup(QUESTIONS,p);
+  const modules=Object.keys(MODULES).map(module=>({module,label:moduleLabel(module),...statisticsGroup(QUESTIONS.filter(q=>q.module===module),p)}));
+  const topics=modules.flatMap(({module})=>visibleTopicEntries(module).map(([topic,label])=>({module,topic,label:moduleLabel(module)+" • "+label,...statisticsGroup(QUESTIONS.filter(q=>q.module===module&&q.topic===topic),p)})));
+  const status=group=>evidenceStatus(group,group.topic?3:5);
+  const compare=(a,b)=>(a.balancedRate??1)-(b.balancedRate??1)||b.autoSeen-a.autoSeen||a.label.localeCompare(b.label,"ru");
+  // A precise topic recommendation takes precedence over its whole module.
+  const recommendations=[];
+  const add=group=>{
+    if(recommendations.some(item=>item.module===group.module))return;
+    recommendations.push({...group,status:status(group)});
+  };
+  topics.filter(g=>status(g)==="weak").sort(compare).forEach(add);
+  modules.filter(g=>status(g)==="weak").sort(compare).forEach(add);
+  topics.filter(g=>status(g)==="developing").sort(compare).forEach(add);
+  modules.filter(g=>status(g)==="developing").sort(compare).forEach(add);
+  topics.filter(g=>status(g)==="early"&&g.autoWrong>0).sort(compare).forEach(add);
+  modules.filter(g=>status(g)==="early"&&g.autoWrong>0).sort(compare).forEach(add);
+  const strengths=[];
+  for(const group of [...topics,...modules].filter(g=>status(g)==="strong").sort((a,b)=>b.balancedRate-a.balancedRate||b.autoSeen-a.autoSeen||a.label.localeCompare(b.label,"ru"))){
+    if(!strengths.some(item=>item.module===group.module))strengths.push({...group,status:"strong"});
+  }
+  return {overall,modules,topics,recommendations:recommendations.slice(0,3),strengths:strengths.slice(0,3)};
+}
+
+function statisticsEvidenceHtml(group){
+  return `<p class="mini">Разных заданий с автопроверкой: ${group.autoSeen}. Попыток: ${group.autoAttempts}.</p><p>Средняя точность по карточкам: <b>${group.balancedAccuracy===null?"—":group.balancedAccuracy+"%"}</b>.</p>`;
+}
+
+function renderStatistics(){
+  const p=loadProgress(),report=studentStatistics(p),s=report.overall;
+  const entries=[["Разных заданий с ответом",`${s.answered} / ${s.total}`],["Решено верно с автопроверкой",s.autoSolved],["Точность автопроверки",s.autoAccuracy===null?"—":s.autoAccuracy+"%"],["Всего попыток ответа",s.attempts],["Ошибок с автопроверкой",s.autoWrong],["Самопроверок решений",s.selfAttempts]];
+  $("statisticsSummary").innerHTML=entries.map(([label,value])=>`<div class="stat"><span class="mini">${label}</span><b>${value}</b></div>`).join("");
+  $("statisticsAssessmentNote").textContent=s.answered?`Статистика охватывает весь текущий банк. Решённым верно считается задание хотя бы с одним правильным ответом. Точность автопроверки: ${s.autoCorrect} верных ответов из ${s.autoAttempts}. Развёрнутые решения с самооценкой показаны отдельно.`:"Ответов пока нет. Начните тренировку по выбранной цели — после ответов здесь появятся прогресс и рекомендации.";
+  $("statisticsRecommendations").innerHTML=report.recommendations.length?report.recommendations.map((group,index)=>{
+    const heading=group.status==="weak"?"Слабое место":group.status==="early"?"Первые ошибки — стоит повторить":"Нужно закрепить";
+    const advice=group.status==="weak"?"Начните с заданий, в которых были ошибки, затем проверьте себя на других задачах этой темы.":group.status==="early"?"Ответов пока мало для оценки темы. Разберите ошибки и попробуйте несколько разных заданий.":"Повторите приём решения и проверьте его на новых заданиях.";
+    return `<article class="statistics-card ${group.status==="weak"?"is-weak":""}"><span class="statistics-status">${heading}</span><h3>${escapeHtml(group.label)}</h3>${statisticsEvidenceHtml(group)}<p class="mini">${advice}</p><button class="btn btn-warn" type="button" data-review-index="${index}">Повторить ${group.topic?"тему":"раздел"}</button></article>`;
+  }).join(""):'<div class="statistics-card"><p>Тем для приоритетного повторения пока не выявлено.</p><p class="mini">Продолжайте решать разные задания: это поможет уточнить рекомендации.</p></div>';
+  $("statisticsRecommendations").querySelectorAll("[data-review-index]").forEach(button=>button.addEventListener("click",()=>{
+    const group=report.recommendations[Number(button.dataset.reviewIndex)];
+    startQuiz("review",{module:group.module,topic:group.topic,category:"all",automaticOnly:true});
+  }));
+  $("statisticsStrengths").innerHTML=report.strengths.length?report.strengths.map(group=>`<article class="statistics-card is-strong"><span class="statistics-status">Сильная сторона</span><h3>${escapeHtml(group.label)}</h3>${statisticsEvidenceHtml(group)}<p class="mini">Хороший результат на разных заданиях. Поддерживайте навык коротким повторением и переходите к более сложным задачам.</p></article>`).join(""):'<div class="statistics-card"><p>Пока недостаточно данных, чтобы выделить сильные стороны.</p><p class="mini">Нужны ответы на несколько разных заданий с автопроверкой.</p></div>';
+  const statuses={weak:"Слабое место",strong:"Сильная сторона",developing:"В работе",early:"Мало данных",empty:"Нет ответов с автопроверкой"};
+  $("statisticsModules").innerHTML=report.modules.map(group=>{
+    const status=evidenceStatus(group);
+    return `<article class="statistics-card ${status==="weak"?"is-weak":status==="strong"?"is-strong":""}"><span class="statistics-status">${statuses[status]}</span><h3>${escapeHtml(group.label)}</h3><p class="mini">С ответом ${group.answered} из ${group.total}. Решено верно с автопроверкой: ${group.autoSolved}.</p>${statisticsEvidenceHtml(group)}${group.selfAttempts?`<p class="mini">Самопроверок решений: ${group.selfAttempts}.</p>`:""}</article>`;
+  }).join("");
+  $("statisticsSelfReview").innerHTML=s.selfAttempts?`<p>Разных заданий с самопроверкой: <b>${s.selfSeen}</b>. Всего самопроверок: <b>${s.selfAttempts}</b>.</p><p>Отмечено выполнение критериев: <b>${s.selfCorrect}</b>. Отмечена необходимость доработки: <b>${s.selfWrong}</b>.</p><p class="mini">Это ваша самооценка. Она не участвует в определении сильных и слабых мест по автоматически проверяемым ответам.</p>`:'<p class="mini">Самопроверок развёрнутых решений пока нет.</p>';
+  renderCategoryStats(p);
+}
+
+function openStatistics(){renderStatistics();showScreen("statisticsScreen");$("statisticsTitle").focus();}
+
 function renderCategoryStats(p){
   $("categoryStats").innerHTML=["formula","practice","part1","part2"].map(category=>{
     const s=categorySummary(category,p);
+    s.selfReviewed=statisticsGroup(QUESTIONS.filter(q=>taskMatches(q,{category})),p).selfAttempts;
     return `<div class="category-stat"><strong>${CATEGORY_LABELS[category]}</strong><p class="mini">Пройдено ${s.seen} из ${s.total}</p><p class="mini">${s.accuracy===null?"Попыток пока нет":`${s.attempts} попыток • ${s.selfReviewed?"Выполнение с учётом самооценки":"Точность"}: ${s.accuracy}%`}</p>${s.selfReviewed?`<p class="mini">Самопроверок решений: ${s.selfReviewed}</p>`:""}</div>`;
   }).join("");
 }
@@ -7660,14 +7785,12 @@ function renderHome(){
   document.querySelectorAll(".category-choice").forEach(btn=>btn.setAttribute("aria-pressed",String(btn.dataset.category===category)));
   const descriptions={all:"Все задания: можно смешивать формулы и применение.",formula:"Узнавание и преобразование формул, условия применения, короткая подстановка, работа с рисунком и типичные ошибки.",practice:"Решение задач, собственные примеры, контрпримеры и доказательства. Формат ответа указан в каждой карточке.",part1:"Подготовка к заданиям 1–13 по проекту ЕГЭ-2027: числовой ответ без вариантов, точная проверка целых чисел, дробей и периодов.",part2:"Подготовка к заданиям 14–20 по проекту ЕГЭ-2027: запишите развёрнутое решение, сравните с образцом и оцените по учебным критериям."};
   $("categoryDescription").textContent=descriptions[category]+` Доступно заданий: ${pool.length}. Выбранная цель действует на тренировки и меню разделов.`;
-  renderCategoryStats(p);
   renderExamCoverage(category,pool,p);
 
-  const oa=category==="all"?overallAccuracy(p):categorySummary(category,p).accuracy;
-  $("overallAccuracyLabel").textContent=category==="all"?"Общая точность":category==="formula"?"Точность формул":category==="part1"?"Точность первой части":category==="part2"?"Выполнение по самооценке":"Выполнение практики";
+  const compact=statisticsGroup(pool,p);
+  const oa=category==="part2"?(compact.selfAttempts?Math.round(100*compact.selfCorrect/compact.selfAttempts):null):compact.autoAccuracy;
+  $("overallAccuracyLabel").textContent=category==="formula"?"Точность формул":category==="part1"?"Точность первой части":category==="part2"?"Выполнение по самооценке":"Точность автопроверки";
   if($("overallAccuracy")) $("overallAccuracy").textContent=oa==null?"—":oa+"%";
-
-  $("assessmentNotice").hidden=category==="formula"||!Object.values(p.weak||{}).some(item=>item.selfReviewed>0);
 
   const menu=$("sectionMenu");
   if(!menu) return;
@@ -7725,6 +7848,13 @@ function pickQuestions(mode,scope={}){
   const p=loadProgress();
   scope={...scope,category:normalizeCategory(scope.category??p.studyCategory)};
   const pool=QUESTIONS.filter(q=>taskMatches(q,scope));
+  if(mode==="review"){
+    const chosen=pool.filter(q=>q.module===scope.module&&(!scope.topic||q.topic===scope.topic));
+    const evidence=q=>statisticsGroup([q],p);
+    const errors=chosen.filter(q=>evidence(q).autoWrong>0).sort((a,b)=>evidence(a).balancedRate-evidence(b).balancedRate||a.uid.localeCompare(b.uid));
+    const fresh=shuffle(chosen.filter(q=>evidence(q).autoSeen===0));
+    return uniqueByUid([...errors,...fresh,...shuffle(chosen)]).slice(0,10);
+  }
   if(mode==="teacher"){
     const chosen=teacherPool(scope);
     const count=Math.max(1,Math.min(Number(scope.count)||10,chosen.length));
@@ -7773,6 +7903,7 @@ function baseModeLabel(mode){
   if(mode==="moduleQuick") return "5 минут по разделу";
   if(mode==="topic") return "Тематическая тренировка";
   if(mode==="teacher") return "Тренировка учителя";
+  if(mode==="review") return "Рекомендованное повторение";
   return "Тренировка";
 }
 
@@ -9552,9 +9683,13 @@ $("solveAllBtn").addEventListener("click",()=>startQuiz("solveAll"));
 $("highBtn").addEventListener("click",()=>startQuiz("high"));
 $("mistakesBtn").addEventListener("click",()=>startQuiz("mistakes"));
 $("teacherBtn").addEventListener("click",openTeacher);
+$("statisticsBtn").addEventListener("click",openStatistics);
+$("resultStatisticsBtn").addEventListener("click",openStatistics);
+$("statisticsBackBtn").addEventListener("click",()=>{showScreen("home");renderHome();$("statisticsBtn").focus();});
 
 $("quizBackBtn").addEventListener("click",()=>{
   if(previousScreenId==="teacherScreen") showScreen("teacherScreen");
+  else if(previousScreenId==="statisticsScreen") openStatistics();
   else { showScreen("home"); renderHome(); }
 });
 $("quizHomeBtn").addEventListener("click",()=>{showScreen("home");renderHome();});
