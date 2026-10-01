@@ -52,6 +52,8 @@ p{line-height:1.55}.lead{font-size:18px;color:var(--muted);max-width:840px}.mini
 .category-picker h3{margin-bottom:12px}
 .category-options{display:flex;gap:8px;flex-wrap:wrap}
 .category-choice[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.exam-positions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.exam-position{white-space:normal;text-align:left}
 .category-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}
 .category-stat{border:1px solid var(--border);border-radius:14px;padding:13px;background:#fff;min-width:0}
 .category-stat strong{display:block;margin-bottom:5px}
@@ -199,13 +201,13 @@ svg{width:100%;height:auto;display:block}
         <p class="lead">Одна точка входа для ежедневной тренировки формул, алгебры, уравнений, геометрии, векторов, производных, вероятности, прогрессий, параметров, тригонометрии, экономических задач, закономерностей и оптимизации. Без регистрации: прогресс хранится в этом браузере.</p>
 
         <div class="stats">
-          <div class="stat"><span class="mini">Заданий в банке</span><b id="totalQuestions">2150</b></div>
+          <div class="stat"><span class="mini">Заданий в банке</span><b id="totalQuestions">2280</b></div>
           <div class="stat"><span class="mini">Пройдено тренировок</span><b id="sessions">0</b></div>
           <div class="stat"><span class="mini">Ошибок для повторения</span><b id="mistakeCount">0</b></div>
           <div class="stat"><span class="mini" id="overallAccuracyLabel">Общая точность</span><b id="overallAccuracy">—</b></div>
         </div>
 
-        <p class="mini" id="assessmentNotice" hidden>В статистике доказательств учтена ваша самооценка.</p>
+        <p class="mini" id="assessmentNotice" hidden>В статистике развёрнутых решений учтена ваша самооценка.</p>
 
         <div class="category-picker">
           <h3 id="categoryPickerLabel">Что тренируем</h3>
@@ -213,10 +215,14 @@ svg{width:100%;height:auto;display:block}
             <button type="button" class="btn btn-ghost category-choice" data-category="all" aria-pressed="true">Весь банк</button>
             <button type="button" class="btn btn-ghost category-choice" data-category="formula" aria-pressed="false">Формулы</button>
             <button type="button" class="btn btn-ghost category-choice" data-category="practice" aria-pressed="false">Практика</button>
+            <button type="button" class="btn btn-ghost category-choice" data-category="part1" aria-pressed="false">Первая часть ЕГЭ</button>
+            <button type="button" class="btn btn-ghost category-choice" data-category="part2" aria-pressed="false">Вторая часть ЕГЭ</button>
           </div>
           <p class="mini" id="categoryDescription" role="status"></p>
         </div>
         <div id="categoryStats" class="category-stats" aria-label="Прогресс по цели тренировки"></div>
+        <p class="mini">Статистика частей ЕГЭ входит в общую статистику практики.</p>
+        <div id="examCoverage" hidden></div>
 
         <div class="mode-grid">
           <div class="mode">
@@ -354,8 +360,9 @@ svg{width:100%;height:auto;display:block}
         </div>
       </div>
       <div class="teacher-panel">
-        <div class="field"><label for="teacherCategory">Цель тренировки</label><select id="teacherCategory"><option value="all">Весь банк</option><option value="formula">Формулы</option><option value="practice">Практика</option></select></div>
-        <div class="field"><label for="teacherAnswerFormat">Формат ответа</label><select id="teacherAnswerFormat"><option value="all">Все форматы</option><option value="choice">Выбор ответа</option><option value="integer">Ввод целого числа</option><option value="example">Собственный пример</option><option value="proof">Доказательство с самопроверкой</option></select></div>
+        <div class="field"><label for="teacherCategory">Цель тренировки</label><select id="teacherCategory"><option value="all">Весь банк</option><option value="formula">Формулы</option><option value="practice">Практика</option><option value="part1">Первая часть ЕГЭ</option><option value="part2">Вторая часть ЕГЭ</option></select></div>
+        <div class="field" id="teacherExamNumberField" hidden><label for="teacherExamNumber">Номер по проекту ЕГЭ-2027</label><select id="teacherExamNumber"><option value="all">Все номера выбранной части</option></select></div>
+        <div class="field"><label for="teacherAnswerFormat">Формат ответа</label><select id="teacherAnswerFormat"><option value="all">Все форматы</option><option value="choice">Выбор ответа</option><option value="integer">Ввод целого числа</option><option value="number">Ввод числа, дроби или периода</option><option value="example">Собственный пример</option><option value="proof">Доказательство с самопроверкой</option><option value="solution">Развёрнутое решение с самопроверкой</option></select></div>
         <div class="field" id="teacherFormulaFocusField" hidden><label for="teacherFormulaFocus">Навык работы с формулой</label><select id="teacherFormulaFocus"><option value="all">Все навыки</option><option value="recall">Узнавание и преобразование</option><option value="applicability">Условия применения</option><option value="substitution">Подстановка в формулу</option><option value="diagram">Работа с рисунком</option><option value="error">Типичная ошибка</option></select></div>
         <div class="field"><label for="teacherLevel">Уровень</label><select id="teacherLevel"><option value="all">Все уровни</option><option value="base">Базовый</option><option value="medium">Средний</option><option value="high">Повышенный</option></select></div>
         <div class="field"><label for="teacherCount">Количество</label><select id="teacherCount"><option value="5">5 заданий</option><option value="10" selected>10 заданий</option><option value="25">25 заданий</option></select></div>
@@ -2775,6 +2782,4107 @@ for(const [module,moduleData] of Object.entries(MODULES)){
     .sort((a,b)=>order[a.difficulty]-order[b.difficulty]||a.uid.localeCompare(b.uid)).forEach((q,i)=>q.sequenceIndex=i);
 })();
 
+// Original preparatory bank aligned with the draft FIPI 2027 positions.
+const EXAM_QUESTIONS = [
+  {
+    "id": "exam2027_1_1",
+    "uid": "planimetry:exam2027_1_1",
+    "module": "planimetry",
+    "topic": "triangles",
+    "skill": "Планиметрия • площадь прямоугольного треугольника",
+    "prompt": "Катеты прямоугольного треугольника равны \\(3\\) и \\(4\\). Найдите его площадь.",
+    "response": {
+      "kind": "number",
+      "answer": "6"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Катеты перпендикулярны, поэтому \\(S=\\frac12ab=12/2=6\\). Ответ: \\(6\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 121,
+    "examPart": 1,
+    "examNumber": 1,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_triangle_area",
+      "a": 3,
+      "b": 4
+    },
+    "diagram": {
+      "type": "right",
+      "AB": 3,
+      "AC": 4,
+      "ABLabel": "3",
+      "ACLabel": "4"
+    }
+  },
+  {
+    "id": "exam2027_1_2",
+    "uid": "planimetry:exam2027_1_2",
+    "module": "planimetry",
+    "topic": "triangles",
+    "skill": "Планиметрия • площадь прямоугольного треугольника",
+    "prompt": "Катеты прямоугольного треугольника равны \\(5\\) и \\(12\\). Найдите его площадь.",
+    "response": {
+      "kind": "number",
+      "answer": "30"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Катеты перпендикулярны, поэтому \\(S=\\frac12ab=60/2=30\\). Ответ: \\(30\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 122,
+    "examPart": 1,
+    "examNumber": 1,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_triangle_area",
+      "a": 5,
+      "b": 12
+    },
+    "diagram": {
+      "type": "right",
+      "AB": 5,
+      "AC": 12,
+      "ABLabel": "5",
+      "ACLabel": "12"
+    }
+  },
+  {
+    "id": "exam2027_1_3",
+    "uid": "planimetry:exam2027_1_3",
+    "module": "planimetry",
+    "topic": "triangles",
+    "skill": "Планиметрия • площадь прямоугольного треугольника",
+    "prompt": "Катеты прямоугольного треугольника равны \\(8\\) и \\(15\\). Найдите его площадь.",
+    "response": {
+      "kind": "number",
+      "answer": "60"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Катеты перпендикулярны, поэтому \\(S=\\frac12ab=120/2=60\\). Ответ: \\(60\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 123,
+    "examPart": 1,
+    "examNumber": 1,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_triangle_area",
+      "a": 8,
+      "b": 15
+    },
+    "diagram": {
+      "type": "right",
+      "AB": 8,
+      "AC": 15,
+      "ABLabel": "8",
+      "ACLabel": "15"
+    }
+  },
+  {
+    "id": "exam2027_1_4",
+    "uid": "planimetry:exam2027_1_4",
+    "module": "planimetry",
+    "topic": "triangles",
+    "skill": "Планиметрия • площадь прямоугольного треугольника",
+    "prompt": "Катеты прямоугольного треугольника равны \\(7\\) и \\(24\\). Найдите его площадь.",
+    "response": {
+      "kind": "number",
+      "answer": "84"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Катеты перпендикулярны, поэтому \\(S=\\frac12ab=168/2=84\\). Ответ: \\(84\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 124,
+    "examPart": 1,
+    "examNumber": 1,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_triangle_area",
+      "a": 7,
+      "b": 24
+    },
+    "diagram": {
+      "type": "right",
+      "AB": 7,
+      "AC": 24,
+      "ABLabel": "7",
+      "ACLabel": "24"
+    }
+  },
+  {
+    "id": "exam2027_1_5",
+    "uid": "planimetry:exam2027_1_5",
+    "module": "planimetry",
+    "topic": "triangles",
+    "skill": "Планиметрия • площадь прямоугольного треугольника",
+    "prompt": "Катеты прямоугольного треугольника равны \\(9\\) и \\(40\\). Найдите его площадь.",
+    "response": {
+      "kind": "number",
+      "answer": "180"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Катеты перпендикулярны, поэтому \\(S=\\frac12ab=360/2=180\\). Ответ: \\(180\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 125,
+    "examPart": 1,
+    "examNumber": 1,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_triangle_area",
+      "a": 9,
+      "b": 40
+    },
+    "diagram": {
+      "type": "right",
+      "AB": 9,
+      "AC": 40,
+      "ABLabel": "9",
+      "ACLabel": "40"
+    }
+  },
+  {
+    "id": "exam2027_2_1",
+    "uid": "vectors:exam2027_2_1",
+    "module": "vectors",
+    "topic": "dot_product",
+    "skill": "Векторы • скалярное произведение",
+    "prompt": "Даны векторы \\(u=(2;3)\\) и \\(v=(4;-1)\\). Найдите их скалярное произведение.",
+    "response": {
+      "kind": "number",
+      "answer": "5"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Умножаем соответствующие координаты и складываем: \\(u\\cdot v=(2)\\cdot(4)+(3)\\cdot(-1)=5\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 141,
+    "examPart": 1,
+    "examNumber": 2,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_dot",
+      "u": [
+        2,
+        3
+      ],
+      "v": [
+        4,
+        -1
+      ]
+    }
+  },
+  {
+    "id": "exam2027_2_2",
+    "uid": "vectors:exam2027_2_2",
+    "module": "vectors",
+    "topic": "dot_product",
+    "skill": "Векторы • скалярное произведение",
+    "prompt": "Даны векторы \\(u=(-3;2)\\) и \\(v=(1;5)\\). Найдите их скалярное произведение.",
+    "response": {
+      "kind": "number",
+      "answer": "7"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Умножаем соответствующие координаты и складываем: \\(u\\cdot v=(-3)\\cdot(1)+(2)\\cdot(5)=7\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 142,
+    "examPart": 1,
+    "examNumber": 2,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_dot",
+      "u": [
+        -3,
+        2
+      ],
+      "v": [
+        1,
+        5
+      ]
+    }
+  },
+  {
+    "id": "exam2027_2_3",
+    "uid": "vectors:exam2027_2_3",
+    "module": "vectors",
+    "topic": "dot_product",
+    "skill": "Векторы • скалярное произведение",
+    "prompt": "Даны векторы \\(u=(4;-2)\\) и \\(v=(3;6)\\). Найдите их скалярное произведение.",
+    "response": {
+      "kind": "number",
+      "answer": "0"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Умножаем соответствующие координаты и складываем: \\(u\\cdot v=(4)\\cdot(3)+(-2)\\cdot(6)=0\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 143,
+    "examPart": 1,
+    "examNumber": 2,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_dot",
+      "u": [
+        4,
+        -2
+      ],
+      "v": [
+        3,
+        6
+      ]
+    }
+  },
+  {
+    "id": "exam2027_2_4",
+    "uid": "vectors:exam2027_2_4",
+    "module": "vectors",
+    "topic": "dot_product",
+    "skill": "Векторы • скалярное произведение",
+    "prompt": "Даны векторы \\(u=(1;7)\\) и \\(v=(-2;3)\\). Найдите их скалярное произведение.",
+    "response": {
+      "kind": "number",
+      "answer": "19"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Умножаем соответствующие координаты и складываем: \\(u\\cdot v=(1)\\cdot(-2)+(7)\\cdot(3)=19\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 144,
+    "examPart": 1,
+    "examNumber": 2,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_dot",
+      "u": [
+        1,
+        7
+      ],
+      "v": [
+        -2,
+        3
+      ]
+    }
+  },
+  {
+    "id": "exam2027_2_5",
+    "uid": "vectors:exam2027_2_5",
+    "module": "vectors",
+    "topic": "dot_product",
+    "skill": "Векторы • скалярное произведение",
+    "prompt": "Даны векторы \\(u=(-5;-4)\\) и \\(v=(2;-3)\\). Найдите их скалярное произведение.",
+    "response": {
+      "kind": "number",
+      "answer": "2"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Умножаем соответствующие координаты и складываем: \\(u\\cdot v=(-5)\\cdot(2)+(-4)\\cdot(-3)=2\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 145,
+    "examPart": 1,
+    "examNumber": 2,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_dot",
+      "u": [
+        -5,
+        -4
+      ],
+      "v": [
+        2,
+        -3
+      ]
+    }
+  },
+  {
+    "id": "exam2027_3_1",
+    "uid": "stereometry:exam2027_3_1",
+    "module": "stereometry",
+    "topic": "prisms",
+    "skill": "Стереометрия • объём прямой призмы",
+    "prompt": "Основание прямой призмы — прямоугольный треугольник с катетами \\(3\\) и \\(4\\). Высота призмы равна \\(5\\). Найдите объём.",
+    "response": {
+      "kind": "number",
+      "answer": "30"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Площадь основания \\(S=6\\). Объём \\(V=Sh=30\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 161,
+    "examPart": 1,
+    "examNumber": 3,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_prism_volume",
+      "a": 3,
+      "b": 4,
+      "h": 5
+    },
+    "stereoDiagram": {
+      "type": "triPrism",
+      "base": "right",
+      "x": 3,
+      "y": 4,
+      "h": 5,
+      "rightAngle": true,
+      "labels": {
+        "x": "3",
+        "y": "4",
+        "h": "5"
+      }
+    }
+  },
+  {
+    "id": "exam2027_3_2",
+    "uid": "stereometry:exam2027_3_2",
+    "module": "stereometry",
+    "topic": "prisms",
+    "skill": "Стереометрия • объём прямой призмы",
+    "prompt": "Основание прямой призмы — прямоугольный треугольник с катетами \\(5\\) и \\(6\\). Высота призмы равна \\(7\\). Найдите объём.",
+    "response": {
+      "kind": "number",
+      "answer": "105"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Площадь основания \\(S=15\\). Объём \\(V=Sh=105\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 162,
+    "examPart": 1,
+    "examNumber": 3,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_prism_volume",
+      "a": 5,
+      "b": 6,
+      "h": 7
+    },
+    "stereoDiagram": {
+      "type": "triPrism",
+      "base": "right",
+      "x": 5,
+      "y": 6,
+      "h": 7,
+      "rightAngle": true,
+      "labels": {
+        "x": "5",
+        "y": "6",
+        "h": "7"
+      }
+    }
+  },
+  {
+    "id": "exam2027_3_3",
+    "uid": "stereometry:exam2027_3_3",
+    "module": "stereometry",
+    "topic": "prisms",
+    "skill": "Стереометрия • объём прямой призмы",
+    "prompt": "Основание прямой призмы — прямоугольный треугольник с катетами \\(2\\) и \\(7\\). Высота призмы равна \\(9\\). Найдите объём.",
+    "response": {
+      "kind": "number",
+      "answer": "63"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Площадь основания \\(S=7\\). Объём \\(V=Sh=63\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 163,
+    "examPart": 1,
+    "examNumber": 3,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_prism_volume",
+      "a": 2,
+      "b": 7,
+      "h": 9
+    },
+    "stereoDiagram": {
+      "type": "triPrism",
+      "base": "right",
+      "x": 2,
+      "y": 7,
+      "h": 9,
+      "rightAngle": true,
+      "labels": {
+        "x": "2",
+        "y": "7",
+        "h": "9"
+      }
+    }
+  },
+  {
+    "id": "exam2027_3_4",
+    "uid": "stereometry:exam2027_3_4",
+    "module": "stereometry",
+    "topic": "prisms",
+    "skill": "Стереометрия • объём прямой призмы",
+    "prompt": "Основание прямой призмы — прямоугольный треугольник с катетами \\(4\\) и \\(8\\). Высота призмы равна \\(3\\). Найдите объём.",
+    "response": {
+      "kind": "number",
+      "answer": "48"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Площадь основания \\(S=16\\). Объём \\(V=Sh=48\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 164,
+    "examPart": 1,
+    "examNumber": 3,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_prism_volume",
+      "a": 4,
+      "b": 8,
+      "h": 3
+    },
+    "stereoDiagram": {
+      "type": "triPrism",
+      "base": "right",
+      "x": 4,
+      "y": 8,
+      "h": 3,
+      "rightAngle": true,
+      "labels": {
+        "x": "4",
+        "y": "8",
+        "h": "3"
+      }
+    }
+  },
+  {
+    "id": "exam2027_3_5",
+    "uid": "stereometry:exam2027_3_5",
+    "module": "stereometry",
+    "topic": "prisms",
+    "skill": "Стереометрия • объём прямой призмы",
+    "prompt": "Основание прямой призмы — прямоугольный треугольник с катетами \\(6\\) и \\(9\\). Высота призмы равна \\(4\\). Найдите объём.",
+    "response": {
+      "kind": "number",
+      "answer": "108"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Площадь основания \\(S=27\\). Объём \\(V=Sh=108\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 165,
+    "examPart": 1,
+    "examNumber": 3,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_prism_volume",
+      "a": 6,
+      "b": 9,
+      "h": 4
+    },
+    "stereoDiagram": {
+      "type": "triPrism",
+      "base": "right",
+      "x": 6,
+      "y": 9,
+      "h": 4,
+      "rightAngle": true,
+      "labels": {
+        "x": "6",
+        "y": "9",
+        "h": "4"
+      }
+    }
+  },
+  {
+    "id": "exam2027_4_1",
+    "uid": "probability:exam2027_4_1",
+    "module": "probability",
+    "topic": "classical",
+    "skill": "Вероятность • равновозможные исходы",
+    "prompt": "В коробке \\(20\\) одинаковых на ощупь шаров, из них \\(7\\) белых. Случайно выбирают один шар. Найдите вероятность того, что он белый.",
+    "response": {
+      "kind": "number",
+      "answer": "7/20"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Все шары выбираются с одинаковой вероятностью: \\(P=\\frac{7}{20}\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 181,
+    "examPart": 1,
+    "examNumber": 4,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_classical",
+      "good": 7,
+      "total": 20
+    }
+  },
+  {
+    "id": "exam2027_4_2",
+    "uid": "probability:exam2027_4_2",
+    "module": "probability",
+    "topic": "classical",
+    "skill": "Вероятность • равновозможные исходы",
+    "prompt": "В коробке \\(25\\) одинаковых на ощупь шаров, из них \\(9\\) белых. Случайно выбирают один шар. Найдите вероятность того, что он белый.",
+    "response": {
+      "kind": "number",
+      "answer": "9/25"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Все шары выбираются с одинаковой вероятностью: \\(P=\\frac{9}{25}\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 182,
+    "examPart": 1,
+    "examNumber": 4,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_classical",
+      "good": 9,
+      "total": 25
+    }
+  },
+  {
+    "id": "exam2027_4_3",
+    "uid": "probability:exam2027_4_3",
+    "module": "probability",
+    "topic": "classical",
+    "skill": "Вероятность • равновозможные исходы",
+    "prompt": "В коробке \\(40\\) одинаковых на ощупь шаров, из них \\(11\\) белых. Случайно выбирают один шар. Найдите вероятность того, что он белый.",
+    "response": {
+      "kind": "number",
+      "answer": "11/40"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Все шары выбираются с одинаковой вероятностью: \\(P=\\frac{11}{40}\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 183,
+    "examPart": 1,
+    "examNumber": 4,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_classical",
+      "good": 11,
+      "total": 40
+    }
+  },
+  {
+    "id": "exam2027_4_4",
+    "uid": "probability:exam2027_4_4",
+    "module": "probability",
+    "topic": "classical",
+    "skill": "Вероятность • равновозможные исходы",
+    "prompt": "В коробке \\(50\\) одинаковых на ощупь шаров, из них \\(13\\) белых. Случайно выбирают один шар. Найдите вероятность того, что он белый.",
+    "response": {
+      "kind": "number",
+      "answer": "13/50"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Все шары выбираются с одинаковой вероятностью: \\(P=\\frac{13}{50}\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 184,
+    "examPart": 1,
+    "examNumber": 4,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_classical",
+      "good": 13,
+      "total": 50
+    }
+  },
+  {
+    "id": "exam2027_4_5",
+    "uid": "probability:exam2027_4_5",
+    "module": "probability",
+    "topic": "classical",
+    "skill": "Вероятность • равновозможные исходы",
+    "prompt": "В коробке \\(100\\) одинаковых на ощупь шаров, из них \\(17\\) белых. Случайно выбирают один шар. Найдите вероятность того, что он белый.",
+    "response": {
+      "kind": "number",
+      "answer": "17/100"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Все шары выбираются с одинаковой вероятностью: \\(P=\\frac{17}{100}\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 185,
+    "examPart": 1,
+    "examNumber": 4,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_classical",
+      "good": 17,
+      "total": 100
+    }
+  },
+  {
+    "id": "exam2027_5_1",
+    "uid": "probability:exam2027_5_1",
+    "module": "probability",
+    "topic": "independence",
+    "skill": "Вероятность • ровно один успех",
+    "prompt": "Два стрелка делают по одному выстрелу независимо друг от друга. Вероятности попадания равны \\(\\frac{3}{5}\\) и \\(\\frac{7}{10}\\). Найдите вероятность ровно одного попадания.",
+    "response": {
+      "kind": "number",
+      "answer": "23/50"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Несовместные случаи: попал первый и промахнулся второй либо наоборот. Поэтому \\(P=p(1-q)+(1-p)q=\\frac{23}{50}\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 201,
+    "examPart": 1,
+    "examNumber": 5,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_one_success",
+      "p": "3/5",
+      "q": "7/10"
+    }
+  },
+  {
+    "id": "exam2027_5_2",
+    "uid": "probability:exam2027_5_2",
+    "module": "probability",
+    "topic": "independence",
+    "skill": "Вероятность • ровно один успех",
+    "prompt": "Два стрелка делают по одному выстрелу независимо друг от друга. Вероятности попадания равны \\(\\frac{4}{5}\\) и \\(\\frac{3}{4}\\). Найдите вероятность ровно одного попадания.",
+    "response": {
+      "kind": "number",
+      "answer": "7/20"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Несовместные случаи: попал первый и промахнулся второй либо наоборот. Поэтому \\(P=p(1-q)+(1-p)q=\\frac{7}{20}\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 202,
+    "examPart": 1,
+    "examNumber": 5,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_one_success",
+      "p": "4/5",
+      "q": "3/4"
+    }
+  },
+  {
+    "id": "exam2027_5_3",
+    "uid": "probability:exam2027_5_3",
+    "module": "probability",
+    "topic": "independence",
+    "skill": "Вероятность • ровно один успех",
+    "prompt": "Два стрелка делают по одному выстрелу независимо друг от друга. Вероятности попадания равны \\(\\frac{9}{10}\\) и \\(\\frac{4}{5}\\). Найдите вероятность ровно одного попадания.",
+    "response": {
+      "kind": "number",
+      "answer": "13/50"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Несовместные случаи: попал первый и промахнулся второй либо наоборот. Поэтому \\(P=p(1-q)+(1-p)q=\\frac{13}{50}\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 203,
+    "examPart": 1,
+    "examNumber": 5,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_one_success",
+      "p": "9/10",
+      "q": "4/5"
+    }
+  },
+  {
+    "id": "exam2027_5_4",
+    "uid": "probability:exam2027_5_4",
+    "module": "probability",
+    "topic": "independence",
+    "skill": "Вероятность • ровно один успех",
+    "prompt": "Два стрелка делают по одному выстрелу независимо друг от друга. Вероятности попадания равны \\(\\frac{1}{2}\\) и \\(\\frac{3}{5}\\). Найдите вероятность ровно одного попадания.",
+    "response": {
+      "kind": "number",
+      "answer": "1/2"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Несовместные случаи: попал первый и промахнулся второй либо наоборот. Поэтому \\(P=p(1-q)+(1-p)q=\\frac{1}{2}\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 204,
+    "examPart": 1,
+    "examNumber": 5,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_one_success",
+      "p": "1/2",
+      "q": "3/5"
+    }
+  },
+  {
+    "id": "exam2027_5_5",
+    "uid": "probability:exam2027_5_5",
+    "module": "probability",
+    "topic": "independence",
+    "skill": "Вероятность • ровно один успех",
+    "prompt": "Два стрелка делают по одному выстрелу независимо друг от друга. Вероятности попадания равны \\(\\frac{7}{10}\\) и \\(\\frac{9}{10}\\). Найдите вероятность ровно одного попадания.",
+    "response": {
+      "kind": "number",
+      "answer": "17/50"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Несовместные случаи: попал первый и промахнулся второй либо наоборот. Поэтому \\(P=p(1-q)+(1-p)q=\\frac{17}{50}\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 205,
+    "examPart": 1,
+    "examNumber": 5,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_one_success",
+      "p": "7/10",
+      "q": "9/10"
+    }
+  },
+  {
+    "id": "exam2027_6_1",
+    "uid": "probability:exam2027_6_1",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Случайная величина • числовые характеристики",
+    "prompt": "Случайная величина \\(X\\) принимает значение \\(1\\) с вероятностью \\(\\frac{1}{4}\\) и значение \\(3\\) с вероятностью \\(\\frac{3}{4}\\). Найдите математическое ожидание \\(X\\).",
+    "response": {
+      "kind": "number",
+      "answer": "5/2"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Вероятности дают сумму 1. По определению \\(M(X)=1\\cdot\\frac{1}{4}+3\\cdot\\frac{3}{4}=\\frac{5}{2}\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 221,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_expectation",
+      "a": 1,
+      "b": 3,
+      "p": "1/4"
+    }
+  },
+  {
+    "id": "exam2027_6_2",
+    "uid": "probability:exam2027_6_2",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Случайная величина • числовые характеристики",
+    "prompt": "Случайная величина \\(X\\) принимает значение \\(2\\) с вероятностью \\(\\frac{3}{4}\\) и значение \\(4\\) с вероятностью \\(\\frac{1}{4}\\). Найдите математическое ожидание \\(X\\).",
+    "response": {
+      "kind": "number",
+      "answer": "5/2"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Вероятности дают сумму 1. По определению \\(M(X)=2\\cdot\\frac{3}{4}+4\\cdot\\frac{1}{4}=\\frac{5}{2}\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 222,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_expectation",
+      "a": 2,
+      "b": 4,
+      "p": "3/4"
+    }
+  },
+  {
+    "id": "exam2027_6_3",
+    "uid": "probability:exam2027_6_3",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Случайная величина • числовые характеристики",
+    "prompt": "Случайная величина принимает значения \\(3\\) и \\(5\\) с вероятностями \\(1/2\\) каждое. Найдите её дисперсию.",
+    "response": {
+      "kind": "number",
+      "answer": "1"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Среднее равно \\(4\\). Оба отклонения по модулю равны 1, поэтому \\(D(X)=\\frac12\\cdot1^2+\\frac12\\cdot1^2=1\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 223,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_variance",
+      "a": 3,
+      "b": 5,
+      "p": "1/2"
+    }
+  },
+  {
+    "id": "exam2027_6_4",
+    "uid": "probability:exam2027_6_4",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Случайная величина • числовые характеристики",
+    "prompt": "Случайная величина принимает значения \\(4\\) и \\(6\\) с вероятностями \\(1/2\\) каждое. Найдите её дисперсию.",
+    "response": {
+      "kind": "number",
+      "answer": "1"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Среднее равно \\(5\\). Оба отклонения по модулю равны 1, поэтому \\(D(X)=\\frac12\\cdot1^2+\\frac12\\cdot1^2=1\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 224,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_variance",
+      "a": 4,
+      "b": 6,
+      "p": "1/2"
+    }
+  },
+  {
+    "id": "exam2027_6_5",
+    "uid": "probability:exam2027_6_5",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Случайная величина • числовые характеристики",
+    "prompt": "Случайная величина принимает значения \\(5\\) и \\(9\\) с равными вероятностями. Найдите её стандартное отклонение.",
+    "response": {
+      "kind": "number",
+      "answer": "2"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Среднее \\(7\\), дисперсия \\(D(X)=4\\), стандартное отклонение \\(\\sigma=\\sqrt4=2\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 225,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_standard_deviation",
+      "a": 5,
+      "b": 9,
+      "p": "1/2"
+    }
+  },
+  {
+    "id": "exam2027_7_1",
+    "uid": "equations:exam2027_7_1",
+    "module": "equations",
+    "topic": "logarithmic",
+    "skill": "Уравнение • логарифм и ОДЗ",
+    "prompt": "Решите уравнение \\(\\log_{2}(x+(1))=3\\).",
+    "response": {
+      "kind": "number",
+      "answer": "7"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "ОДЗ: \\(x+(1)>0\\). По определению логарифма \\(x+(1)=2^3=8\\), откуда \\(x=7\\). Аргумент при найденном корне положителен.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 241,
+    "examPart": 1,
+    "examNumber": 7,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_log_equation",
+      "base": 2,
+      "power": 3,
+      "shift": 1
+    }
+  },
+  {
+    "id": "exam2027_7_2",
+    "uid": "equations:exam2027_7_2",
+    "module": "equations",
+    "topic": "logarithmic",
+    "skill": "Уравнение • логарифм и ОДЗ",
+    "prompt": "Решите уравнение \\(\\log_{3}(x+(-2))=2\\).",
+    "response": {
+      "kind": "number",
+      "answer": "11"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "ОДЗ: \\(x+(-2)>0\\). По определению логарифма \\(x+(-2)=3^2=9\\), откуда \\(x=11\\). Аргумент при найденном корне положителен.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 242,
+    "examPart": 1,
+    "examNumber": 7,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_log_equation",
+      "base": 3,
+      "power": 2,
+      "shift": -2
+    }
+  },
+  {
+    "id": "exam2027_7_3",
+    "uid": "equations:exam2027_7_3",
+    "module": "equations",
+    "topic": "logarithmic",
+    "skill": "Уравнение • логарифм и ОДЗ",
+    "prompt": "Решите уравнение \\(\\log_{5}(x+(4))=2\\).",
+    "response": {
+      "kind": "number",
+      "answer": "21"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "ОДЗ: \\(x+(4)>0\\). По определению логарифма \\(x+(4)=5^2=25\\), откуда \\(x=21\\). Аргумент при найденном корне положителен.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 243,
+    "examPart": 1,
+    "examNumber": 7,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_log_equation",
+      "base": 5,
+      "power": 2,
+      "shift": 4
+    }
+  },
+  {
+    "id": "exam2027_7_4",
+    "uid": "equations:exam2027_7_4",
+    "module": "equations",
+    "topic": "logarithmic",
+    "skill": "Уравнение • логарифм и ОДЗ",
+    "prompt": "Решите уравнение \\(\\log_{2}(x+(-3))=5\\).",
+    "response": {
+      "kind": "number",
+      "answer": "35"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "ОДЗ: \\(x+(-3)>0\\). По определению логарифма \\(x+(-3)=2^5=32\\), откуда \\(x=35\\). Аргумент при найденном корне положителен.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 244,
+    "examPart": 1,
+    "examNumber": 7,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_log_equation",
+      "base": 2,
+      "power": 5,
+      "shift": -3
+    }
+  },
+  {
+    "id": "exam2027_7_5",
+    "uid": "equations:exam2027_7_5",
+    "module": "equations",
+    "topic": "logarithmic",
+    "skill": "Уравнение • логарифм и ОДЗ",
+    "prompt": "Решите уравнение \\(\\log_{4}(x+(7))=2\\).",
+    "response": {
+      "kind": "number",
+      "answer": "9"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "ОДЗ: \\(x+(7)>0\\). По определению логарифма \\(x+(7)=4^2=16\\), откуда \\(x=9\\). Аргумент при найденном корне положителен.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 245,
+    "examPart": 1,
+    "examNumber": 7,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_log_equation",
+      "base": 4,
+      "power": 2,
+      "shift": 7
+    }
+  },
+  {
+    "id": "exam2027_8_1",
+    "uid": "algebra:exam2027_8_1",
+    "module": "algebra",
+    "topic": "powers",
+    "skill": "Вычисления • степени и дроби",
+    "prompt": "Вычислите \\(\\frac{2^5}{2^3\\cdot 3}\\).",
+    "response": {
+      "kind": "number",
+      "answer": "4/3"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Сокращаем степени с одинаковым ненулевым основанием: \\(\\frac{2^{5-3}}{3}=\\frac{4}{3}\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 261,
+    "examPart": 1,
+    "examNumber": 8,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_power_fraction",
+      "a": 2,
+      "b": 3
+    }
+  },
+  {
+    "id": "exam2027_8_2",
+    "uid": "algebra:exam2027_8_2",
+    "module": "algebra",
+    "topic": "powers",
+    "skill": "Вычисления • степени и дроби",
+    "prompt": "Вычислите \\(\\frac{3^5}{3^3\\cdot 4}\\).",
+    "response": {
+      "kind": "number",
+      "answer": "9/4"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Сокращаем степени с одинаковым ненулевым основанием: \\(\\frac{3^{5-3}}{4}=\\frac{9}{4}\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 262,
+    "examPart": 1,
+    "examNumber": 8,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_power_fraction",
+      "a": 3,
+      "b": 4
+    }
+  },
+  {
+    "id": "exam2027_8_3",
+    "uid": "algebra:exam2027_8_3",
+    "module": "algebra",
+    "topic": "powers",
+    "skill": "Вычисления • степени и дроби",
+    "prompt": "Вычислите \\(\\frac{5^5}{5^3\\cdot 2}\\).",
+    "response": {
+      "kind": "number",
+      "answer": "25/2"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Сокращаем степени с одинаковым ненулевым основанием: \\(\\frac{5^{5-3}}{2}=\\frac{25}{2}\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 263,
+    "examPart": 1,
+    "examNumber": 8,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_power_fraction",
+      "a": 5,
+      "b": 2
+    }
+  },
+  {
+    "id": "exam2027_8_4",
+    "uid": "algebra:exam2027_8_4",
+    "module": "algebra",
+    "topic": "powers",
+    "skill": "Вычисления • степени и дроби",
+    "prompt": "Вычислите \\(\\frac{7^5}{7^3\\cdot 3}\\).",
+    "response": {
+      "kind": "number",
+      "answer": "49/3"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Сокращаем степени с одинаковым ненулевым основанием: \\(\\frac{7^{5-3}}{3}=\\frac{49}{3}\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 264,
+    "examPart": 1,
+    "examNumber": 8,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_power_fraction",
+      "a": 7,
+      "b": 3
+    }
+  },
+  {
+    "id": "exam2027_8_5",
+    "uid": "algebra:exam2027_8_5",
+    "module": "algebra",
+    "topic": "powers",
+    "skill": "Вычисления • степени и дроби",
+    "prompt": "Вычислите \\(\\frac{4^5}{4^3\\cdot 5}\\).",
+    "response": {
+      "kind": "number",
+      "answer": "16/5"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Сокращаем степени с одинаковым ненулевым основанием: \\(\\frac{4^{5-3}}{5}=\\frac{16}{5}\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 265,
+    "examPart": 1,
+    "examNumber": 8,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_power_fraction",
+      "a": 4,
+      "b": 5
+    }
+  },
+  {
+    "id": "exam2027_9_1",
+    "uid": "calculus:exam2027_9_1",
+    "module": "calculus",
+    "topic": "tangent",
+    "skill": "Производная • наклон касательной",
+    "prompt": "Найдите угловой коэффициент касательной к графику \\(f(x)=x^3-2x+2\\) в точке с абсциссой \\(1\\).",
+    "response": {
+      "kind": "number",
+      "answer": "1"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Угловой коэффициент равен производной в точке: \\(f'(x)=3x^2-2\\), \\(f'(1)=1\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 281,
+    "examPart": 1,
+    "examNumber": 9,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_tangent",
+      "a": 2,
+      "x": 1
+    }
+  },
+  {
+    "id": "exam2027_9_2",
+    "uid": "calculus:exam2027_9_2",
+    "module": "calculus",
+    "topic": "tangent",
+    "skill": "Производная • наклон касательной",
+    "prompt": "Найдите угловой коэффициент касательной к графику \\(f(x)=x^3-3x+2\\) в точке с абсциссой \\(2\\).",
+    "response": {
+      "kind": "number",
+      "answer": "9"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Угловой коэффициент равен производной в точке: \\(f'(x)=3x^2-3\\), \\(f'(2)=9\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 282,
+    "examPart": 1,
+    "examNumber": 9,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_tangent",
+      "a": 3,
+      "x": 2
+    }
+  },
+  {
+    "id": "exam2027_9_3",
+    "uid": "calculus:exam2027_9_3",
+    "module": "calculus",
+    "topic": "tangent",
+    "skill": "Производная • наклон касательной",
+    "prompt": "Найдите угловой коэффициент касательной к графику \\(f(x)=x^3-4x+2\\) в точке с абсциссой \\(-1\\).",
+    "response": {
+      "kind": "number",
+      "answer": "-1"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Угловой коэффициент равен производной в точке: \\(f'(x)=3x^2-4\\), \\(f'(-1)=-1\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 283,
+    "examPart": 1,
+    "examNumber": 9,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_tangent",
+      "a": 4,
+      "x": -1
+    }
+  },
+  {
+    "id": "exam2027_9_4",
+    "uid": "calculus:exam2027_9_4",
+    "module": "calculus",
+    "topic": "tangent",
+    "skill": "Производная • наклон касательной",
+    "prompt": "Найдите угловой коэффициент касательной к графику \\(f(x)=x^3-5x+2\\) в точке с абсциссой \\(3\\).",
+    "response": {
+      "kind": "number",
+      "answer": "22"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Угловой коэффициент равен производной в точке: \\(f'(x)=3x^2-5\\), \\(f'(3)=22\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 284,
+    "examPart": 1,
+    "examNumber": 9,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_tangent",
+      "a": 5,
+      "x": 3
+    }
+  },
+  {
+    "id": "exam2027_9_5",
+    "uid": "calculus:exam2027_9_5",
+    "module": "calculus",
+    "topic": "tangent",
+    "skill": "Производная • наклон касательной",
+    "prompt": "Найдите угловой коэффициент касательной к графику \\(f(x)=x^3-6x+2\\) в точке с абсциссой \\(-2\\).",
+    "response": {
+      "kind": "number",
+      "answer": "6"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Угловой коэффициент равен производной в точке: \\(f'(x)=3x^2-6\\), \\(f'(-2)=6\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "base",
+    "level": "base",
+    "sequenceIndex": 285,
+    "examPart": 1,
+    "examNumber": 9,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_tangent",
+      "a": 6,
+      "x": -2
+    }
+  },
+  {
+    "id": "exam2027_10_1",
+    "uid": "optimization:exam2027_10_1",
+    "module": "optimization",
+    "topic": "models",
+    "skill": "Модель • мощность электрического тока",
+    "prompt": "Мощность нагревателя вычисляется по формуле \\(P=I^2R\\), где ток измеряется в амперах, сопротивление — в омах, мощность — в ваттах. Найдите мощность при \\(I=3\\) А и \\(R=4\\) Ом.",
+    "response": {
+      "kind": "number",
+      "answer": "36"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Подставляем значения: \\(P=3^2\\cdot4=36\\) Вт. Ответ: \\(36\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 301,
+    "examPart": 1,
+    "examNumber": 10,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_power_model",
+      "r": 4,
+      "current": 3
+    }
+  },
+  {
+    "id": "exam2027_10_2",
+    "uid": "optimization:exam2027_10_2",
+    "module": "optimization",
+    "topic": "models",
+    "skill": "Модель • мощность электрического тока",
+    "prompt": "Мощность нагревателя вычисляется по формуле \\(P=I^2R\\), где ток измеряется в амперах, сопротивление — в омах, мощность — в ваттах. Найдите мощность при \\(I=2\\) А и \\(R=6\\) Ом.",
+    "response": {
+      "kind": "number",
+      "answer": "24"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Подставляем значения: \\(P=2^2\\cdot6=24\\) Вт. Ответ: \\(24\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 302,
+    "examPart": 1,
+    "examNumber": 10,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_power_model",
+      "r": 6,
+      "current": 2
+    }
+  },
+  {
+    "id": "exam2027_10_3",
+    "uid": "optimization:exam2027_10_3",
+    "module": "optimization",
+    "topic": "models",
+    "skill": "Модель • мощность электрического тока",
+    "prompt": "Мощность нагревателя вычисляется по формуле \\(P=I^2R\\), где ток измеряется в амперах, сопротивление — в омах, мощность — в ваттах. Найдите мощность при \\(I=5\\) А и \\(R=8\\) Ом.",
+    "response": {
+      "kind": "number",
+      "answer": "200"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Подставляем значения: \\(P=5^2\\cdot8=200\\) Вт. Ответ: \\(200\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 303,
+    "examPart": 1,
+    "examNumber": 10,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_power_model",
+      "r": 8,
+      "current": 5
+    }
+  },
+  {
+    "id": "exam2027_10_4",
+    "uid": "optimization:exam2027_10_4",
+    "module": "optimization",
+    "topic": "models",
+    "skill": "Модель • мощность электрического тока",
+    "prompt": "Мощность нагревателя вычисляется по формуле \\(P=I^2R\\), где ток измеряется в амперах, сопротивление — в омах, мощность — в ваттах. Найдите мощность при \\(I=4\\) А и \\(R=10\\) Ом.",
+    "response": {
+      "kind": "number",
+      "answer": "160"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Подставляем значения: \\(P=4^2\\cdot10=160\\) Вт. Ответ: \\(160\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 304,
+    "examPart": 1,
+    "examNumber": 10,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_power_model",
+      "r": 10,
+      "current": 4
+    }
+  },
+  {
+    "id": "exam2027_10_5",
+    "uid": "optimization:exam2027_10_5",
+    "module": "optimization",
+    "topic": "models",
+    "skill": "Модель • мощность электрического тока",
+    "prompt": "Мощность нагревателя вычисляется по формуле \\(P=I^2R\\), где ток измеряется в амперах, сопротивление — в омах, мощность — в ваттах. Найдите мощность при \\(I=3\\) А и \\(R=12\\) Ом.",
+    "response": {
+      "kind": "number",
+      "answer": "108"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Подставляем значения: \\(P=3^2\\cdot12=108\\) Вт. Ответ: \\(108\\).",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 305,
+    "examPart": 1,
+    "examNumber": 10,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_power_model",
+      "r": 12,
+      "current": 3
+    }
+  },
+  {
+    "id": "exam2027_11_1",
+    "uid": "word_tasks:exam2027_11_1",
+    "module": "word_tasks",
+    "topic": "motion",
+    "skill": "Движение • встреча",
+    "prompt": "Расстояние между двумя пунктами равно \\(60\\) км. Из них одновременно навстречу друг другу выезжают два автомобиля со скоростями \\(40\\) и \\(60\\) км/ч. Через сколько часов они встретятся?",
+    "response": {
+      "kind": "number",
+      "answer": "3/5"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Скорость сближения \\(100\\) км/ч. Время \\(t=\\frac{3}{5}\\) ч.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 321,
+    "examPart": 1,
+    "examNumber": 11,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_meeting",
+      "distance": 60,
+      "slow": 40,
+      "fast": 60
+    }
+  },
+  {
+    "id": "exam2027_11_2",
+    "uid": "word_tasks:exam2027_11_2",
+    "module": "word_tasks",
+    "topic": "motion",
+    "skill": "Движение • встреча",
+    "prompt": "Расстояние между двумя пунктами равно \\(100\\) км. Из них одновременно навстречу друг другу выезжают два автомобиля со скоростями \\(50\\) и \\(75\\) км/ч. Через сколько часов они встретятся?",
+    "response": {
+      "kind": "number",
+      "answer": "4/5"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Скорость сближения \\(125\\) км/ч. Время \\(t=\\frac{4}{5}\\) ч.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 322,
+    "examPart": 1,
+    "examNumber": 11,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_meeting",
+      "distance": 100,
+      "slow": 50,
+      "fast": 75
+    }
+  },
+  {
+    "id": "exam2027_11_3",
+    "uid": "word_tasks:exam2027_11_3",
+    "module": "word_tasks",
+    "topic": "motion",
+    "skill": "Движение • встреча",
+    "prompt": "Расстояние между двумя пунктами равно \\(40\\) км. Из них одновременно навстречу друг другу выезжают два автомобиля со скоростями \\(60\\) и \\(80\\) км/ч. Через сколько часов они встретятся?",
+    "response": {
+      "kind": "number",
+      "answer": "2/7"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Скорость сближения \\(140\\) км/ч. Время \\(t=\\frac{2}{7}\\) ч.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 323,
+    "examPart": 1,
+    "examNumber": 11,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_meeting",
+      "distance": 40,
+      "slow": 60,
+      "fast": 80
+    }
+  },
+  {
+    "id": "exam2027_11_4",
+    "uid": "word_tasks:exam2027_11_4",
+    "module": "word_tasks",
+    "topic": "motion",
+    "skill": "Движение • встреча",
+    "prompt": "Расстояние между двумя пунктами равно \\(90\\) км. Из них одновременно навстречу друг другу выезжают два автомобиля со скоростями \\(30\\) и \\(45\\) км/ч. Через сколько часов они встретятся?",
+    "response": {
+      "kind": "number",
+      "answer": "6/5"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Скорость сближения \\(75\\) км/ч. Время \\(t=\\frac{6}{5}\\) ч.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 324,
+    "examPart": 1,
+    "examNumber": 11,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_meeting",
+      "distance": 90,
+      "slow": 30,
+      "fast": 45
+    }
+  },
+  {
+    "id": "exam2027_11_5",
+    "uid": "word_tasks:exam2027_11_5",
+    "module": "word_tasks",
+    "topic": "motion",
+    "skill": "Движение • встреча",
+    "prompt": "Расстояние между двумя пунктами равно \\(100\\) км. Из них одновременно навстречу друг другу выезжают два автомобиля со скоростями \\(70\\) и \\(90\\) км/ч. Через сколько часов они встретятся?",
+    "response": {
+      "kind": "number",
+      "answer": "5/8"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Скорость сближения \\(160\\) км/ч. Время \\(t=\\frac{5}{8}\\) ч.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 325,
+    "examPart": 1,
+    "examNumber": 11,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_meeting",
+      "distance": 100,
+      "slow": 70,
+      "fast": 90
+    }
+  },
+  {
+    "id": "exam2027_12_1",
+    "uid": "functions:exam2027_12_1",
+    "module": "functions",
+    "topic": "graphs",
+    "skill": "Функция • пересечение графиков",
+    "prompt": "График функции \\(y=2x+(3)\\) пересекает горизонтальную прямую \\(y=11\\). Найдите абсциссу точки пересечения.",
+    "response": {
+      "kind": "number",
+      "answer": "4"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "В точке пересечения ординаты равны: \\(2x+(3)=11\\). Поэтому \\(x=4\\). Подстановка даёт требуемую ординату.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 341,
+    "examPart": 1,
+    "examNumber": 12,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_function_intersection",
+      "k": 2,
+      "b": 3,
+      "c": 11
+    }
+  },
+  {
+    "id": "exam2027_12_2",
+    "uid": "functions:exam2027_12_2",
+    "module": "functions",
+    "topic": "graphs",
+    "skill": "Функция • пересечение графиков",
+    "prompt": "График функции \\(y=3x+(-2)\\) пересекает горизонтальную прямую \\(y=13\\). Найдите абсциссу точки пересечения.",
+    "response": {
+      "kind": "number",
+      "answer": "5"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "В точке пересечения ординаты равны: \\(3x+(-2)=13\\). Поэтому \\(x=5\\). Подстановка даёт требуемую ординату.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 342,
+    "examPart": 1,
+    "examNumber": 12,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_function_intersection",
+      "k": 3,
+      "b": -2,
+      "c": 13
+    }
+  },
+  {
+    "id": "exam2027_12_3",
+    "uid": "functions:exam2027_12_3",
+    "module": "functions",
+    "topic": "graphs",
+    "skill": "Функция • пересечение графиков",
+    "prompt": "График функции \\(y=-2x+(8)\\) пересекает горизонтальную прямую \\(y=2\\). Найдите абсциссу точки пересечения.",
+    "response": {
+      "kind": "number",
+      "answer": "3"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "В точке пересечения ординаты равны: \\(-2x+(8)=2\\). Поэтому \\(x=3\\). Подстановка даёт требуемую ординату.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 343,
+    "examPart": 1,
+    "examNumber": 12,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_function_intersection",
+      "k": -2,
+      "b": 8,
+      "c": 2
+    }
+  },
+  {
+    "id": "exam2027_12_4",
+    "uid": "functions:exam2027_12_4",
+    "module": "functions",
+    "topic": "graphs",
+    "skill": "Функция • пересечение графиков",
+    "prompt": "График функции \\(y=4x+(1)\\) пересекает горизонтальную прямую \\(y=17\\). Найдите абсциссу точки пересечения.",
+    "response": {
+      "kind": "number",
+      "answer": "4"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "В точке пересечения ординаты равны: \\(4x+(1)=17\\). Поэтому \\(x=4\\). Подстановка даёт требуемую ординату.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 344,
+    "examPart": 1,
+    "examNumber": 12,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_function_intersection",
+      "k": 4,
+      "b": 1,
+      "c": 17
+    }
+  },
+  {
+    "id": "exam2027_12_5",
+    "uid": "functions:exam2027_12_5",
+    "module": "functions",
+    "topic": "graphs",
+    "skill": "Функция • пересечение графиков",
+    "prompt": "График функции \\(y=-3x+(10)\\) пересекает горизонтальную прямую \\(y=1\\). Найдите абсциссу точки пересечения.",
+    "response": {
+      "kind": "number",
+      "answer": "3"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "В точке пересечения ординаты равны: \\(-3x+(10)=1\\). Поэтому \\(x=3\\). Подстановка даёт требуемую ординату.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 345,
+    "examPart": 1,
+    "examNumber": 12,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_function_intersection",
+      "k": -3,
+      "b": 10,
+      "c": 1
+    }
+  },
+  {
+    "id": "exam2027_13_1",
+    "uid": "economics:exam2027_13_1",
+    "module": "economics",
+    "topic": "differentiated",
+    "skill": "Финансы • кредит с равным погашением основного долга",
+    "prompt": "Кредит \\(120000\\) рублей погашают за \\(3\\) лет. В начале каждого года на оставшийся основной долг начисляют \\(10\\)% годовых. В конце каждого года возвращают одинаковую часть первоначального основного долга и все начисленные за этот год проценты. Найдите общую сумму выплат в рублях.",
+    "response": {
+      "kind": "number",
+      "answer": "144000"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Ежегодно возвращается \\(40000\\) рублей основного долга. Сумма остатков перед начислением процентов равна \\(120000\\cdot\\frac{3+1}{2}\\). Все проценты равны \\(24000\\) рублей; общая выплата \\(144000\\) рублей.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 361,
+    "examPart": 1,
+    "examNumber": 13,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_equal_principal",
+      "principal": 120000,
+      "n": 3,
+      "rate": 10
+    }
+  },
+  {
+    "id": "exam2027_13_2",
+    "uid": "economics:exam2027_13_2",
+    "module": "economics",
+    "topic": "differentiated",
+    "skill": "Финансы • кредит с равным погашением основного долга",
+    "prompt": "Кредит \\(180000\\) рублей погашают за \\(3\\) лет. В начале каждого года на оставшийся основной долг начисляют \\(20\\)% годовых. В конце каждого года возвращают одинаковую часть первоначального основного долга и все начисленные за этот год проценты. Найдите общую сумму выплат в рублях.",
+    "response": {
+      "kind": "number",
+      "answer": "252000"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Ежегодно возвращается \\(60000\\) рублей основного долга. Сумма остатков перед начислением процентов равна \\(180000\\cdot\\frac{3+1}{2}\\). Все проценты равны \\(72000\\) рублей; общая выплата \\(252000\\) рублей.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 362,
+    "examPart": 1,
+    "examNumber": 13,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_equal_principal",
+      "principal": 180000,
+      "n": 3,
+      "rate": 20
+    }
+  },
+  {
+    "id": "exam2027_13_3",
+    "uid": "economics:exam2027_13_3",
+    "module": "economics",
+    "topic": "differentiated",
+    "skill": "Финансы • кредит с равным погашением основного долга",
+    "prompt": "Кредит \\(240000\\) рублей погашают за \\(4\\) лет. В начале каждого года на оставшийся основной долг начисляют \\(10\\)% годовых. В конце каждого года возвращают одинаковую часть первоначального основного долга и все начисленные за этот год проценты. Найдите общую сумму выплат в рублях.",
+    "response": {
+      "kind": "number",
+      "answer": "300000"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Ежегодно возвращается \\(60000\\) рублей основного долга. Сумма остатков перед начислением процентов равна \\(240000\\cdot\\frac{4+1}{2}\\). Все проценты равны \\(60000\\) рублей; общая выплата \\(300000\\) рублей.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 363,
+    "examPart": 1,
+    "examNumber": 13,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_equal_principal",
+      "principal": 240000,
+      "n": 4,
+      "rate": 10
+    }
+  },
+  {
+    "id": "exam2027_13_4",
+    "uid": "economics:exam2027_13_4",
+    "module": "economics",
+    "topic": "differentiated",
+    "skill": "Финансы • кредит с равным погашением основного долга",
+    "prompt": "Кредит \\(300000\\) рублей погашают за \\(5\\) лет. В начале каждого года на оставшийся основной долг начисляют \\(12\\)% годовых. В конце каждого года возвращают одинаковую часть первоначального основного долга и все начисленные за этот год проценты. Найдите общую сумму выплат в рублях.",
+    "response": {
+      "kind": "number",
+      "answer": "408000"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Ежегодно возвращается \\(60000\\) рублей основного долга. Сумма остатков перед начислением процентов равна \\(300000\\cdot\\frac{5+1}{2}\\). Все проценты равны \\(108000\\) рублей; общая выплата \\(408000\\) рублей.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 364,
+    "examPart": 1,
+    "examNumber": 13,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_equal_principal",
+      "principal": 300000,
+      "n": 5,
+      "rate": 12
+    }
+  },
+  {
+    "id": "exam2027_13_5",
+    "uid": "economics:exam2027_13_5",
+    "module": "economics",
+    "topic": "differentiated",
+    "skill": "Финансы • кредит с равным погашением основного долга",
+    "prompt": "Кредит \\(150000\\) рублей погашают за \\(3\\) лет. В начале каждого года на оставшийся основной долг начисляют \\(15\\)% годовых. В конце каждого года возвращают одинаковую часть первоначального основного долга и все начисленные за этот год проценты. Найдите общую сумму выплат в рублях.",
+    "response": {
+      "kind": "number",
+      "answer": "195000"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Ежегодно возвращается \\(50000\\) рублей основного долга. Сумма остатков перед начислением процентов равна \\(150000\\cdot\\frac{3+1}{2}\\). Все проценты равны \\(45000\\) рублей; общая выплата \\(195000\\) рублей.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 365,
+    "examPart": 1,
+    "examNumber": 13,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_equal_principal",
+      "principal": 150000,
+      "n": 3,
+      "rate": 15
+    }
+  },
+  {
+    "id": "exam2027_14_1",
+    "uid": "equations:exam2027_14_1",
+    "module": "equations",
+    "topic": "trig",
+    "skill": "Уравнение • общий ответ и отбор корней",
+    "prompt": "а) Решите уравнение \\(\\cos x=\\frac12\\). б) Найдите все его корни на отрезке \\([2\\pi;4\\pi]\\).",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Правильно указаны обе серии корней и целый параметр.",
+        "Обоснован отбор корней по отрезку, включая проверку его концов.",
+        "Перечислены оба подходящих корня и исключены остальные."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "а) \\(x=\\pm\\frac{\\pi}{3}+2\\pi n,\\ n\\in\\mathbb Z\\). б) Из ветви с плюсом подходит \\(2\\pi+\\frac{\\pi}{3}\\), из ветви с минусом — \\(4\\pi-\\frac{\\pi}{3}\\). Другие значения отличаются на полный период и выходят из отрезка. Ни один конец отрезка не является корнем. Ответ: \\(2\\pi+\\frac{\\pi}{3}\\) и \\(4\\pi-\\frac{\\pi}{3}\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 381,
+    "examPart": 2,
+    "examNumber": 14,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_cos_selection",
+      "angle": "\\frac{\\pi}{3}",
+      "value": "\\frac12"
+    }
+  },
+  {
+    "id": "exam2027_14_2",
+    "uid": "equations:exam2027_14_2",
+    "module": "equations",
+    "topic": "trig",
+    "skill": "Уравнение • общий ответ и отбор корней",
+    "prompt": "а) Решите уравнение \\(\\cos x=\\frac{\\sqrt2}{2}\\). б) Найдите все его корни на отрезке \\([2\\pi;4\\pi]\\).",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Правильно указаны обе серии корней и целый параметр.",
+        "Обоснован отбор корней по отрезку, включая проверку его концов.",
+        "Перечислены оба подходящих корня и исключены остальные."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "а) \\(x=\\pm\\frac{\\pi}{4}+2\\pi n,\\ n\\in\\mathbb Z\\). б) Из ветви с плюсом подходит \\(2\\pi+\\frac{\\pi}{4}\\), из ветви с минусом — \\(4\\pi-\\frac{\\pi}{4}\\). Другие значения отличаются на полный период и выходят из отрезка. Ни один конец отрезка не является корнем. Ответ: \\(2\\pi+\\frac{\\pi}{4}\\) и \\(4\\pi-\\frac{\\pi}{4}\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 382,
+    "examPart": 2,
+    "examNumber": 14,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_cos_selection",
+      "angle": "\\frac{\\pi}{4}",
+      "value": "\\frac{\\sqrt2}{2}"
+    }
+  },
+  {
+    "id": "exam2027_14_3",
+    "uid": "equations:exam2027_14_3",
+    "module": "equations",
+    "topic": "trig",
+    "skill": "Уравнение • общий ответ и отбор корней",
+    "prompt": "а) Решите уравнение \\(\\cos x=\\frac{\\sqrt3}{2}\\). б) Найдите все его корни на отрезке \\([2\\pi;4\\pi]\\).",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Правильно указаны обе серии корней и целый параметр.",
+        "Обоснован отбор корней по отрезку, включая проверку его концов.",
+        "Перечислены оба подходящих корня и исключены остальные."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "а) \\(x=\\pm\\frac{\\pi}{6}+2\\pi n,\\ n\\in\\mathbb Z\\). б) Из ветви с плюсом подходит \\(2\\pi+\\frac{\\pi}{6}\\), из ветви с минусом — \\(4\\pi-\\frac{\\pi}{6}\\). Другие значения отличаются на полный период и выходят из отрезка. Ни один конец отрезка не является корнем. Ответ: \\(2\\pi+\\frac{\\pi}{6}\\) и \\(4\\pi-\\frac{\\pi}{6}\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 383,
+    "examPart": 2,
+    "examNumber": 14,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_cos_selection",
+      "angle": "\\frac{\\pi}{6}",
+      "value": "\\frac{\\sqrt3}{2}"
+    }
+  },
+  {
+    "id": "exam2027_14_4",
+    "uid": "equations:exam2027_14_4",
+    "module": "equations",
+    "topic": "trig",
+    "skill": "Уравнение • общий ответ и отбор корней",
+    "prompt": "а) Решите уравнение \\(\\cos x=-\\frac12\\). б) Найдите все его корни на отрезке \\([2\\pi;4\\pi]\\).",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Правильно указаны обе серии корней и целый параметр.",
+        "Обоснован отбор корней по отрезку, включая проверку его концов.",
+        "Перечислены оба подходящих корня и исключены остальные."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "а) \\(x=\\pm\\frac{2\\pi}{3}+2\\pi n,\\ n\\in\\mathbb Z\\). б) Из ветви с плюсом подходит \\(2\\pi+\\frac{2\\pi}{3}\\), из ветви с минусом — \\(4\\pi-\\frac{2\\pi}{3}\\). Другие значения отличаются на полный период и выходят из отрезка. Ни один конец отрезка не является корнем. Ответ: \\(2\\pi+\\frac{2\\pi}{3}\\) и \\(4\\pi-\\frac{2\\pi}{3}\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 384,
+    "examPart": 2,
+    "examNumber": 14,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_cos_selection",
+      "angle": "\\frac{2\\pi}{3}",
+      "value": "-\\frac12"
+    }
+  },
+  {
+    "id": "exam2027_14_5",
+    "uid": "equations:exam2027_14_5",
+    "module": "equations",
+    "topic": "trig",
+    "skill": "Уравнение • общий ответ и отбор корней",
+    "prompt": "а) Решите уравнение \\(\\cos x=-\\frac{\\sqrt2}{2}\\). б) Найдите все его корни на отрезке \\([2\\pi;4\\pi]\\).",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Правильно указаны обе серии корней и целый параметр.",
+        "Обоснован отбор корней по отрезку, включая проверку его концов.",
+        "Перечислены оба подходящих корня и исключены остальные."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "а) \\(x=\\pm\\frac{3\\pi}{4}+2\\pi n,\\ n\\in\\mathbb Z\\). б) Из ветви с плюсом подходит \\(2\\pi+\\frac{3\\pi}{4}\\), из ветви с минусом — \\(4\\pi-\\frac{3\\pi}{4}\\). Другие значения отличаются на полный период и выходят из отрезка. Ни один конец отрезка не является корнем. Ответ: \\(2\\pi+\\frac{3\\pi}{4}\\) и \\(4\\pi-\\frac{3\\pi}{4}\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 385,
+    "examPart": 2,
+    "examNumber": 14,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_cos_selection",
+      "angle": "\\frac{3\\pi}{4}",
+      "value": "-\\frac{\\sqrt2}{2}"
+    }
+  },
+  {
+    "id": "exam2027_15_1",
+    "uid": "stereometry:exam2027_15_1",
+    "module": "stereometry",
+    "topic": "angles",
+    "skill": "Стереометрия • доказательство и расстояние",
+    "prompt": "В прямой призме \\(ABCDA_1B_1C_1D_1\\) основание \\(ABCD\\) — квадрат со стороной \\(4\\), высота призмы \\(3\\). а) Докажите, что \\(BD\\) перпендикулярна плоскости \\(AA_1C\\). б) Найдите расстояние от \\(B\\) до этой плоскости.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Построена точка пересечения диагоналей и прямая через неё, параллельная боковым рёбрам.",
+        "Доказана перпендикулярность BD двум пересекающимся прямым нужной плоскости.",
+        "Обосновано, что BO — расстояние, и вычислена половина диагонали квадрата."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Пусть \\(O=AC\\cap BD\\). В квадрате диагонали перпендикулярны, поэтому \\(BD\\perp AC\\). Проведём через \\(O\\) прямую \\(OO_1\\) параллельно боковым рёбрам. Она лежит в плоскости \\(AA_1C\\) и перпендикулярна основанию, следовательно, \\(OO_1\\perp BD\\). Прямые \\(AC\\) и \\(OO_1\\) пересекаются; по признаку перпендикулярности \\(BD\\perp(AA_1C)\\). Значит, \\(BO\\) — искомый перпендикуляр, \\(BO=\\frac{BD}{2}=\\frac{4\\sqrt2}{2}=2\\sqrt2\\). Высота на это расстояние не влияет.",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 401,
+    "examPart": 2,
+    "examNumber": 15,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_square_prism_distance",
+      "a": 4,
+      "h": 3
+    },
+    "stereoDiagram": {
+      "type": "box",
+      "a": 4,
+      "b": 4,
+      "c": 3,
+      "plane": [
+        "A",
+        "A1",
+        "C1",
+        "C"
+      ],
+      "lines": [
+        [
+          "A",
+          "C"
+        ],
+        [
+          "B",
+          "D"
+        ]
+      ],
+      "labels": {
+        "AB": "4",
+        "AA1": "3"
+      }
+    }
+  },
+  {
+    "id": "exam2027_15_2",
+    "uid": "stereometry:exam2027_15_2",
+    "module": "stereometry",
+    "topic": "angles",
+    "skill": "Стереометрия • доказательство и расстояние",
+    "prompt": "В прямой призме \\(ABCDA_1B_1C_1D_1\\) основание \\(ABCD\\) — квадрат со стороной \\(6\\), высота призмы \\(5\\). а) Докажите, что \\(BD\\) перпендикулярна плоскости \\(AA_1C\\). б) Найдите расстояние от \\(B\\) до этой плоскости.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Построена точка пересечения диагоналей и прямая через неё, параллельная боковым рёбрам.",
+        "Доказана перпендикулярность BD двум пересекающимся прямым нужной плоскости.",
+        "Обосновано, что BO — расстояние, и вычислена половина диагонали квадрата."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Пусть \\(O=AC\\cap BD\\). В квадрате диагонали перпендикулярны, поэтому \\(BD\\perp AC\\). Проведём через \\(O\\) прямую \\(OO_1\\) параллельно боковым рёбрам. Она лежит в плоскости \\(AA_1C\\) и перпендикулярна основанию, следовательно, \\(OO_1\\perp BD\\). Прямые \\(AC\\) и \\(OO_1\\) пересекаются; по признаку перпендикулярности \\(BD\\perp(AA_1C)\\). Значит, \\(BO\\) — искомый перпендикуляр, \\(BO=\\frac{BD}{2}=\\frac{6\\sqrt2}{2}=3\\sqrt2\\). Высота на это расстояние не влияет.",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 402,
+    "examPart": 2,
+    "examNumber": 15,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_square_prism_distance",
+      "a": 6,
+      "h": 5
+    },
+    "stereoDiagram": {
+      "type": "box",
+      "a": 6,
+      "b": 6,
+      "c": 5,
+      "plane": [
+        "A",
+        "A1",
+        "C1",
+        "C"
+      ],
+      "lines": [
+        [
+          "A",
+          "C"
+        ],
+        [
+          "B",
+          "D"
+        ]
+      ],
+      "labels": {
+        "AB": "6",
+        "AA1": "5"
+      }
+    }
+  },
+  {
+    "id": "exam2027_15_3",
+    "uid": "stereometry:exam2027_15_3",
+    "module": "stereometry",
+    "topic": "angles",
+    "skill": "Стереометрия • доказательство и расстояние",
+    "prompt": "В прямой призме \\(ABCDA_1B_1C_1D_1\\) основание \\(ABCD\\) — квадрат со стороной \\(8\\), высота призмы \\(7\\). а) Докажите, что \\(BD\\) перпендикулярна плоскости \\(AA_1C\\). б) Найдите расстояние от \\(B\\) до этой плоскости.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Построена точка пересечения диагоналей и прямая через неё, параллельная боковым рёбрам.",
+        "Доказана перпендикулярность BD двум пересекающимся прямым нужной плоскости.",
+        "Обосновано, что BO — расстояние, и вычислена половина диагонали квадрата."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Пусть \\(O=AC\\cap BD\\). В квадрате диагонали перпендикулярны, поэтому \\(BD\\perp AC\\). Проведём через \\(O\\) прямую \\(OO_1\\) параллельно боковым рёбрам. Она лежит в плоскости \\(AA_1C\\) и перпендикулярна основанию, следовательно, \\(OO_1\\perp BD\\). Прямые \\(AC\\) и \\(OO_1\\) пересекаются; по признаку перпендикулярности \\(BD\\perp(AA_1C)\\). Значит, \\(BO\\) — искомый перпендикуляр, \\(BO=\\frac{BD}{2}=\\frac{8\\sqrt2}{2}=4\\sqrt2\\). Высота на это расстояние не влияет.",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 403,
+    "examPart": 2,
+    "examNumber": 15,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_square_prism_distance",
+      "a": 8,
+      "h": 7
+    },
+    "stereoDiagram": {
+      "type": "box",
+      "a": 8,
+      "b": 8,
+      "c": 7,
+      "plane": [
+        "A",
+        "A1",
+        "C1",
+        "C"
+      ],
+      "lines": [
+        [
+          "A",
+          "C"
+        ],
+        [
+          "B",
+          "D"
+        ]
+      ],
+      "labels": {
+        "AB": "8",
+        "AA1": "7"
+      }
+    }
+  },
+  {
+    "id": "exam2027_15_4",
+    "uid": "stereometry:exam2027_15_4",
+    "module": "stereometry",
+    "topic": "angles",
+    "skill": "Стереометрия • доказательство и расстояние",
+    "prompt": "В прямой призме \\(ABCDA_1B_1C_1D_1\\) основание \\(ABCD\\) — квадрат со стороной \\(10\\), высота призмы \\(6\\). а) Докажите, что \\(BD\\) перпендикулярна плоскости \\(AA_1C\\). б) Найдите расстояние от \\(B\\) до этой плоскости.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Построена точка пересечения диагоналей и прямая через неё, параллельная боковым рёбрам.",
+        "Доказана перпендикулярность BD двум пересекающимся прямым нужной плоскости.",
+        "Обосновано, что BO — расстояние, и вычислена половина диагонали квадрата."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Пусть \\(O=AC\\cap BD\\). В квадрате диагонали перпендикулярны, поэтому \\(BD\\perp AC\\). Проведём через \\(O\\) прямую \\(OO_1\\) параллельно боковым рёбрам. Она лежит в плоскости \\(AA_1C\\) и перпендикулярна основанию, следовательно, \\(OO_1\\perp BD\\). Прямые \\(AC\\) и \\(OO_1\\) пересекаются; по признаку перпендикулярности \\(BD\\perp(AA_1C)\\). Значит, \\(BO\\) — искомый перпендикуляр, \\(BO=\\frac{BD}{2}=\\frac{10\\sqrt2}{2}=5\\sqrt2\\). Высота на это расстояние не влияет.",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 404,
+    "examPart": 2,
+    "examNumber": 15,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_square_prism_distance",
+      "a": 10,
+      "h": 6
+    },
+    "stereoDiagram": {
+      "type": "box",
+      "a": 10,
+      "b": 10,
+      "c": 6,
+      "plane": [
+        "A",
+        "A1",
+        "C1",
+        "C"
+      ],
+      "lines": [
+        [
+          "A",
+          "C"
+        ],
+        [
+          "B",
+          "D"
+        ]
+      ],
+      "labels": {
+        "AB": "10",
+        "AA1": "6"
+      }
+    }
+  },
+  {
+    "id": "exam2027_15_5",
+    "uid": "stereometry:exam2027_15_5",
+    "module": "stereometry",
+    "topic": "angles",
+    "skill": "Стереометрия • доказательство и расстояние",
+    "prompt": "В прямой призме \\(ABCDA_1B_1C_1D_1\\) основание \\(ABCD\\) — квадрат со стороной \\(12\\), высота призмы \\(9\\). а) Докажите, что \\(BD\\) перпендикулярна плоскости \\(AA_1C\\). б) Найдите расстояние от \\(B\\) до этой плоскости.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Построена точка пересечения диагоналей и прямая через неё, параллельная боковым рёбрам.",
+        "Доказана перпендикулярность BD двум пересекающимся прямым нужной плоскости.",
+        "Обосновано, что BO — расстояние, и вычислена половина диагонали квадрата."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Пусть \\(O=AC\\cap BD\\). В квадрате диагонали перпендикулярны, поэтому \\(BD\\perp AC\\). Проведём через \\(O\\) прямую \\(OO_1\\) параллельно боковым рёбрам. Она лежит в плоскости \\(AA_1C\\) и перпендикулярна основанию, следовательно, \\(OO_1\\perp BD\\). Прямые \\(AC\\) и \\(OO_1\\) пересекаются; по признаку перпендикулярности \\(BD\\perp(AA_1C)\\). Значит, \\(BO\\) — искомый перпендикуляр, \\(BO=\\frac{BD}{2}=\\frac{12\\sqrt2}{2}=6\\sqrt2\\). Высота на это расстояние не влияет.",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 405,
+    "examPart": 2,
+    "examNumber": 15,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_square_prism_distance",
+      "a": 12,
+      "h": 9
+    },
+    "stereoDiagram": {
+      "type": "box",
+      "a": 12,
+      "b": 12,
+      "c": 9,
+      "plane": [
+        "A",
+        "A1",
+        "C1",
+        "C"
+      ],
+      "lines": [
+        [
+          "A",
+          "C"
+        ],
+        [
+          "B",
+          "D"
+        ]
+      ],
+      "labels": {
+        "AB": "12",
+        "AA1": "9"
+      }
+    }
+  },
+  {
+    "id": "exam2027_16_1",
+    "uid": "equations:exam2027_16_1",
+    "module": "equations",
+    "topic": "inequalities",
+    "skill": "Неравенство • метод интервалов",
+    "prompt": "Решите неравенство \\(\\frac{x-(-3)}{x-(2)}\\ge0\\).",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Записано ограничение: знаменатель не равен нулю.",
+        "Верно определены критические точки и знаки на всех трёх промежутках.",
+        "В ответе включён нуль числителя и исключён нуль знаменателя."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "ОДЗ: \\(x\\ne2\\). Критические точки: \\(-3\\) (нуль числителя) и \\(2\\) (нуль знаменателя). На внешних промежутках числитель и знаменатель имеют одинаковые знаки, на внутреннем — разные. Точка \\(-3\\) включается, точка \\(2\\) исключается. Ответ: \\((-\\infty;-3]\\cup(2;+\\infty)\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 421,
+    "examPart": 2,
+    "examNumber": 16,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_rational_inequality",
+      "a": -3,
+      "b": 2
+    }
+  },
+  {
+    "id": "exam2027_16_2",
+    "uid": "equations:exam2027_16_2",
+    "module": "equations",
+    "topic": "inequalities",
+    "skill": "Неравенство • метод интервалов",
+    "prompt": "Решите неравенство \\(\\frac{x-(-2)}{x-(4)}\\ge0\\).",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Записано ограничение: знаменатель не равен нулю.",
+        "Верно определены критические точки и знаки на всех трёх промежутках.",
+        "В ответе включён нуль числителя и исключён нуль знаменателя."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "ОДЗ: \\(x\\ne4\\). Критические точки: \\(-2\\) (нуль числителя) и \\(4\\) (нуль знаменателя). На внешних промежутках числитель и знаменатель имеют одинаковые знаки, на внутреннем — разные. Точка \\(-2\\) включается, точка \\(4\\) исключается. Ответ: \\((-\\infty;-2]\\cup(4;+\\infty)\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 422,
+    "examPart": 2,
+    "examNumber": 16,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_rational_inequality",
+      "a": -2,
+      "b": 4
+    }
+  },
+  {
+    "id": "exam2027_16_3",
+    "uid": "equations:exam2027_16_3",
+    "module": "equations",
+    "topic": "inequalities",
+    "skill": "Неравенство • метод интервалов",
+    "prompt": "Решите неравенство \\(\\frac{x-(1)}{x-(5)}\\ge0\\).",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Записано ограничение: знаменатель не равен нулю.",
+        "Верно определены критические точки и знаки на всех трёх промежутках.",
+        "В ответе включён нуль числителя и исключён нуль знаменателя."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "ОДЗ: \\(x\\ne5\\). Критические точки: \\(1\\) (нуль числителя) и \\(5\\) (нуль знаменателя). На внешних промежутках числитель и знаменатель имеют одинаковые знаки, на внутреннем — разные. Точка \\(1\\) включается, точка \\(5\\) исключается. Ответ: \\((-\\infty;1]\\cup(5;+\\infty)\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 423,
+    "examPart": 2,
+    "examNumber": 16,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_rational_inequality",
+      "a": 1,
+      "b": 5
+    }
+  },
+  {
+    "id": "exam2027_16_4",
+    "uid": "equations:exam2027_16_4",
+    "module": "equations",
+    "topic": "inequalities",
+    "skill": "Неравенство • метод интервалов",
+    "prompt": "Решите неравенство \\(\\frac{x-(-5)}{x-(-1)}\\ge0\\).",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Записано ограничение: знаменатель не равен нулю.",
+        "Верно определены критические точки и знаки на всех трёх промежутках.",
+        "В ответе включён нуль числителя и исключён нуль знаменателя."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "ОДЗ: \\(x\\ne-1\\). Критические точки: \\(-5\\) (нуль числителя) и \\(-1\\) (нуль знаменателя). На внешних промежутках числитель и знаменатель имеют одинаковые знаки, на внутреннем — разные. Точка \\(-5\\) включается, точка \\(-1\\) исключается. Ответ: \\((-\\infty;-5]\\cup(-1;+\\infty)\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 424,
+    "examPart": 2,
+    "examNumber": 16,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_rational_inequality",
+      "a": -5,
+      "b": -1
+    }
+  },
+  {
+    "id": "exam2027_16_5",
+    "uid": "equations:exam2027_16_5",
+    "module": "equations",
+    "topic": "inequalities",
+    "skill": "Неравенство • метод интервалов",
+    "prompt": "Решите неравенство \\(\\frac{x-(3)}{x-(8)}\\ge0\\).",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Записано ограничение: знаменатель не равен нулю.",
+        "Верно определены критические точки и знаки на всех трёх промежутках.",
+        "В ответе включён нуль числителя и исключён нуль знаменателя."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "ОДЗ: \\(x\\ne8\\). Критические точки: \\(3\\) (нуль числителя) и \\(8\\) (нуль знаменателя). На внешних промежутках числитель и знаменатель имеют одинаковые знаки, на внутреннем — разные. Точка \\(3\\) включается, точка \\(8\\) исключается. Ответ: \\((-\\infty;3]\\cup(8;+\\infty)\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 425,
+    "examPart": 2,
+    "examNumber": 16,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_rational_inequality",
+      "a": 3,
+      "b": 8
+    }
+  },
+  {
+    "id": "exam2027_17_1",
+    "uid": "optimization:exam2027_17_1",
+    "module": "optimization",
+    "topic": "optimization",
+    "skill": "Оптимизация • участок у стены",
+    "prompt": "Прямоугольный участок расположен у прямой стены. Ограждают только три стороны, на них расходуют ровно \\(24\\) м забора. а) Выразите площадь через длину \\(x\\) стороны, перпендикулярной стене, и укажите область допустимых значений. б) Найдите размеры участка наибольшей площади и эту площадь.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Получена модель 2x+y=L и область 0<x<L/2.",
+        "Максимум обоснован выделением квадрата или производной.",
+        "Вычислены обе стороны и площадь с правильными единицами."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Если сторона вдоль стены равна \\(y\\), то \\(2x+y=24\\). Положительность сторон даёт \\(0<x<24/2\\). \\(S=x(24-2x)=-2(x-6)^2+72\\). Квадрат неотрицателен; максимум достигается при \\(x=6\\), \\(y=12\\). Ответ: перпендикулярная сторона \\(6\\) м, сторона вдоль стены \\(12\\) м, максимальная площадь \\(72\\) м².",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 441,
+    "examPart": 2,
+    "examNumber": 17,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_fence_optimum",
+      "length": 24
+    }
+  },
+  {
+    "id": "exam2027_17_2",
+    "uid": "optimization:exam2027_17_2",
+    "module": "optimization",
+    "topic": "optimization",
+    "skill": "Оптимизация • участок у стены",
+    "prompt": "Прямоугольный участок расположен у прямой стены. Ограждают только три стороны, на них расходуют ровно \\(32\\) м забора. а) Выразите площадь через длину \\(x\\) стороны, перпендикулярной стене, и укажите область допустимых значений. б) Найдите размеры участка наибольшей площади и эту площадь.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Получена модель 2x+y=L и область 0<x<L/2.",
+        "Максимум обоснован выделением квадрата или производной.",
+        "Вычислены обе стороны и площадь с правильными единицами."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Если сторона вдоль стены равна \\(y\\), то \\(2x+y=32\\). Положительность сторон даёт \\(0<x<32/2\\). \\(S=x(32-2x)=-2(x-8)^2+128\\). Квадрат неотрицателен; максимум достигается при \\(x=8\\), \\(y=16\\). Ответ: перпендикулярная сторона \\(8\\) м, сторона вдоль стены \\(16\\) м, максимальная площадь \\(128\\) м².",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 442,
+    "examPart": 2,
+    "examNumber": 17,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_fence_optimum",
+      "length": 32
+    }
+  },
+  {
+    "id": "exam2027_17_3",
+    "uid": "optimization:exam2027_17_3",
+    "module": "optimization",
+    "topic": "optimization",
+    "skill": "Оптимизация • участок у стены",
+    "prompt": "Прямоугольный участок расположен у прямой стены. Ограждают только три стороны, на них расходуют ровно \\(40\\) м забора. а) Выразите площадь через длину \\(x\\) стороны, перпендикулярной стене, и укажите область допустимых значений. б) Найдите размеры участка наибольшей площади и эту площадь.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Получена модель 2x+y=L и область 0<x<L/2.",
+        "Максимум обоснован выделением квадрата или производной.",
+        "Вычислены обе стороны и площадь с правильными единицами."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Если сторона вдоль стены равна \\(y\\), то \\(2x+y=40\\). Положительность сторон даёт \\(0<x<40/2\\). \\(S=x(40-2x)=-2(x-10)^2+200\\). Квадрат неотрицателен; максимум достигается при \\(x=10\\), \\(y=20\\). Ответ: перпендикулярная сторона \\(10\\) м, сторона вдоль стены \\(20\\) м, максимальная площадь \\(200\\) м².",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 443,
+    "examPart": 2,
+    "examNumber": 17,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_fence_optimum",
+      "length": 40
+    }
+  },
+  {
+    "id": "exam2027_17_4",
+    "uid": "optimization:exam2027_17_4",
+    "module": "optimization",
+    "topic": "optimization",
+    "skill": "Оптимизация • участок у стены",
+    "prompt": "Прямоугольный участок расположен у прямой стены. Ограждают только три стороны, на них расходуют ровно \\(48\\) м забора. а) Выразите площадь через длину \\(x\\) стороны, перпендикулярной стене, и укажите область допустимых значений. б) Найдите размеры участка наибольшей площади и эту площадь.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Получена модель 2x+y=L и область 0<x<L/2.",
+        "Максимум обоснован выделением квадрата или производной.",
+        "Вычислены обе стороны и площадь с правильными единицами."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Если сторона вдоль стены равна \\(y\\), то \\(2x+y=48\\). Положительность сторон даёт \\(0<x<48/2\\). \\(S=x(48-2x)=-2(x-12)^2+288\\). Квадрат неотрицателен; максимум достигается при \\(x=12\\), \\(y=24\\). Ответ: перпендикулярная сторона \\(12\\) м, сторона вдоль стены \\(24\\) м, максимальная площадь \\(288\\) м².",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 444,
+    "examPart": 2,
+    "examNumber": 17,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_fence_optimum",
+      "length": 48
+    }
+  },
+  {
+    "id": "exam2027_17_5",
+    "uid": "optimization:exam2027_17_5",
+    "module": "optimization",
+    "topic": "optimization",
+    "skill": "Оптимизация • участок у стены",
+    "prompt": "Прямоугольный участок расположен у прямой стены. Ограждают только три стороны, на них расходуют ровно \\(56\\) м забора. а) Выразите площадь через длину \\(x\\) стороны, перпендикулярной стене, и укажите область допустимых значений. б) Найдите размеры участка наибольшей площади и эту площадь.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Получена модель 2x+y=L и область 0<x<L/2.",
+        "Максимум обоснован выделением квадрата или производной.",
+        "Вычислены обе стороны и площадь с правильными единицами."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Если сторона вдоль стены равна \\(y\\), то \\(2x+y=56\\). Положительность сторон даёт \\(0<x<56/2\\). \\(S=x(56-2x)=-2(x-14)^2+392\\). Квадрат неотрицателен; максимум достигается при \\(x=14\\), \\(y=28\\). Ответ: перпендикулярная сторона \\(14\\) м, сторона вдоль стены \\(28\\) м, максимальная площадь \\(392\\) м².",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 445,
+    "examPart": 2,
+    "examNumber": 17,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_fence_optimum",
+      "length": 56
+    }
+  },
+  {
+    "id": "exam2027_17_6",
+    "uid": "optimization:exam2027_17_6",
+    "module": "optimization",
+    "topic": "optimization",
+    "skill": "Оптимизация • цена и прибыль",
+    "prompt": "При цене \\(p\\) рублей спрос за день составляет \\(q=120-2p\\) единиц товара. Себестоимость единицы — \\(10\\) рублей, ежедневные постоянные расходы — \\(100\\) рублей. Цена — действительное число, спрос рассматривается как непрерывная модель. а) Запишите прибыль и допустимый диапазон \\(p\\) при неотрицательных цене и спросе. б) Найдите цену наибольшей прибыли и эту прибыль.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Прибыль записана как выручка минус переменные и постоянные расходы.",
+        "Указан допустимый диапазон, и оптимальная цена проверена на принадлежность ему.",
+        "Доказан максимум, вычислены цена и прибыль."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "ОДЗ модели: \\(0\\le p\\le60\\). Прибыль \\(\\Pi=(p-10)(120-2p)-100=-2(p-35)^2+1150\\). Вершина параболы \\(p=35\\) лежит в допустимом диапазоне. Цена \\(35\\) руб., спрос \\(50\\) единиц, максимальная прибыль \\(1150\\) руб.",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 446,
+    "examPart": 2,
+    "examNumber": 17,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_profit_optimum",
+      "A": 120,
+      "B": 2,
+      "c": 10,
+      "F": 100
+    }
+  },
+  {
+    "id": "exam2027_17_7",
+    "uid": "optimization:exam2027_17_7",
+    "module": "optimization",
+    "topic": "optimization",
+    "skill": "Оптимизация • цена и прибыль",
+    "prompt": "При цене \\(p\\) рублей спрос за день составляет \\(q=150-3p\\) единиц товара. Себестоимость единицы — \\(10\\) рублей, ежедневные постоянные расходы — \\(200\\) рублей. Цена — действительное число, спрос рассматривается как непрерывная модель. а) Запишите прибыль и допустимый диапазон \\(p\\) при неотрицательных цене и спросе. б) Найдите цену наибольшей прибыли и эту прибыль.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Прибыль записана как выручка минус переменные и постоянные расходы.",
+        "Указан допустимый диапазон, и оптимальная цена проверена на принадлежность ему.",
+        "Доказан максимум, вычислены цена и прибыль."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "ОДЗ модели: \\(0\\le p\\le50\\). Прибыль \\(\\Pi=(p-10)(150-3p)-200=-3(p-30)^2+1000\\). Вершина параболы \\(p=30\\) лежит в допустимом диапазоне. Цена \\(30\\) руб., спрос \\(60\\) единиц, максимальная прибыль \\(1000\\) руб.",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 447,
+    "examPart": 2,
+    "examNumber": 17,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_profit_optimum",
+      "A": 150,
+      "B": 3,
+      "c": 10,
+      "F": 200
+    }
+  },
+  {
+    "id": "exam2027_17_8",
+    "uid": "optimization:exam2027_17_8",
+    "module": "optimization",
+    "topic": "optimization",
+    "skill": "Оптимизация • цена и прибыль",
+    "prompt": "При цене \\(p\\) рублей спрос за день составляет \\(q=160-2p\\) единиц товара. Себестоимость единицы — \\(20\\) рублей, ежедневные постоянные расходы — \\(300\\) рублей. Цена — действительное число, спрос рассматривается как непрерывная модель. а) Запишите прибыль и допустимый диапазон \\(p\\) при неотрицательных цене и спросе. б) Найдите цену наибольшей прибыли и эту прибыль.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Прибыль записана как выручка минус переменные и постоянные расходы.",
+        "Указан допустимый диапазон, и оптимальная цена проверена на принадлежность ему.",
+        "Доказан максимум, вычислены цена и прибыль."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "ОДЗ модели: \\(0\\le p\\le80\\). Прибыль \\(\\Pi=(p-20)(160-2p)-300=-2(p-50)^2+1500\\). Вершина параболы \\(p=50\\) лежит в допустимом диапазоне. Цена \\(50\\) руб., спрос \\(60\\) единиц, максимальная прибыль \\(1500\\) руб.",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 448,
+    "examPart": 2,
+    "examNumber": 17,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_profit_optimum",
+      "A": 160,
+      "B": 2,
+      "c": 20,
+      "F": 300
+    }
+  },
+  {
+    "id": "exam2027_17_9",
+    "uid": "optimization:exam2027_17_9",
+    "module": "optimization",
+    "topic": "optimization",
+    "skill": "Оптимизация • цена и прибыль",
+    "prompt": "При цене \\(p\\) рублей спрос за день составляет \\(q=200-4p\\) единиц товара. Себестоимость единицы — \\(10\\) рублей, ежедневные постоянные расходы — \\(500\\) рублей. Цена — действительное число, спрос рассматривается как непрерывная модель. а) Запишите прибыль и допустимый диапазон \\(p\\) при неотрицательных цене и спросе. б) Найдите цену наибольшей прибыли и эту прибыль.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Прибыль записана как выручка минус переменные и постоянные расходы.",
+        "Указан допустимый диапазон, и оптимальная цена проверена на принадлежность ему.",
+        "Доказан максимум, вычислены цена и прибыль."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "ОДЗ модели: \\(0\\le p\\le50\\). Прибыль \\(\\Pi=(p-10)(200-4p)-500=-4(p-30)^2+1100\\). Вершина параболы \\(p=30\\) лежит в допустимом диапазоне. Цена \\(30\\) руб., спрос \\(80\\) единиц, максимальная прибыль \\(1100\\) руб.",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 449,
+    "examPart": 2,
+    "examNumber": 17,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_profit_optimum",
+      "A": 200,
+      "B": 4,
+      "c": 10,
+      "F": 500
+    }
+  },
+  {
+    "id": "exam2027_17_10",
+    "uid": "optimization:exam2027_17_10",
+    "module": "optimization",
+    "topic": "optimization",
+    "skill": "Оптимизация • цена и прибыль",
+    "prompt": "При цене \\(p\\) рублей спрос за день составляет \\(q=180-3p\\) единиц товара. Себестоимость единицы — \\(20\\) рублей, ежедневные постоянные расходы — \\(400\\) рублей. Цена — действительное число, спрос рассматривается как непрерывная модель. а) Запишите прибыль и допустимый диапазон \\(p\\) при неотрицательных цене и спросе. б) Найдите цену наибольшей прибыли и эту прибыль.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Прибыль записана как выручка минус переменные и постоянные расходы.",
+        "Указан допустимый диапазон, и оптимальная цена проверена на принадлежность ему.",
+        "Доказан максимум, вычислены цена и прибыль."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "ОДЗ модели: \\(0\\le p\\le60\\). Прибыль \\(\\Pi=(p-20)(180-3p)-400=-3(p-40)^2+800\\). Вершина параболы \\(p=40\\) лежит в допустимом диапазоне. Цена \\(40\\) руб., спрос \\(60\\) единиц, максимальная прибыль \\(800\\) руб.",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 450,
+    "examPart": 2,
+    "examNumber": 17,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_profit_optimum",
+      "A": 180,
+      "B": 3,
+      "c": 20,
+      "F": 400
+    }
+  },
+  {
+    "id": "exam2027_17_11",
+    "uid": "optimization:exam2027_17_11",
+    "module": "optimization",
+    "topic": "models",
+    "skill": "Модель • мощность и допустимое сопротивление",
+    "prompt": "Мощность на нагрузке \\(R>0\\) Ом задаётся формулой \\(P(R)=\\frac{24^2R}{(R+2)^2}\\), мощность измеряется в ваттах. а) Найдите максимальную мощность и сопротивление, при котором она достигается. б) Найдите все \\(R\\), при которых мощность не меньше \\(36\\) Вт.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Получена верхняя граница мощности и проверено условие её достижения.",
+        "Пороговое неравенство преобразовано с учётом положительности знаменателя.",
+        "Правильно найдены оба корня и записан отрезок допустимых сопротивлений."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Из \\((R-2)^2\\ge0\\) следует \\((R+2)^2\\ge4\\cdot2R\\). Поэтому \\(P\\le72\\), равенство только при \\(R=2\\). Для пункта б) знаменатель положителен. Вводим \\(u=R/2>0\\); неравенство равносильно \\(8u\\ge(u+1)^2\\), то есть \\(u^2-6u+1\\le0\\). Корни \\(3\\pm2\\sqrt2\\) положительны. Ответ: \\(R\\in[2(3-2\\sqrt2);2(3+2\\sqrt2)]\\) Ом; максимум \\(72\\) Вт при \\(2\\) Ом.",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 451,
+    "examPart": 2,
+    "examNumber": 17,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_load_power",
+      "E": 24,
+      "r": 2
+    }
+  },
+  {
+    "id": "exam2027_17_12",
+    "uid": "optimization:exam2027_17_12",
+    "module": "optimization",
+    "topic": "models",
+    "skill": "Модель • мощность и допустимое сопротивление",
+    "prompt": "Мощность на нагрузке \\(R>0\\) Ом задаётся формулой \\(P(R)=\\frac{30^2R}{(R+3)^2}\\), мощность измеряется в ваттах. а) Найдите максимальную мощность и сопротивление, при котором она достигается. б) Найдите все \\(R\\), при которых мощность не меньше \\(\\frac{75}{2}\\) Вт.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Получена верхняя граница мощности и проверено условие её достижения.",
+        "Пороговое неравенство преобразовано с учётом положительности знаменателя.",
+        "Правильно найдены оба корня и записан отрезок допустимых сопротивлений."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Из \\((R-3)^2\\ge0\\) следует \\((R+3)^2\\ge4\\cdot3R\\). Поэтому \\(P\\le75\\), равенство только при \\(R=3\\). Для пункта б) знаменатель положителен. Вводим \\(u=R/3>0\\); неравенство равносильно \\(8u\\ge(u+1)^2\\), то есть \\(u^2-6u+1\\le0\\). Корни \\(3\\pm2\\sqrt2\\) положительны. Ответ: \\(R\\in[3(3-2\\sqrt2);3(3+2\\sqrt2)]\\) Ом; максимум \\(75\\) Вт при \\(3\\) Ом.",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 452,
+    "examPart": 2,
+    "examNumber": 17,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_load_power",
+      "E": 30,
+      "r": 3
+    }
+  },
+  {
+    "id": "exam2027_17_13",
+    "uid": "optimization:exam2027_17_13",
+    "module": "optimization",
+    "topic": "models",
+    "skill": "Модель • мощность и допустимое сопротивление",
+    "prompt": "Мощность на нагрузке \\(R>0\\) Ом задаётся формулой \\(P(R)=\\frac{40^2R}{(R+4)^2}\\), мощность измеряется в ваттах. а) Найдите максимальную мощность и сопротивление, при котором она достигается. б) Найдите все \\(R\\), при которых мощность не меньше \\(50\\) Вт.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Получена верхняя граница мощности и проверено условие её достижения.",
+        "Пороговое неравенство преобразовано с учётом положительности знаменателя.",
+        "Правильно найдены оба корня и записан отрезок допустимых сопротивлений."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Из \\((R-4)^2\\ge0\\) следует \\((R+4)^2\\ge4\\cdot4R\\). Поэтому \\(P\\le100\\), равенство только при \\(R=4\\). Для пункта б) знаменатель положителен. Вводим \\(u=R/4>0\\); неравенство равносильно \\(8u\\ge(u+1)^2\\), то есть \\(u^2-6u+1\\le0\\). Корни \\(3\\pm2\\sqrt2\\) положительны. Ответ: \\(R\\in[4(3-2\\sqrt2);4(3+2\\sqrt2)]\\) Ом; максимум \\(100\\) Вт при \\(4\\) Ом.",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 453,
+    "examPart": 2,
+    "examNumber": 17,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_load_power",
+      "E": 40,
+      "r": 4
+    }
+  },
+  {
+    "id": "exam2027_17_14",
+    "uid": "optimization:exam2027_17_14",
+    "module": "optimization",
+    "topic": "models",
+    "skill": "Модель • мощность и допустимое сопротивление",
+    "prompt": "Мощность на нагрузке \\(R>0\\) Ом задаётся формулой \\(P(R)=\\frac{50^2R}{(R+5)^2}\\), мощность измеряется в ваттах. а) Найдите максимальную мощность и сопротивление, при котором она достигается. б) Найдите все \\(R\\), при которых мощность не меньше \\(\\frac{125}{2}\\) Вт.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Получена верхняя граница мощности и проверено условие её достижения.",
+        "Пороговое неравенство преобразовано с учётом положительности знаменателя.",
+        "Правильно найдены оба корня и записан отрезок допустимых сопротивлений."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Из \\((R-5)^2\\ge0\\) следует \\((R+5)^2\\ge4\\cdot5R\\). Поэтому \\(P\\le125\\), равенство только при \\(R=5\\). Для пункта б) знаменатель положителен. Вводим \\(u=R/5>0\\); неравенство равносильно \\(8u\\ge(u+1)^2\\), то есть \\(u^2-6u+1\\le0\\). Корни \\(3\\pm2\\sqrt2\\) положительны. Ответ: \\(R\\in[5(3-2\\sqrt2);5(3+2\\sqrt2)]\\) Ом; максимум \\(125\\) Вт при \\(5\\) Ом.",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 454,
+    "examPart": 2,
+    "examNumber": 17,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_load_power",
+      "E": 50,
+      "r": 5
+    }
+  },
+  {
+    "id": "exam2027_17_15",
+    "uid": "optimization:exam2027_17_15",
+    "module": "optimization",
+    "topic": "models",
+    "skill": "Модель • мощность и допустимое сопротивление",
+    "prompt": "Мощность на нагрузке \\(R>0\\) Ом задаётся формулой \\(P(R)=\\frac{60^2R}{(R+6)^2}\\), мощность измеряется в ваттах. а) Найдите максимальную мощность и сопротивление, при котором она достигается. б) Найдите все \\(R\\), при которых мощность не меньше \\(75\\) Вт.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Получена верхняя граница мощности и проверено условие её достижения.",
+        "Пороговое неравенство преобразовано с учётом положительности знаменателя.",
+        "Правильно найдены оба корня и записан отрезок допустимых сопротивлений."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Из \\((R-6)^2\\ge0\\) следует \\((R+6)^2\\ge4\\cdot6R\\). Поэтому \\(P\\le150\\), равенство только при \\(R=6\\). Для пункта б) знаменатель положителен. Вводим \\(u=R/6>0\\); неравенство равносильно \\(8u\\ge(u+1)^2\\), то есть \\(u^2-6u+1\\le0\\). Корни \\(3\\pm2\\sqrt2\\) положительны. Ответ: \\(R\\in[6(3-2\\sqrt2);6(3+2\\sqrt2)]\\) Ом; максимум \\(150\\) Вт при \\(6\\) Ом.",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 455,
+    "examPart": 2,
+    "examNumber": 17,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_load_power",
+      "E": 60,
+      "r": 6
+    }
+  },
+  {
+    "id": "exam2027_18_1",
+    "uid": "planimetry:exam2027_18_1",
+    "module": "planimetry",
+    "topic": "triangles",
+    "skill": "Планиметрия • высота к гипотенузе",
+    "prompt": "В треугольнике \\(ABC\\) угол \\(C\\) прямой, \\(AC=3\\), \\(BC=4\\). Высота \\(CH\\) опущена на гипотенузу \\(AB\\). а) Докажите \\(AC^2=AB\\cdot AH\\). б) Найдите \\(CH\\), \\(AH\\) и \\(HB\\).",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Подобие нужных треугольников доказано и пропорция записана с верным соответствием сторон.",
+        "Из пропорции выведено AC²=AB·AH.",
+        "Вычислены гипотенуза, высота и обе проекции; их сумма равна гипотенузе."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Треугольники \\(ACH\\) и \\(ABC\\) подобны: у них общий угол \\(A\\) и прямые углы \\(H\\) и \\(C\\). Из \\(AH/AC=AC/AB\\) следует требуемое равенство. По теореме Пифагора \\(AB=5\\). Сравнение выражений площади \\(AC\\cdot BC/2=AB\\cdot CH/2\\) даёт \\(CH=\\frac{12}{5}\\). По доказанному равенству \\(AH=\\frac{9}{5}\\), затем \\(HB=AB-AH=\\frac{16}{5}\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 461,
+    "examPart": 2,
+    "examNumber": 18,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_right_triangle_altitude",
+      "a": 3,
+      "b": 4,
+      "hyp": 5
+    },
+    "diagram": {
+      "type": "rightAltitude",
+      "projection1": 1.8,
+      "projection2": 3.2,
+      "rightVertex": "C",
+      "legLabel": "3",
+      "secondLegLabel": "4"
+    }
+  },
+  {
+    "id": "exam2027_18_2",
+    "uid": "planimetry:exam2027_18_2",
+    "module": "planimetry",
+    "topic": "triangles",
+    "skill": "Планиметрия • высота к гипотенузе",
+    "prompt": "В треугольнике \\(ABC\\) угол \\(C\\) прямой, \\(AC=5\\), \\(BC=12\\). Высота \\(CH\\) опущена на гипотенузу \\(AB\\). а) Докажите \\(AC^2=AB\\cdot AH\\). б) Найдите \\(CH\\), \\(AH\\) и \\(HB\\).",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Подобие нужных треугольников доказано и пропорция записана с верным соответствием сторон.",
+        "Из пропорции выведено AC²=AB·AH.",
+        "Вычислены гипотенуза, высота и обе проекции; их сумма равна гипотенузе."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Треугольники \\(ACH\\) и \\(ABC\\) подобны: у них общий угол \\(A\\) и прямые углы \\(H\\) и \\(C\\). Из \\(AH/AC=AC/AB\\) следует требуемое равенство. По теореме Пифагора \\(AB=13\\). Сравнение выражений площади \\(AC\\cdot BC/2=AB\\cdot CH/2\\) даёт \\(CH=\\frac{60}{13}\\). По доказанному равенству \\(AH=\\frac{25}{13}\\), затем \\(HB=AB-AH=\\frac{144}{13}\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 462,
+    "examPart": 2,
+    "examNumber": 18,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_right_triangle_altitude",
+      "a": 5,
+      "b": 12,
+      "hyp": 13
+    },
+    "diagram": {
+      "type": "rightAltitude",
+      "projection1": 1.9230769230769231,
+      "projection2": 11.076923076923077,
+      "rightVertex": "C",
+      "legLabel": "5",
+      "secondLegLabel": "12"
+    }
+  },
+  {
+    "id": "exam2027_18_3",
+    "uid": "planimetry:exam2027_18_3",
+    "module": "planimetry",
+    "topic": "triangles",
+    "skill": "Планиметрия • высота к гипотенузе",
+    "prompt": "В треугольнике \\(ABC\\) угол \\(C\\) прямой, \\(AC=8\\), \\(BC=15\\). Высота \\(CH\\) опущена на гипотенузу \\(AB\\). а) Докажите \\(AC^2=AB\\cdot AH\\). б) Найдите \\(CH\\), \\(AH\\) и \\(HB\\).",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Подобие нужных треугольников доказано и пропорция записана с верным соответствием сторон.",
+        "Из пропорции выведено AC²=AB·AH.",
+        "Вычислены гипотенуза, высота и обе проекции; их сумма равна гипотенузе."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Треугольники \\(ACH\\) и \\(ABC\\) подобны: у них общий угол \\(A\\) и прямые углы \\(H\\) и \\(C\\). Из \\(AH/AC=AC/AB\\) следует требуемое равенство. По теореме Пифагора \\(AB=17\\). Сравнение выражений площади \\(AC\\cdot BC/2=AB\\cdot CH/2\\) даёт \\(CH=\\frac{120}{17}\\). По доказанному равенству \\(AH=\\frac{64}{17}\\), затем \\(HB=AB-AH=\\frac{225}{17}\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 463,
+    "examPart": 2,
+    "examNumber": 18,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_right_triangle_altitude",
+      "a": 8,
+      "b": 15,
+      "hyp": 17
+    },
+    "diagram": {
+      "type": "rightAltitude",
+      "projection1": 3.764705882352941,
+      "projection2": 13.235294117647058,
+      "rightVertex": "C",
+      "legLabel": "8",
+      "secondLegLabel": "15"
+    }
+  },
+  {
+    "id": "exam2027_18_4",
+    "uid": "planimetry:exam2027_18_4",
+    "module": "planimetry",
+    "topic": "triangles",
+    "skill": "Планиметрия • высота к гипотенузе",
+    "prompt": "В треугольнике \\(ABC\\) угол \\(C\\) прямой, \\(AC=7\\), \\(BC=24\\). Высота \\(CH\\) опущена на гипотенузу \\(AB\\). а) Докажите \\(AC^2=AB\\cdot AH\\). б) Найдите \\(CH\\), \\(AH\\) и \\(HB\\).",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Подобие нужных треугольников доказано и пропорция записана с верным соответствием сторон.",
+        "Из пропорции выведено AC²=AB·AH.",
+        "Вычислены гипотенуза, высота и обе проекции; их сумма равна гипотенузе."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Треугольники \\(ACH\\) и \\(ABC\\) подобны: у них общий угол \\(A\\) и прямые углы \\(H\\) и \\(C\\). Из \\(AH/AC=AC/AB\\) следует требуемое равенство. По теореме Пифагора \\(AB=25\\). Сравнение выражений площади \\(AC\\cdot BC/2=AB\\cdot CH/2\\) даёт \\(CH=\\frac{168}{25}\\). По доказанному равенству \\(AH=\\frac{49}{25}\\), затем \\(HB=AB-AH=\\frac{576}{25}\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 464,
+    "examPart": 2,
+    "examNumber": 18,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_right_triangle_altitude",
+      "a": 7,
+      "b": 24,
+      "hyp": 25
+    },
+    "diagram": {
+      "type": "rightAltitude",
+      "projection1": 1.96,
+      "projection2": 23.04,
+      "rightVertex": "C",
+      "legLabel": "7",
+      "secondLegLabel": "24"
+    }
+  },
+  {
+    "id": "exam2027_18_5",
+    "uid": "planimetry:exam2027_18_5",
+    "module": "planimetry",
+    "topic": "triangles",
+    "skill": "Планиметрия • высота к гипотенузе",
+    "prompt": "В треугольнике \\(ABC\\) угол \\(C\\) прямой, \\(AC=9\\), \\(BC=40\\). Высота \\(CH\\) опущена на гипотенузу \\(AB\\). а) Докажите \\(AC^2=AB\\cdot AH\\). б) Найдите \\(CH\\), \\(AH\\) и \\(HB\\).",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Подобие нужных треугольников доказано и пропорция записана с верным соответствием сторон.",
+        "Из пропорции выведено AC²=AB·AH.",
+        "Вычислены гипотенуза, высота и обе проекции; их сумма равна гипотенузе."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Треугольники \\(ACH\\) и \\(ABC\\) подобны: у них общий угол \\(A\\) и прямые углы \\(H\\) и \\(C\\). Из \\(AH/AC=AC/AB\\) следует требуемое равенство. По теореме Пифагора \\(AB=41\\). Сравнение выражений площади \\(AC\\cdot BC/2=AB\\cdot CH/2\\) даёт \\(CH=\\frac{360}{41}\\). По доказанному равенству \\(AH=\\frac{81}{41}\\), затем \\(HB=AB-AH=\\frac{1600}{41}\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 465,
+    "examPart": 2,
+    "examNumber": 18,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_right_triangle_altitude",
+      "a": 9,
+      "b": 40,
+      "hyp": 41
+    },
+    "diagram": {
+      "type": "rightAltitude",
+      "projection1": 1.975609756097561,
+      "projection2": 39.02439024390244,
+      "rightVertex": "C",
+      "legLabel": "9",
+      "secondLegLabel": "40"
+    }
+  },
+  {
+    "id": "exam2027_19_1",
+    "uid": "parameters:exam2027_19_1",
+    "module": "parameters",
+    "topic": "quadratic",
+    "skill": "Параметр • два положительных корня",
+    "prompt": "Найдите все значения параметра \\(a\\), при которых уравнение \\(x^2-2ax+a+2=0\\) имеет два различных положительных корня.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Решено строгое условие положительного дискриминанта.",
+        "Положительность обоих корней обоснована через сумму и произведение, а не только дискриминант.",
+        "Получено полное пересечение условий, исключён кратный корень."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Для двух различных вещественных корней необходимо и достаточно \\(D=4(a^2-a-2)=4(a-2)(a+1)>0\\), то есть \\(a<-1\\) или \\(a>2\\). По теореме Виета сумма корней \\(2a\\), произведение \\(a+2\\). При вещественных различных корнях оба положительны тогда и только тогда, когда сумма и произведение положительны. Условие \\(a>0\\) исключает левую ветвь; на правой произведение положительно автоматически. Граница \\(a=2\\) даёт кратный корень и не подходит. Ответ: \\(a>2\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "high",
+    "level": "high",
+    "sequenceIndex": 481,
+    "examPart": 2,
+    "examNumber": 19,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_positive_roots_parameter",
+      "k": 2,
+      "t": 2
+    }
+  },
+  {
+    "id": "exam2027_19_2",
+    "uid": "parameters:exam2027_19_2",
+    "module": "parameters",
+    "topic": "quadratic",
+    "skill": "Параметр • два положительных корня",
+    "prompt": "Найдите все значения параметра \\(a\\), при которых уравнение \\(x^2-2ax+a+6=0\\) имеет два различных положительных корня.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Решено строгое условие положительного дискриминанта.",
+        "Положительность обоих корней обоснована через сумму и произведение, а не только дискриминант.",
+        "Получено полное пересечение условий, исключён кратный корень."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Для двух различных вещественных корней необходимо и достаточно \\(D=4(a^2-a-6)=4(a-3)(a+2)>0\\), то есть \\(a<-2\\) или \\(a>3\\). По теореме Виета сумма корней \\(2a\\), произведение \\(a+6\\). При вещественных различных корнях оба положительны тогда и только тогда, когда сумма и произведение положительны. Условие \\(a>0\\) исключает левую ветвь; на правой произведение положительно автоматически. Граница \\(a=3\\) даёт кратный корень и не подходит. Ответ: \\(a>3\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "high",
+    "level": "high",
+    "sequenceIndex": 482,
+    "examPart": 2,
+    "examNumber": 19,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_positive_roots_parameter",
+      "k": 3,
+      "t": 6
+    }
+  },
+  {
+    "id": "exam2027_19_3",
+    "uid": "parameters:exam2027_19_3",
+    "module": "parameters",
+    "topic": "quadratic",
+    "skill": "Параметр • два положительных корня",
+    "prompt": "Найдите все значения параметра \\(a\\), при которых уравнение \\(x^2-2ax+a+12=0\\) имеет два различных положительных корня.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Решено строгое условие положительного дискриминанта.",
+        "Положительность обоих корней обоснована через сумму и произведение, а не только дискриминант.",
+        "Получено полное пересечение условий, исключён кратный корень."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Для двух различных вещественных корней необходимо и достаточно \\(D=4(a^2-a-12)=4(a-4)(a+3)>0\\), то есть \\(a<-3\\) или \\(a>4\\). По теореме Виета сумма корней \\(2a\\), произведение \\(a+12\\). При вещественных различных корнях оба положительны тогда и только тогда, когда сумма и произведение положительны. Условие \\(a>0\\) исключает левую ветвь; на правой произведение положительно автоматически. Граница \\(a=4\\) даёт кратный корень и не подходит. Ответ: \\(a>4\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "high",
+    "level": "high",
+    "sequenceIndex": 483,
+    "examPart": 2,
+    "examNumber": 19,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_positive_roots_parameter",
+      "k": 4,
+      "t": 12
+    }
+  },
+  {
+    "id": "exam2027_19_4",
+    "uid": "parameters:exam2027_19_4",
+    "module": "parameters",
+    "topic": "quadratic",
+    "skill": "Параметр • два положительных корня",
+    "prompt": "Найдите все значения параметра \\(a\\), при которых уравнение \\(x^2-2ax+a+20=0\\) имеет два различных положительных корня.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Решено строгое условие положительного дискриминанта.",
+        "Положительность обоих корней обоснована через сумму и произведение, а не только дискриминант.",
+        "Получено полное пересечение условий, исключён кратный корень."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Для двух различных вещественных корней необходимо и достаточно \\(D=4(a^2-a-20)=4(a-5)(a+4)>0\\), то есть \\(a<-4\\) или \\(a>5\\). По теореме Виета сумма корней \\(2a\\), произведение \\(a+20\\). При вещественных различных корнях оба положительны тогда и только тогда, когда сумма и произведение положительны. Условие \\(a>0\\) исключает левую ветвь; на правой произведение положительно автоматически. Граница \\(a=5\\) даёт кратный корень и не подходит. Ответ: \\(a>5\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "high",
+    "level": "high",
+    "sequenceIndex": 484,
+    "examPart": 2,
+    "examNumber": 19,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_positive_roots_parameter",
+      "k": 5,
+      "t": 20
+    }
+  },
+  {
+    "id": "exam2027_19_5",
+    "uid": "parameters:exam2027_19_5",
+    "module": "parameters",
+    "topic": "quadratic",
+    "skill": "Параметр • два положительных корня",
+    "prompt": "Найдите все значения параметра \\(a\\), при которых уравнение \\(x^2-2ax+a+30=0\\) имеет два различных положительных корня.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Решено строгое условие положительного дискриминанта.",
+        "Положительность обоих корней обоснована через сумму и произведение, а не только дискриминант.",
+        "Получено полное пересечение условий, исключён кратный корень."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Для двух различных вещественных корней необходимо и достаточно \\(D=4(a^2-a-30)=4(a-6)(a+5)>0\\), то есть \\(a<-5\\) или \\(a>6\\). По теореме Виета сумма корней \\(2a\\), произведение \\(a+30\\). При вещественных различных корнях оба положительны тогда и только тогда, когда сумма и произведение положительны. Условие \\(a>0\\) исключает левую ветвь; на правой произведение положительно автоматически. Граница \\(a=6\\) даёт кратный корень и не подходит. Ответ: \\(a>6\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "high",
+    "level": "high",
+    "sequenceIndex": 485,
+    "examPart": 2,
+    "examNumber": 19,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_positive_roots_parameter",
+      "k": 6,
+      "t": 30
+    }
+  },
+  {
+    "id": "exam2027_20_1",
+    "uid": "numbers:exam2027_20_1",
+    "module": "numbers",
+    "topic": "sets",
+    "skill": "Числовой набор • конструкция и точная оценка",
+    "prompt": "Сумма различных натуральных чисел равна \\(17\\). Натуральные числа начинаются с 1. а) Приведите набор из \\(5\\) таких чисел. б) Найдите максимально возможное количество чисел. в) Среди наборов максимальной длины найдите минимальное возможное наибольшее число.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Пример содержит нужное число различных положительных целых чисел и имеет заданную сумму.",
+        "Доказана невозможность большей длины и приведено достижение найденной длины.",
+        "Нижняя граница для наибольшего числа доказана и достигнута конструкцией."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "а) Подходит набор \\(1;2;3;5;6\\): из \\(1,2,\\ldots,6\\) исключено \\(4\\), поэтому сумма равна \\(17\\). б) Для \\(6\\) различных натуральных чисел сумма не меньше \\(21\\), что больше \\(17\\). Длину \\(5\\) построили, значит, она максимальна. в) Если все \\(5\\) чисел не больше \\(5\\), набор обязан быть \\(1,2,\\ldots,5\\), его сумма \\(15\\) недостаточна. Следовательно, наибольшее число хотя бы \\(6\\). Набор пункта а) достигает этой границы. Ответ: максимальная длина \\(5\\), минимальное наибольшее число \\(6\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "high",
+    "level": "high",
+    "sequenceIndex": 501,
+    "examPart": 2,
+    "examNumber": 20,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_distinct_set_bound",
+      "k": 5,
+      "d": 2,
+      "S": 17,
+      "sample": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ]
+    }
+  },
+  {
+    "id": "exam2027_20_2",
+    "uid": "numbers:exam2027_20_2",
+    "module": "numbers",
+    "topic": "sets",
+    "skill": "Числовой набор • конструкция и точная оценка",
+    "prompt": "Сумма различных натуральных чисел равна \\(24\\). Натуральные числа начинаются с 1. а) Приведите набор из \\(6\\) таких чисел. б) Найдите максимально возможное количество чисел. в) Среди наборов максимальной длины найдите минимальное возможное наибольшее число.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Пример содержит нужное число различных положительных целых чисел и имеет заданную сумму.",
+        "Доказана невозможность большей длины и приведено достижение найденной длины.",
+        "Нижняя граница для наибольшего числа доказана и достигнута конструкцией."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "а) Подходит набор \\(1;2;3;5;6;7\\): из \\(1,2,\\ldots,7\\) исключено \\(4\\), поэтому сумма равна \\(24\\). б) Для \\(7\\) различных натуральных чисел сумма не меньше \\(28\\), что больше \\(24\\). Длину \\(6\\) построили, значит, она максимальна. в) Если все \\(6\\) чисел не больше \\(6\\), набор обязан быть \\(1,2,\\ldots,6\\), его сумма \\(21\\) недостаточна. Следовательно, наибольшее число хотя бы \\(7\\). Набор пункта а) достигает этой границы. Ответ: максимальная длина \\(6\\), минимальное наибольшее число \\(7\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "high",
+    "level": "high",
+    "sequenceIndex": 502,
+    "examPart": 2,
+    "examNumber": 20,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_distinct_set_bound",
+      "k": 6,
+      "d": 3,
+      "S": 24,
+      "sample": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7
+      ]
+    }
+  },
+  {
+    "id": "exam2027_20_3",
+    "uid": "numbers:exam2027_20_3",
+    "module": "numbers",
+    "topic": "sets",
+    "skill": "Числовой набор • конструкция и точная оценка",
+    "prompt": "Сумма различных натуральных чисел равна \\(32\\). Натуральные числа начинаются с 1. а) Приведите набор из \\(7\\) таких чисел. б) Найдите максимально возможное количество чисел. в) Среди наборов максимальной длины найдите минимальное возможное наибольшее число.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Пример содержит нужное число различных положительных целых чисел и имеет заданную сумму.",
+        "Доказана невозможность большей длины и приведено достижение найденной длины.",
+        "Нижняя граница для наибольшего числа доказана и достигнута конструкцией."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "а) Подходит набор \\(1;2;3;5;6;7;8\\): из \\(1,2,\\ldots,8\\) исключено \\(4\\), поэтому сумма равна \\(32\\). б) Для \\(8\\) различных натуральных чисел сумма не меньше \\(36\\), что больше \\(32\\). Длину \\(7\\) построили, значит, она максимальна. в) Если все \\(7\\) чисел не больше \\(7\\), набор обязан быть \\(1,2,\\ldots,7\\), его сумма \\(28\\) недостаточна. Следовательно, наибольшее число хотя бы \\(8\\). Набор пункта а) достигает этой границы. Ответ: максимальная длина \\(7\\), минимальное наибольшее число \\(8\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "high",
+    "level": "high",
+    "sequenceIndex": 503,
+    "examPart": 2,
+    "examNumber": 20,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_distinct_set_bound",
+      "k": 7,
+      "d": 4,
+      "S": 32,
+      "sample": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        8
+      ]
+    }
+  },
+  {
+    "id": "exam2027_20_4",
+    "uid": "numbers:exam2027_20_4",
+    "module": "numbers",
+    "topic": "sets",
+    "skill": "Числовой набор • конструкция и точная оценка",
+    "prompt": "Сумма различных натуральных чисел равна \\(41\\). Натуральные числа начинаются с 1. а) Приведите набор из \\(8\\) таких чисел. б) Найдите максимально возможное количество чисел. в) Среди наборов максимальной длины найдите минимальное возможное наибольшее число.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Пример содержит нужное число различных положительных целых чисел и имеет заданную сумму.",
+        "Доказана невозможность большей длины и приведено достижение найденной длины.",
+        "Нижняя граница для наибольшего числа доказана и достигнута конструкцией."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "а) Подходит набор \\(1;2;3;5;6;7;8;9\\): из \\(1,2,\\ldots,9\\) исключено \\(4\\), поэтому сумма равна \\(41\\). б) Для \\(9\\) различных натуральных чисел сумма не меньше \\(45\\), что больше \\(41\\). Длину \\(8\\) построили, значит, она максимальна. в) Если все \\(8\\) чисел не больше \\(8\\), набор обязан быть \\(1,2,\\ldots,8\\), его сумма \\(36\\) недостаточна. Следовательно, наибольшее число хотя бы \\(9\\). Набор пункта а) достигает этой границы. Ответ: максимальная длина \\(8\\), минимальное наибольшее число \\(9\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "high",
+    "level": "high",
+    "sequenceIndex": 504,
+    "examPart": 2,
+    "examNumber": 20,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_distinct_set_bound",
+      "k": 8,
+      "d": 5,
+      "S": 41,
+      "sample": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    }
+  },
+  {
+    "id": "exam2027_20_5",
+    "uid": "numbers:exam2027_20_5",
+    "module": "numbers",
+    "topic": "sets",
+    "skill": "Числовой набор • конструкция и точная оценка",
+    "prompt": "Сумма различных натуральных чисел равна \\(51\\). Натуральные числа начинаются с 1. а) Приведите набор из \\(9\\) таких чисел. б) Найдите максимально возможное количество чисел. в) Среди наборов максимальной длины найдите минимальное возможное наибольшее число.",
+    "response": {
+      "kind": "solution",
+      "rubric": [
+        "Пример содержит нужное число различных положительных целых чисел и имеет заданную сумму.",
+        "Доказана невозможность большей длины и приведено достижение найденной длины.",
+        "Нижняя граница для наибольшего числа доказана и достигнута конструкцией."
+      ]
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "а) Подходит набор \\(1;2;3;5;6;7;8;9;10\\): из \\(1,2,\\ldots,10\\) исключено \\(4\\), поэтому сумма равна \\(51\\). б) Для \\(10\\) различных натуральных чисел сумма не меньше \\(55\\), что больше \\(51\\). Длину \\(9\\) построили, значит, она максимальна. в) Если все \\(9\\) чисел не больше \\(9\\), набор обязан быть \\(1,2,\\ldots,9\\), его сумма \\(45\\) недостаточна. Следовательно, наибольшее число хотя бы \\(10\\). Набор пункта а) достигает этой границы. Ответ: максимальная длина \\(9\\), минимальное наибольшее число \\(10\\).",
+    "tip": "Обоснуйте каждый шаг и проверьте все пункты. Допустим другой верный способ решения.",
+    "difficulty": "high",
+    "level": "high",
+    "sequenceIndex": 505,
+    "examPart": 2,
+    "examNumber": 20,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_distinct_set_bound",
+      "k": 9,
+      "d": 6,
+      "S": 51,
+      "sample": [
+        1,
+        2,
+        3,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    }
+  },
+  {
+    "id": "exam2027_6_6",
+    "uid": "probability:exam2027_6_6",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Случайная величина • среднее число успехов",
+    "prompt": "В \\(8\\) независимых испытаниях вероятность успеха в каждом равна \\(\\frac{1}{4}\\). Случайная величина \\(X\\) — число успехов. Найдите \\(M(X)\\).",
+    "response": {
+      "kind": "number",
+      "answer": "2"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Число успехов имеет биномиальное распределение; \\(M(X)=np=2\\). Независимость и одинаковая вероятность указаны в условии.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 226,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_binomial_mean",
+      "n": 8,
+      "p": "1/4"
+    }
+  },
+  {
+    "id": "exam2027_6_7",
+    "uid": "probability:exam2027_6_7",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Случайная величина • среднее число успехов",
+    "prompt": "В \\(10\\) независимых испытаниях вероятность успеха в каждом равна \\(\\frac{3}{5}\\). Случайная величина \\(X\\) — число успехов. Найдите \\(M(X)\\).",
+    "response": {
+      "kind": "number",
+      "answer": "6"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Число успехов имеет биномиальное распределение; \\(M(X)=np=6\\). Независимость и одинаковая вероятность указаны в условии.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 227,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_binomial_mean",
+      "n": 10,
+      "p": "3/5"
+    }
+  },
+  {
+    "id": "exam2027_6_8",
+    "uid": "probability:exam2027_6_8",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Случайная величина • среднее число успехов",
+    "prompt": "В \\(12\\) независимых испытаниях вероятность успеха в каждом равна \\(\\frac{1}{3}\\). Случайная величина \\(X\\) — число успехов. Найдите \\(M(X)\\).",
+    "response": {
+      "kind": "number",
+      "answer": "4"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Число успехов имеет биномиальное распределение; \\(M(X)=np=4\\). Независимость и одинаковая вероятность указаны в условии.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 228,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_binomial_mean",
+      "n": 12,
+      "p": "1/3"
+    }
+  },
+  {
+    "id": "exam2027_6_9",
+    "uid": "probability:exam2027_6_9",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Случайная величина • среднее число успехов",
+    "prompt": "В \\(15\\) независимых испытаниях вероятность успеха в каждом равна \\(\\frac{2}{5}\\). Случайная величина \\(X\\) — число успехов. Найдите \\(M(X)\\).",
+    "response": {
+      "kind": "number",
+      "answer": "6"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Число успехов имеет биномиальное распределение; \\(M(X)=np=6\\). Независимость и одинаковая вероятность указаны в условии.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 229,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_binomial_mean",
+      "n": 15,
+      "p": "2/5"
+    }
+  },
+  {
+    "id": "exam2027_6_10",
+    "uid": "probability:exam2027_6_10",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Случайная величина • среднее число успехов",
+    "prompt": "В \\(20\\) независимых испытаниях вероятность успеха в каждом равна \\(\\frac{3}{4}\\). Случайная величина \\(X\\) — число успехов. Найдите \\(M(X)\\).",
+    "response": {
+      "kind": "number",
+      "answer": "15"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Число успехов имеет биномиальное распределение; \\(M(X)=np=15\\). Независимость и одинаковая вероятность указаны в условии.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 230,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_binomial_mean",
+      "n": 20,
+      "p": "3/4"
+    }
+  },
+  {
+    "id": "exam2027_6_11",
+    "uid": "probability:exam2027_6_11",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Случайная величина • дисперсия числа успехов",
+    "prompt": "Случайная величина \\(X\\) — число успехов в \\(12\\) независимых испытаниях с вероятностью успеха \\(\\frac{1}{4}\\) в каждом. Найдите дисперсию \\(X\\).",
+    "response": {
+      "kind": "number",
+      "answer": "9/4"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "При биномиальном распределении \\(D(X)=np(1-p)=\\frac{9}{4}\\). Дисперсия — средний квадрат отклонения, её не нужно извлекать из корня.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 231,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_binomial_variance",
+      "n": 12,
+      "p": "1/4"
+    }
+  },
+  {
+    "id": "exam2027_6_12",
+    "uid": "probability:exam2027_6_12",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Случайная величина • дисперсия числа успехов",
+    "prompt": "Случайная величина \\(X\\) — число успехов в \\(16\\) независимых испытаниях с вероятностью успеха \\(\\frac{1}{2}\\) в каждом. Найдите дисперсию \\(X\\).",
+    "response": {
+      "kind": "number",
+      "answer": "4"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "При биномиальном распределении \\(D(X)=np(1-p)=4\\). Дисперсия — средний квадрат отклонения, её не нужно извлекать из корня.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 232,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_binomial_variance",
+      "n": 16,
+      "p": "1/2"
+    }
+  },
+  {
+    "id": "exam2027_6_13",
+    "uid": "probability:exam2027_6_13",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Случайная величина • дисперсия числа успехов",
+    "prompt": "Случайная величина \\(X\\) — число успехов в \\(20\\) независимых испытаниях с вероятностью успеха \\(\\frac{1}{5}\\) в каждом. Найдите дисперсию \\(X\\).",
+    "response": {
+      "kind": "number",
+      "answer": "16/5"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "При биномиальном распределении \\(D(X)=np(1-p)=\\frac{16}{5}\\). Дисперсия — средний квадрат отклонения, её не нужно извлекать из корня.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 233,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_binomial_variance",
+      "n": 20,
+      "p": "1/5"
+    }
+  },
+  {
+    "id": "exam2027_6_14",
+    "uid": "probability:exam2027_6_14",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Случайная величина • дисперсия числа успехов",
+    "prompt": "Случайная величина \\(X\\) — число успехов в \\(25\\) независимых испытаниях с вероятностью успеха \\(\\frac{2}{5}\\) в каждом. Найдите дисперсию \\(X\\).",
+    "response": {
+      "kind": "number",
+      "answer": "6"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "При биномиальном распределении \\(D(X)=np(1-p)=6\\). Дисперсия — средний квадрат отклонения, её не нужно извлекать из корня.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 234,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_binomial_variance",
+      "n": 25,
+      "p": "2/5"
+    }
+  },
+  {
+    "id": "exam2027_6_15",
+    "uid": "probability:exam2027_6_15",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Случайная величина • дисперсия числа успехов",
+    "prompt": "Случайная величина \\(X\\) — число успехов в \\(32\\) независимых испытаниях с вероятностью успеха \\(\\frac{3}{4}\\) в каждом. Найдите дисперсию \\(X\\).",
+    "response": {
+      "kind": "number",
+      "answer": "6"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "При биномиальном распределении \\(D(X)=np(1-p)=6\\). Дисперсия — средний квадрат отклонения, её не нужно извлекать из корня.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 235,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_binomial_variance",
+      "n": 32,
+      "p": "3/4"
+    }
+  },
+  {
+    "id": "exam2027_6_16",
+    "uid": "probability:exam2027_6_16",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Распределение • равномерный закон",
+    "prompt": "Случайная величина \\(X\\) равномерно распределена на отрезке \\([0;10]\\). Найдите \\(P(2\\le X\\le7)\\).",
+    "response": {
+      "kind": "number",
+      "answer": "1/2"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Оба конца выбранного промежутка лежат в отрезке распределения. Вероятность равна отношению длин: \\(P=\\frac{1}{2}\\). Для непрерывной величины включение отдельных концов вероятность не меняет.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 236,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_uniform_interval",
+      "lo": 0,
+      "hi": 10,
+      "left": 2,
+      "right": 7
+    }
+  },
+  {
+    "id": "exam2027_6_17",
+    "uid": "probability:exam2027_6_17",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Распределение • равномерный закон",
+    "prompt": "Случайная величина \\(X\\) равномерно распределена на отрезке \\([2;18]\\). Найдите \\(P(5\\le X\\le11)\\).",
+    "response": {
+      "kind": "number",
+      "answer": "3/8"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Оба конца выбранного промежутка лежат в отрезке распределения. Вероятность равна отношению длин: \\(P=\\frac{3}{8}\\). Для непрерывной величины включение отдельных концов вероятность не меняет.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 237,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_uniform_interval",
+      "lo": 2,
+      "hi": 18,
+      "left": 5,
+      "right": 11
+    }
+  },
+  {
+    "id": "exam2027_6_18",
+    "uid": "probability:exam2027_6_18",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Распределение • равномерный закон",
+    "prompt": "Случайная величина \\(X\\) равномерно распределена на отрезке \\([-4;8]\\). Найдите \\(P(-1\\le X\\le5)\\).",
+    "response": {
+      "kind": "number",
+      "answer": "1/2"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Оба конца выбранного промежутка лежат в отрезке распределения. Вероятность равна отношению длин: \\(P=\\frac{1}{2}\\). Для непрерывной величины включение отдельных концов вероятность не меняет.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 238,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_uniform_interval",
+      "lo": -4,
+      "hi": 8,
+      "left": -1,
+      "right": 5
+    }
+  },
+  {
+    "id": "exam2027_6_19",
+    "uid": "probability:exam2027_6_19",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Распределение • равномерный закон",
+    "prompt": "Случайная величина \\(X\\) равномерно распределена на отрезке \\([10;30]\\). Найдите \\(P(14\\le X\\le19)\\).",
+    "response": {
+      "kind": "number",
+      "answer": "1/4"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Оба конца выбранного промежутка лежат в отрезке распределения. Вероятность равна отношению длин: \\(P=\\frac{1}{4}\\). Для непрерывной величины включение отдельных концов вероятность не меняет.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 239,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_uniform_interval",
+      "lo": 10,
+      "hi": 30,
+      "left": 14,
+      "right": 19
+    }
+  },
+  {
+    "id": "exam2027_6_20",
+    "uid": "probability:exam2027_6_20",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Распределение • равномерный закон",
+    "prompt": "Случайная величина \\(X\\) равномерно распределена на отрезке \\([-10;10]\\). Найдите \\(P(-3\\le X\\le3)\\).",
+    "response": {
+      "kind": "number",
+      "answer": "3/10"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Оба конца выбранного промежутка лежат в отрезке распределения. Вероятность равна отношению длин: \\(P=\\frac{3}{10}\\). Для непрерывной величины включение отдельных концов вероятность не меняет.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 240,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_uniform_interval",
+      "lo": -10,
+      "hi": 10,
+      "left": -3,
+      "right": 3
+    }
+  },
+  {
+    "id": "exam2027_6_21",
+    "uid": "probability:exam2027_6_21",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Распределение • симметрия нормального закона",
+    "prompt": "Величина \\(X\\) имеет нормальное распределение с математическим ожиданием \\(0\\). Известно, что \\(P(X\\le-1)=\\frac{4}{25}\\). Найдите вероятность \\(P(-1\\le X\\le1)\\).",
+    "response": {
+      "kind": "number",
+      "answer": "17/25"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Нормальное распределение симметрично относительно среднего. Поэтому правый хвост имеет ту же вероятность \\(\\frac{4}{25}\\), что и левый. Внутри отрезка \\(P=1-2\\cdot\\frac{4}{25}=\\frac{17}{25}\\). Вероятность отдельной точки равна нулю.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 241,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_normal_symmetry",
+      "mu": 0,
+      "d": 1,
+      "p": "4/25"
+    }
+  },
+  {
+    "id": "exam2027_6_22",
+    "uid": "probability:exam2027_6_22",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Распределение • симметрия нормального закона",
+    "prompt": "Величина \\(X\\) имеет нормальное распределение с математическим ожиданием \\(10\\). Известно, что \\(P(X\\le8)=\\frac{1}{10}\\). Найдите вероятность \\(P(8\\le X\\le12)\\).",
+    "response": {
+      "kind": "number",
+      "answer": "4/5"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Нормальное распределение симметрично относительно среднего. Поэтому правый хвост имеет ту же вероятность \\(\\frac{1}{10}\\), что и левый. Внутри отрезка \\(P=1-2\\cdot\\frac{1}{10}=\\frac{4}{5}\\). Вероятность отдельной точки равна нулю.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 242,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_normal_symmetry",
+      "mu": 10,
+      "d": 2,
+      "p": "1/10"
+    }
+  },
+  {
+    "id": "exam2027_6_23",
+    "uid": "probability:exam2027_6_23",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Распределение • симметрия нормального закона",
+    "prompt": "Величина \\(X\\) имеет нормальное распределение с математическим ожиданием \\(20\\). Известно, что \\(P(X\\le17)=\\frac{1}{20}\\). Найдите вероятность \\(P(17\\le X\\le23)\\).",
+    "response": {
+      "kind": "number",
+      "answer": "9/10"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Нормальное распределение симметрично относительно среднего. Поэтому правый хвост имеет ту же вероятность \\(\\frac{1}{20}\\), что и левый. Внутри отрезка \\(P=1-2\\cdot\\frac{1}{20}=\\frac{9}{10}\\). Вероятность отдельной точки равна нулю.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 243,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_normal_symmetry",
+      "mu": 20,
+      "d": 3,
+      "p": "1/20"
+    }
+  },
+  {
+    "id": "exam2027_6_24",
+    "uid": "probability:exam2027_6_24",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Распределение • симметрия нормального закона",
+    "prompt": "Величина \\(X\\) имеет нормальное распределение с математическим ожиданием \\(-5\\). Известно, что \\(P(X\\le-9)=\\frac{1}{40}\\). Найдите вероятность \\(P(-9\\le X\\le-1)\\).",
+    "response": {
+      "kind": "number",
+      "answer": "19/20"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Нормальное распределение симметрично относительно среднего. Поэтому правый хвост имеет ту же вероятность \\(\\frac{1}{40}\\), что и левый. Внутри отрезка \\(P=1-2\\cdot\\frac{1}{40}=\\frac{19}{20}\\). Вероятность отдельной точки равна нулю.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 244,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_normal_symmetry",
+      "mu": -5,
+      "d": 4,
+      "p": "1/40"
+    }
+  },
+  {
+    "id": "exam2027_6_25",
+    "uid": "probability:exam2027_6_25",
+    "module": "probability",
+    "topic": "random_variable",
+    "skill": "Распределение • симметрия нормального закона",
+    "prompt": "Величина \\(X\\) имеет нормальное распределение с математическим ожиданием \\(50\\). Известно, что \\(P(X\\le45)=\\frac{1}{100}\\). Найдите вероятность \\(P(45\\le X\\le55)\\).",
+    "response": {
+      "kind": "number",
+      "answer": "49/50"
+    },
+    "choices": [],
+    "correct": null,
+    "explanation": "Нормальное распределение симметрично относительно среднего. Поэтому правый хвост имеет ту же вероятность \\(\\frac{1}{100}\\), что и левый. Внутри отрезка \\(P=1-2\\cdot\\frac{1}{100}=\\frac{49}{50}\\). Вероятность отдельной точки равна нулю.",
+    "tip": "Проверьте ограничения и единицы ответа.",
+    "difficulty": "medium",
+    "level": "medium",
+    "sequenceIndex": 245,
+    "examPart": 1,
+    "examNumber": 6,
+    "examYear": 2027,
+    "audit": {
+      "type": "exam_normal_symmetry",
+      "mu": 50,
+      "d": 5,
+      "p": "1/100"
+    }
+  }
+];
+QUESTIONS.push(...EXAM_QUESTIONS);
+MODULES.probability.topics.random_variable="Случайные величины и распределения";
+
 // Reviewed task goals. A formula in a problem statement alone does not make
 // it a formula drill. Keep stable UIDs, answers and historical progress intact.
 const FORMULA_FOCUS_BY_UID = {
@@ -3069,11 +7177,12 @@ const FORMULA_FOCUS_BY_AUDIT = {
     "econ_inflation_compound": "substitution"
   }
 };
-const CATEGORY_LABELS={all:"Весь банк",formula:"Формулы",practice:"Практика"};
+const CATEGORY_LABELS={all:"Весь банк",formula:"Формулы",practice:"Практика",part1:"Первая часть ЕГЭ",part2:"Вторая часть ЕГЭ"};
+const EXAM_POSITION_LABELS={1:"Планиметрия",2:"Векторы",3:"Стереометрия",4:"Вероятность",5:"Сложная вероятность",6:"Случайные величины",7:"Уравнения",8:"Вычисления",9:"Производная",10:"Прикладные формулы",11:"Текстовые задачи",12:"Функции",13:"Финансовые модели",14:"Уравнения и отбор корней",15:"Стереометрия",16:"Неравенства",17:"Модели и оптимизация",18:"Планиметрия",19:"Параметры",20:"Числа и доказательства"};
 const FORMULA_FOCUS_LABELS={recall:"Узнавание и преобразование",applicability:"Условия применения",substitution:"Подстановка в формулу",diagram:"Работа с рисунком",error:"Типичная ошибка"};
-const ANSWER_FORMAT_LABELS={choice:"Выбор ответа",integer:"Ввод целого числа",example:"Собственный пример",proof:"Доказательство с самопроверкой"};
+const ANSWER_FORMAT_LABELS={choice:"Выбор ответа",integer:"Ввод целого числа",number:"Числовой ответ",example:"Собственный пример",proof:"Доказательство с самопроверкой",solution:"Развёрнутое решение с самопроверкой"};
 
-function normalizeCategory(value){return ["formula","practice"].includes(value)?value:"all";}
+function normalizeCategory(value){return ["formula","practice","part1","part2"].includes(value)?value:"all";}
 function formulaFocus(q){
   if(q.response)return null;
   return FORMULA_FOCUS_BY_UID[q.uid]||FORMULA_FOCUS_BY_AUDIT[q.module]?.[q.audit?.type]||null;
@@ -3082,7 +7191,10 @@ function taskCategory(q){return formulaFocus(q)?"formula":"practice";}
 function answerFormat(q){return q.response?.kind||"choice";}
 function taskMatches(q,scope={}){
   const category=normalizeCategory(scope.category);
-  if(category!=="all"&&taskCategory(q)!==category)return false;
+  if(category==="part1"||category==="part2"){
+    if(q.examPart!==(category==="part1"?1:2))return false;
+  }else if(category!=="all"&&taskCategory(q)!==category)return false;
+  if(scope.examNumber&&scope.examNumber!=="all"&&q.examNumber!==Number(scope.examNumber))return false;
   if(scope.answerFormat&&scope.answerFormat!=="all"&&answerFormat(q)!==scope.answerFormat)return false;
   if(category==="formula"&&scope.formulaFocus&&scope.formulaFocus!=="all"&&formulaFocus(q)!==scope.formulaFocus)return false;
   return true;
@@ -3099,16 +7211,18 @@ function categorySummary(category,p=loadProgress()){
   return {total:pool.length,seen,correct,wrong,selfReviewed,attempts:correct+wrong,accuracy:correct+wrong?Math.round(100*correct/(correct+wrong)):null};
 }
 function renderCategoryStats(p){
-  $("categoryStats").innerHTML=["formula","practice"].map(category=>{
+  $("categoryStats").innerHTML=["formula","practice","part1","part2"].map(category=>{
     const s=categorySummary(category,p);
-    return `<div class="category-stat"><strong>${CATEGORY_LABELS[category]}</strong><p class="mini">Пройдено ${s.seen} из ${s.total}</p><p class="mini">${s.accuracy===null?"Попыток пока нет":`${s.attempts} попыток • ${s.selfReviewed?"Выполнение с учётом самооценки":"Точность"}: ${s.accuracy}%`}</p>${s.selfReviewed?`<p class="mini">Самопроверок доказательств: ${s.selfReviewed}</p>`:""}</div>`;
+    return `<div class="category-stat"><strong>${CATEGORY_LABELS[category]}</strong><p class="mini">Пройдено ${s.seen} из ${s.total}</p><p class="mini">${s.accuracy===null?"Попыток пока нет":`${s.attempts} попыток • ${s.selfReviewed?"Выполнение с учётом самооценки":"Точность"}: ${s.accuracy}%`}</p>${s.selfReviewed?`<p class="mini">Самопроверок решений: ${s.selfReviewed}</p>`:""}</div>`;
   }).join("");
 }
 function renderResultCategoryStats(){
-  const totals=state.categoryResults||{};
-  $("resultCategoryStats").innerHTML=["formula","practice"].filter(category=>totals[category]?.answered).map(category=>{
+  const selected=normalizeCategory(state.scope?.category);
+  const isPart=selected==="part1"||selected==="part2";
+  const totals=isPart?state.examResults||{}:state.categoryResults||{};
+  $("resultCategoryStats").innerHTML=(isPart?[selected]:["formula","practice"]).filter(category=>totals[category]?.answered).map(category=>{
     const s=totals[category],pct=Math.round(100*s.correct/s.answered);
-    return `<div class="category-stat"><strong>${CATEGORY_LABELS[category]}</strong><p class="mini">${s.selfReviewed?"Выполнено с учётом самооценки":"Правильных ответов"}: ${s.correct} из ${s.answered} • ${pct}%</p>${s.selfReviewed?`<p class="mini">Самопроверок доказательств: ${s.selfReviewed}</p>`:""}</div>`;
+    return `<div class="category-stat"><strong>${CATEGORY_LABELS[category]}</strong><p class="mini">${s.selfReviewed?"Выполнено с учётом самооценки":"Правильных ответов"}: ${s.correct} из ${s.answered} • ${pct}%</p>${s.selfReviewed?`<p class="mini">Самопроверок решений: ${s.selfReviewed}</p>`:""}</div>`;
   }).join("");
 }
 
@@ -3540,15 +7654,17 @@ function renderHome(){
   const category=normalizeCategory(p.studyCategory);
   const pool=QUESTIONS.filter(q=>taskMatches(q,{category}));
   const eligibleIds=new Set(pool.map(q=>q.uid));
+  $("highBtn").disabled=!pool.some(q=>q.difficulty==="high");
   if($("mistakeCount")) $("mistakeCount").textContent=[...new Set(p.mistakes||[])].filter(uid=>category==="all"||eligibleIds.has(uid)).length;
 
   document.querySelectorAll(".category-choice").forEach(btn=>btn.setAttribute("aria-pressed",String(btn.dataset.category===category)));
-  const descriptions={all:"Все задания: можно смешивать формулы и применение.",formula:"Узнавание и преобразование формул, условия применения, короткая подстановка, работа с рисунком и типичные ошибки.",practice:"Решение задач, собственные примеры, контрпримеры и доказательства. Формат ответа указан в каждой карточке."};
+  const descriptions={all:"Все задания: можно смешивать формулы и применение.",formula:"Узнавание и преобразование формул, условия применения, короткая подстановка, работа с рисунком и типичные ошибки.",practice:"Решение задач, собственные примеры, контрпримеры и доказательства. Формат ответа указан в каждой карточке.",part1:"Подготовка к заданиям 1–13 по проекту ЕГЭ-2027: числовой ответ без вариантов, точная проверка целых чисел, дробей и периодов.",part2:"Подготовка к заданиям 14–20 по проекту ЕГЭ-2027: запишите развёрнутое решение, сравните с образцом и оцените по учебным критериям."};
   $("categoryDescription").textContent=descriptions[category]+` Доступно заданий: ${pool.length}. Выбранная цель действует на тренировки и меню разделов.`;
   renderCategoryStats(p);
+  renderExamCoverage(category,pool,p);
 
   const oa=category==="all"?overallAccuracy(p):categorySummary(category,p).accuracy;
-  $("overallAccuracyLabel").textContent=category==="all"?"Общая точность":category==="formula"?"Точность формул":"Выполнение практики";
+  $("overallAccuracyLabel").textContent=category==="all"?"Общая точность":category==="formula"?"Точность формул":category==="part1"?"Точность первой части":category==="part2"?"Выполнение по самооценке":"Выполнение практики";
   if($("overallAccuracy")) $("overallAccuracy").textContent=oa==null?"—":oa+"%";
 
   $("assessmentNotice").hidden=category==="formula"||!Object.values(p.weak||{}).some(item=>item.selfReviewed>0);
@@ -3593,6 +7709,18 @@ function renderHome(){
   bindSectionMenu(menu);
 }
 
+function renderExamCoverage(category,pool,p){
+  const panel=$("examCoverage");
+  panel.hidden=category!=="part1"&&category!=="part2";
+  if(panel.hidden){panel.innerHTML="";return;}
+  const numbers=category==="part1"?Array.from({length:13},(_,i)=>i+1):Array.from({length:7},(_,i)=>i+14);
+  panel.innerHTML=`<h3>Выберите номер задания</h3><p class="mini">Авторские подготовительные упражнения по <a href="https://fipi.ru/ege/demoversii-specifikacii-kodifikatory" target="_blank" rel="noopener noreferrer">проекту ФИПИ-2027</a>. Тематическая тренировка; школьные примеры не охватывают все типы экзаменационных задач. Учебные критерии второй части используются для самопроверки.</p><div class="exam-positions">${numbers.map(number=>{
+    const tasks=pool.filter(q=>q.examNumber===number),seen=tasks.filter(q=>attemptsFor(q,p)>0).length;
+    return `<button type="button" class="btn btn-ghost exam-position" data-exam-number="${number}" ${tasks.length?"":"disabled"}>№${number} • ${EXAM_POSITION_LABELS[number]}<br><span class="mini">Пройдено ${seen} из ${tasks.length}</span></button>`;
+  }).join("")}</div>`;
+  panel.querySelectorAll("[data-exam-number]").forEach(button=>button.addEventListener("click",()=>startQuiz("examTopic",{examNumber:Number(button.dataset.examNumber)})));
+}
+
 function pickQuestions(mode,scope={}){
   const p=loadProgress();
   scope={...scope,category:normalizeCategory(scope.category??p.studyCategory)};
@@ -3608,6 +7736,7 @@ function pickQuestions(mode,scope={}){
     return (unseen.length?unseen:pool).slice().sort((a,b)=>(a.sequenceIndex-b.sequenceIndex)||a.uid.localeCompare(b.uid)).slice(0,25);
   }
   if(mode==="module")return shuffle(pool.filter(q=>q.module===scope.module)).slice(0,10);
+  if(mode==="examTopic")return shuffle(pool).slice(0,10);
   if(mode==="topic"){
     const count=Math.max(1,Math.min(25,Number(scope.count)||10));
     const chosen=pool.filter(q=>q.module===scope.module&&q.topic===scope.topic);
@@ -3631,7 +7760,7 @@ function pickQuestions(mode,scope={}){
 }
 
 function modeLabel(mode,scope){
-  const label=baseModeLabel(mode);
+  const label=mode==="examTopic"?`Задание №${scope.examNumber} • проект ЕГЭ-2027`:baseModeLabel(mode);
   return normalizeCategory(scope?.category)==="all"?label:label+" • "+CATEGORY_LABELS[normalizeCategory(scope.category)];
 }
 function baseModeLabel(mode){
@@ -3669,7 +7798,7 @@ function startQuiz(mode,scope={}){
   }
   state={
     index:0,score:0,answered:false,mistakes:[],deferred:[],
-    mode,scope,queue,modeLabel:modeLabel(mode,scope),categoryResults:{}
+    mode,scope,queue,modeLabel:modeLabel(mode,scope),categoryResults:{},examResults:{}
   };
   showScreen("quiz");
   renderQuestion();
@@ -3682,6 +7811,40 @@ function parseIntegerResponse(raw){
   if(parts.some(s=>!/^[-+]?\d+$/.test(s)))return null;
   const values=parts.map(Number);
   return values.every(Number.isSafeInteger)?values:null;
+}
+
+// Parse exactly, without eval or floating-point rounding. Parentheses denote
+// a repeating decimal period; comma and dot are equivalent input separators.
+function parseNumericResponse(raw){
+  let text=String(raw).trim().replace(/−/g,"-");
+  if(!text||text.length>200)return null;
+  const fraction=text.match(/^([+-]?\d+)\s*\/\s*([+-]?\d+)$/);
+  let numerator,denominator;
+  if(fraction){
+    numerator=BigInt(fraction[1]);denominator=BigInt(fraction[2]);
+  }else{
+    text=text.replace(/^([+-]?)(?=[,.])/,(_,sign)=>sign+"0");
+    const decimal=text.match(/^([+-]?)(\d+)(?:[,.](\d*)(?:\((\d+)\))?)?$/);
+    if(!decimal||(/[,.]/.test(text)&&!decimal[3]&&!decimal[4]))return null;
+    const [,sign,whole,tail="",period=""]=decimal;
+    const scale=10n**BigInt(tail.length);
+    numerator=BigInt(whole)*scale+BigInt(tail||"0");denominator=scale;
+    if(period){
+      const cycle=10n**BigInt(period.length)-1n;
+      numerator=numerator*cycle+BigInt(period);denominator*=cycle;
+    }
+    if(sign==="-")numerator=-numerator;
+  }
+  if(denominator===0n)return null;
+  if(denominator<0n){numerator=-numerator;denominator=-denominator;}
+  const gcd=(a,b)=>{while(b!==0n){const r=a%b;a=b;b=r;}return a;};
+  const divisor=gcd(numerator<0n?-numerator:numerator,denominator);
+  return {numerator:numerator/divisor,denominator:denominator/divisor};
+}
+
+function numericResponseMatches(raw,answer){
+  const actual=parseNumericResponse(raw),expected=parseNumericResponse(answer);
+  return !!actual&&!!expected&&actual.numerator===expected.numerator&&actual.denominator===expected.denominator;
 }
 
 function validNumberExample(q,values){
@@ -3705,8 +7868,9 @@ function validNumberExample(q,values){
 }
 
 function renderOpenResponse(q){
-  if(q.response.kind==="proof"){
-    $("answerArea").innerHTML=`<div class="open-response"><label for="proofInput">Ваше доказательство</label><p class="mini">Сначала запишите решение. Затем сравните его с образцом и отметьте выполненные критерии. Итог учитывает вашу самооценку.</p><textarea id="proofInput" rows="7" maxlength="12000" placeholder="Общий аргумент, обоснование каждого шага, вывод"></textarea><p id="responseError" class="response-error" role="alert"></p><button class="btn btn-primary" id="compareProofBtn" type="button">Сверить решение</button><div id="proofReview" hidden></div></div>`;
+  if(q.response.kind==="proof"||q.response.kind==="solution"){
+    const isSolution=q.response.kind==="solution";
+    $("answerArea").innerHTML=`<div class="open-response"><label for="proofInput">${isSolution?"Ваше развёрнутое решение":"Ваше доказательство"}</label><p class="mini">Сначала запишите решение. Затем сравните его с образцом и отметьте выполненные критерии. Итог учитывает вашу самооценку.</p><textarea id="proofInput" rows="7" maxlength="12000" placeholder="Обоснование каждого шага, проверка ограничений, ответы на все пункты"></textarea><p id="responseError" class="response-error" role="alert"></p><button class="btn btn-primary" id="compareProofBtn" type="button">Сверить решение</button><div id="proofReview" hidden></div></div>`;
     $("proofInput").value=loadProgress().proofDrafts?.[q.uid]||"";
     $("proofInput").addEventListener("input",()=>{
       const p=loadProgress();p.proofDrafts||={};p.proofDrafts[q.uid]=$("proofInput").value;saveProgress(p);
@@ -3717,7 +7881,8 @@ function renderOpenResponse(q){
       }
       $("responseError").textContent="";
       $("proofReview").hidden=false;
-      $("proofReview").innerHTML=`<h3>Образец доказательства</h3><div>${feedbackHtml(q.explanation)}</div><h3 style="margin-top:18px">Критерии самопроверки</h3>${q.response.rubric.map((item,i)=>`<label class="proof-criterion"><input type="checkbox" id="proofCriterion${i}"><span>${formatRichText(item)}</span></label>`).join("")}<p class="mini">Допустим другой верный способ доказательства. Примеры сами по себе общего утверждения не доказывают.</p><div class="actions"><button class="btn btn-primary" id="proofOkBtn" type="button" disabled>Все критерии выполнены</button><button class="btn btn-secondary" id="proofRetryBtn" type="button">Нужна доработка</button></div>`;
+      $("proofInput").readOnly=true;
+      $("proofReview").innerHTML=`<h3>${isSolution?"Образец решения":"Образец доказательства"}</h3><div>${feedbackHtml(q.explanation)}</div><h3 style="margin-top:18px">Учебные критерии самопроверки</h3>${q.response.rubric.map((item,i)=>`<label class="proof-criterion"><input type="checkbox" id="proofCriterion${i}"><span>${formatRichText(item)}</span></label>`).join("")}<p class="mini">${isSolution?"Допустим другой верный способ решения. Это самопроверка: текст не проверяется автоматически, результат не является оценкой эксперта ЕГЭ.":"Допустим другой верный способ доказательства. Примеры сами по себе общего утверждения не доказывают."}</p><div class="actions"><button class="btn btn-primary" id="proofOkBtn" type="button" disabled>Все критерии выполнены</button><button class="btn btn-secondary" id="proofRetryBtn" type="button">Нужна доработка</button></div>`;
       $("proofReview").querySelectorAll('input[type="checkbox"]').forEach(input=>input.addEventListener("change",()=>{
         $("proofOkBtn").disabled=![...$("proofReview").querySelectorAll('input[type="checkbox"]')].every(x=>x.checked);
       }));
@@ -3728,9 +7893,15 @@ function renderOpenResponse(q){
     });
   }else{
     const isExample=q.response.kind==="example";
-    $("answerArea").innerHTML=`<form id="openResponseForm" class="open-response"><label for="numberInput">${isExample?"Ваш пример":"Числовой ответ"}</label><input id="numberInput" type="text" ${isExample?"":"inputmode=\"numeric\""} autocomplete="off" maxlength="200" placeholder="${isExample?"Одно число или несколько чисел через пробел":"Введите целое число"}"><p class="mini">${isExample?"Можно ввести любой пример, удовлетворяющий всем условиям. Числа разделяйте пробелами, запятыми или точкой с запятой.":"Ответ проверяется автоматически."}</p><p id="responseError" class="response-error" role="alert"></p><button class="btn btn-primary" type="submit">Проверить ответ</button></form>`;
+    const isNumber=q.response.kind==="number";
+    $("answerArea").innerHTML=`<form id="openResponseForm" class="open-response"><label for="numberInput">${isExample?"Ваш пример":"Числовой ответ"}</label><input id="numberInput" type="text" ${isExample||isNumber?"":"inputmode=\"numeric\""} autocomplete="off" maxlength="200" placeholder="${isExample?"Одно число или несколько чисел через пробел":isNumber?"Например: -2; 0,25; 1/4; 0,(3)":"Введите целое число"}"><p class="mini">${isExample?"Можно ввести любой пример, удовлетворяющий всем условиям. Числа разделяйте пробелами, запятыми или точкой с запятой.":isNumber?"Введите одно точное число. Можно использовать запятую или точку, дробь a/b и период в скобках: 0,1(6). Приближённые значения без указания округления не принимаются.":"Ответ проверяется автоматически."}</p><p id="responseError" class="response-error" role="alert"></p><button class="btn btn-primary" type="submit">Проверить ответ</button></form>`;
     $("openResponseForm").addEventListener("submit",event=>{
       event.preventDefault();if(state.answered)return;
+      if(isNumber){
+        const raw=$("numberInput").value;
+        if(!parseNumericResponse(raw)){$("responseError").textContent="Введите одно число, дробь с ненулевым знаменателем или периодическую дробь с периодом в скобках.";return;}
+        $("responseError").textContent="";completeAnswer(numericResponseMatches(raw,q.response.answer));return;
+      }
       const values=parseIntegerResponse($("numberInput").value);
       if(!values||(!isExample&&values.length!==1)){
         $("responseError").textContent=isExample?"Введите целые числа через пробел, запятую или точку с запятой.":"Введите одно целое число.";return;
@@ -3750,7 +7921,7 @@ function renderQuestion(){
   $("modeChip").textContent=state.modeLabel;
   $("moduleChip").textContent=moduleLabel(q.module);
   $("topicChip").textContent=topicLabel(q.module,q.topic);
-  $("categoryChip").textContent=CATEGORY_LABELS[taskCategory(q)]+" • "+(formulaFocus(q)?FORMULA_FOCUS_LABELS[formulaFocus(q)]:ANSWER_FORMAT_LABELS[answerFormat(q)]);
+  $("categoryChip").textContent=(q.examPart?CATEGORY_LABELS["part"+q.examPart]+` • №${q.examNumber} • проект ${q.examYear}`:CATEGORY_LABELS[taskCategory(q)])+" • "+(formulaFocus(q)?FORMULA_FOCUS_LABELS[formulaFocus(q)]:ANSWER_FORMAT_LABELS[answerFormat(q)]);
 
   $("questionText").innerHTML="";
   $("formulaBox").innerHTML="";
@@ -3817,6 +7988,12 @@ function completeAnswer(ok,{selfAssessed=false}={}){
   const summary=state.categoryResults[category]||={answered:0,correct:0,wrong:0,selfReviewed:0};
   summary.answered++;summary[ok?"correct":"wrong"]++;
   if(selfAssessed)summary.selfReviewed++;
+  if(q.examPart){
+    state.examResults||={};
+    const partSummary=state.examResults["part"+q.examPart]||={answered:0,correct:0,wrong:0,selfReviewed:0};
+    partSummary.answered++;partSummary[ok?"correct":"wrong"]++;
+    if(selfAssessed)partSummary.selfReviewed++;
+  }
   if(selfAssessed)state.selfAssessed=(state.selfAssessed||0)+1;
   if(ok) state.score++;
   else state.mistakes.push({uid:q.uid,skill:q.skill,module:q.module});
@@ -3881,7 +8058,7 @@ function finishQuiz(){
     pct>=90?"Формулы и конструкции уже близки к автоматизму.":
     pct>=70?"База уверенная, но отдельные навыки стоит повторить.":
     "Лучше сразу повторить ошибки и вернуться к слабым темам.";
-  if(state.selfAssessed)$("resultLead").textContent+=` Доказательств с вашей самооценкой: ${state.selfAssessed}. Их результат не является автоматической проверкой текста.`;
+  if(state.selfAssessed)$("resultLead").textContent+=` Решений с вашей самооценкой: ${state.selfAssessed}. Их результат не является автоматической проверкой текста или оценкой эксперта ЕГЭ.`;
   renderResultCategoryStats();
 
   if(!state.mistakes.length){
@@ -3957,6 +8134,7 @@ function populateTeacherTopics(){
 function teacherScope(order="random"){
   return {
     category:$("teacherCategory").value,
+    examNumber:$("teacherExamNumber").value,
     answerFormat:$("teacherAnswerFormat").value,
     formulaFocus:$("teacherFormulaFocus").value,
     modules:selectedTeacherModules(),
@@ -3983,6 +8161,14 @@ function teacherPool(scope=teacherScope()){
 
 function updateTeacherPoolInfo(){
   const formulasOnly=$("teacherCategory").value==="formula";
+  const category=$("teacherCategory").value;
+  const isPart=category==="part1"||category==="part2";
+  $("teacherExamNumberField").hidden=!isPart;
+  $("teacherExamNumber").disabled=!isPart;
+  Array.from($("teacherExamNumber").options).forEach(option=>{
+    option.disabled=option.value!=="all"&&isPart&&(category==="part1"?Number(option.value)>13:Number(option.value)<14);
+  });
+  if(!isPart||$("teacherExamNumber").selectedOptions[0]?.disabled)$("teacherExamNumber").value="all";
   $("teacherFormulaFocusField").hidden=!formulasOnly;
   $("teacherFormulaFocus").disabled=!formulasOnly;
   if(!formulasOnly)$("teacherFormulaFocus").value="all";
@@ -4004,6 +8190,7 @@ function updateTeacherPoolInfo(){
 function openTeacher(){
   previousScreenId="home";
   $("teacherCategory").value=currentStudyCategory();
+  $("teacherExamNumber").value="all";
   $("teacherAnswerFormat").value="all";
   $("teacherFormulaFocus").value="all";
   populateTeacherModules();
@@ -4993,7 +9180,8 @@ function renderPlanDiagram(d){
 
   if(d.type==="rightAltitude"){
     // A is the right-angle vertex; BC is the hypotenuse.
-    const seg1=numberFromLabel(d.seg1), seg2=numberFromLabel(d.seg2);
+    const seg1=d.projection1??numberFromLabel(d.seg1), seg2=d.projection2??numberFromLabel(d.seg2);
+    const names=d.rightVertex==="C"?["C","A","B"]:["A","B","C"];
     const bh=Number.isFinite(seg1)?seg1:4, hc=Number.isFinite(seg2)?seg2:9;
     const altitude=Math.sqrt(bh*hc), total=bh+hc;
     const scale=Math.min(330/total,190/Math.max(altitude,0.01));
@@ -5009,12 +9197,13 @@ function renderPlanDiagram(d){
       <polyline points="${q1.x},${q1.y} ${q2.x},${q2.y} ${q3.x},${q3.y}" fill="none" stroke="#4f596b" stroke-width="2"/>
       <line x1="${A.x}" y1="${A.y}" x2="${H.x}" y2="${H.y}" stroke="#9a67ea" stroke-width="3"/>
       <polyline points="${H.x},${H.y-16} ${H.x+16},${H.y-16} ${H.x+16},${H.y}" fill="none" stroke="#4f596b" stroke-width="2"/>
-      ${planSvgText(A.x,A.y-12,"A")}${planSvgText(B.x-14,B.y+18,"B")}${planSvgText(C.x+14,C.y+18,"C")}${planSvgText(H.x,H.y+20,"H")}
+      ${planSvgText(A.x,A.y-12,names[0])}${planSvgText(B.x-14,B.y+18,names[1])}${planSvgText(C.x+14,C.y+18,names[2])}${planSvgText(H.x,H.y+20,"H")}
       ${planSvgText((B.x+H.x)/2,B.y+27,d.seg1||"")}
       ${planSvgText((H.x+C.x)/2,C.y+27,d.seg2||"")}
       ${planSvgText((A.x+H.x)/2+18,(A.y+H.y)/2,d.height||"")}
       ${planSvgText((B.x+C.x)/2,B.y-12,d.hypLabel||"")}
       ${sideLabel(A,B,d.legLabel||"",22)}
+      ${sideLabel(A,C,d.secondLegLabel||"",22)}
     </svg>`);
   }
 
@@ -5354,7 +9543,8 @@ function renderGraph(type){
 document.querySelectorAll(".category-choice").forEach(btn=>btn.addEventListener("click",()=>{
   const p=loadProgress();p.studyCategory=normalizeCategory(btn.dataset.category);saveProgress(p);renderHome();
 }));
-["teacherCategory","teacherAnswerFormat","teacherFormulaFocus"].forEach(id=>$(id).addEventListener("change",updateTeacherPoolInfo));
+$("teacherExamNumber").innerHTML+=Object.entries(EXAM_POSITION_LABELS).map(([number,label])=>`<option value="${number}">№${number} • ${label}</option>`).join("");
+["teacherCategory","teacherAnswerFormat","teacherFormulaFocus","teacherExamNumber"].forEach(id=>$(id).addEventListener("change",updateTeacherPoolInfo));
 
 $("quickBtn").addEventListener("click",()=>startQuiz("quick"));
 $("allBtn").addEventListener("click",()=>startQuiz("all"));
