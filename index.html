@@ -84,6 +84,15 @@ p{line-height:1.55}.lead{font-size:18px;color:var(--muted);max-width:840px}.mini
 .question{font-size:22px;font-weight:760;line-height:1.5;margin:12px 0 16px}
 .math-block{margin:14px 0;padding:20px 16px;background:#fafbff;border:1px solid #edf0f7;border-radius:16px;overflow-x:auto;text-align:center}
 .math-block .katex{font-size:2em}.question .katex{font-size:1.05em}
+.open-response{display:grid;gap:12px;margin-top:16px;min-width:0}
+.open-response label{font-weight:700}
+.open-response input[type="text"],.open-response textarea{width:100%;min-width:0;border:1.5px solid var(--border);border-radius:14px;padding:14px;font:inherit;background:#fff;color:var(--text)}
+.open-response textarea{resize:vertical;min-height:160px;line-height:1.6}
+.open-response input:focus,.open-response textarea:focus{outline:2px solid #bcc5ff;outline-offset:2px}
+.response-error{color:var(--red);margin:0}
+.proof-criterion{display:flex;gap:10px;align-items:flex-start;margin:12px 0;font-weight:400!important}
+.proof-criterion input{margin-top:4px;flex-shrink:0}
+.btn:disabled{opacity:.55;cursor:default;transform:none}
 .choices{display:grid;gap:10px;margin-top:16px}
 .choice{
   width:100%;text-align:left;background:#fff;border:1.5px solid var(--border);
@@ -179,11 +188,13 @@ svg{width:100%;height:auto;display:block}
         <p class="lead">Одна точка входа для ежедневной тренировки формул, алгебры, уравнений, геометрии, векторов, производных, вероятности, прогрессий, параметров, тригонометрии, экономических задач, закономерностей и оптимизации. Без регистрации: прогресс хранится в этом браузере.</p>
 
         <div class="stats">
-          <div class="stat"><span class="mini">Заданий в банке</span><b id="totalQuestions">2025</b></div>
+          <div class="stat"><span class="mini">Заданий в банке</span><b id="totalQuestions">2150</b></div>
           <div class="stat"><span class="mini">Пройдено тренировок</span><b id="sessions">0</b></div>
           <div class="stat"><span class="mini">Ошибок для повторения</span><b id="mistakeCount">0</b></div>
           <div class="stat"><span class="mini">Общая точность</span><b id="overallAccuracy">—</b></div>
         </div>
+
+        <p class="mini" id="assessmentNotice" hidden>В статистике доказательств учтена ваша самооценка.</p>
 
         <div class="mode-grid">
           <div class="mode">
@@ -269,11 +280,11 @@ svg{width:100%;height:auto;display:block}
       <p class="lead" id="resultLead"></p>
 
       <div class="result-grid">
-        <div class="result-box"><span class="mini">Правильных ответов</span><h2 id="scoreBox"></h2></div>
-        <div class="result-box"><span class="mini">Точность</span><h2 id="percentBox"></h2></div>
+        <div class="result-box"><span class="mini" id="scoreLabel">Правильных ответов</span><h2 id="scoreBox"></h2></div>
+        <div class="result-box"><span class="mini" id="percentLabel">Точность</span><h2 id="percentBox"></h2></div>
       </div>
 
-      <h3>Ошибки этой тренировки</h3>
+      <h3>Задания для повторения</h3>
       <div id="weakList" class="weak-list"></div>
 
       <div class="actions" style="margin-top:18px">
@@ -294,7 +305,7 @@ svg{width:100%;height:auto;display:block}
       <div class="teacher-summary">
         <div class="stat"><span class="mini">Выбрано разделов</span><b id="teacherSelectedModules">10</b></div>
         <div class="stat"><span class="mini">Выбрано подразделов</span><b id="teacherSelectedTopics">68</b></div>
-        <div class="stat"><span class="mini">Доступно заданий</span><b id="teacherTotal">2025</b></div>
+        <div class="stat"><span class="mini">Доступно заданий</span><b id="teacherTotal">2150</b></div>
       </div>
       <div class="teacher-selection-grid">
         <div class="teacher-check-card">
@@ -2553,6 +2564,190 @@ for(const [module,moduleData] of Object.entries(MODULES)){
   }
 })();
 
+// Preparatory number-theory tasks: exact answers, valid constructions, proofs.
+(function extendNumbersAndProofs(){
+  const out=[];
+  const m=s=>`\\(${s}\\)`;
+  const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
+  const prime=n=>{if(n<2)return false;for(let d=2;d*d<=n;d++)if(n%d===0)return false;return true;};
+  const digits=n=>String(n).split("").map(Number);
+  const first=(lo,hi,test)=>{for(let n=lo;n<=hi;n++)if(test(n))return n;throw new Error("No example");};
+  const add=(topic,id,skill,prompt,response,explanation,tip,audit,difficulty="medium")=>{
+    out.push({id,uid:`numbers:${id}`,module:"numbers",topic,skill,prompt,response,
+      choices:[],correct:null,explanation,tip,audit,level:difficulty,difficulty,sequenceIndex:0});
+  };
+  const integer=(topic,id,skill,prompt,answer,explanation,tip,audit,difficulty="medium")=>
+    add(topic,id,skill,prompt,{kind:"integer",answer},explanation+` Ответ: ${m(answer)}.`,tip,{...audit,answer},difficulty);
+  const example=(topic,id,skill,prompt,sample,rule,explanation,tip,params={})=>
+    add(topic,id,skill,prompt,{kind:"example",sample,rule,params},explanation,tip,{type:rule,...params},"high");
+  const proof=(topic,id,skill,prompt,explanation,rubric,audit)=>
+    add(topic,id,skill,prompt,{kind:"proof",rubric},explanation,"Проверяйте общий аргумент: несколько числовых примеров не заменяют доказательство.",audit,"high");
+
+  // 1. Divisibility, Euclid's algorithm, residues: 25 tasks.
+  [[84,126],[144,198],[210,330],[252,378],[391,437]].forEach(([a,b],i)=>integer("divisibility",`gcd_${i+1}`,"Делимость • алгоритм Евклида",
+    `Найдите наибольший общий делитель ${m(a)} и ${m(b)}.`,gcd(a,b),
+    `Последовательно заменяйте пару чисел делителем и остатком: ${m("\\gcd(a,b)=\\gcd(b,a\\bmod b)")}. Последний ненулевой остаток равен НОД.`,
+    "Каждый общий делитель двух чисел делит и их разность.",{type:"gcd",a,b},"base"));
+  [[18,24],[28,42],[45,60],[54,72],[66,88]].forEach(([a,b],i)=>integer("divisibility",`lcm_${i+1}`,"Делимость • НОД и НОК",
+    `Найдите наименьшее общее кратное ${m(a)} и ${m(b)}.`,a*b/gcd(a,b),
+    `Для положительных чисел ${m("\\operatorname{НОК}(a,b)=\\frac{ab}{\\gcd(a,b)}")}. Сначала вычислите НОД, затем разделите произведение на него.`,
+    "Произведение НОД и НОК равно произведению исходных положительных чисел.",{type:"lcm",a,b},"base"));
+  [[2,17,7],[3,13,5],[7,11,10],[5,21,9],[4,15,7]].forEach(([a,n,d],i)=>{
+    let r=1;for(let k=0;k<n;k++)r=r*a%d;
+    integer("divisibility",`power_remainder_${i+1}`,"Остатки • период степеней",
+      `Найдите остаток от деления ${m(a+"^{"+n+"}")} на ${m(d)}.`,r,
+      `Вычисляйте остатки последовательных степеней по модулю ${m(d)}. Каждый следующий получается умножением предыдущего на ${m(a)} с последующим делением с остатком. Период позволяет сократить число шагов.`,
+      "Остаток всегда лежит между 0 и делителем минус 1.",{type:"power_remainder",a,n,d});
+  });
+  [[4,1,5,2],[5,2,7,3],[6,5,7,1],[7,3,8,5],[8,7,9,2]].forEach(([a,r,b,s],i)=>{
+    const answer=first(1,a*b,n=>n%a===r&&n%b===s);
+    integer("divisibility",`two_remainders_${i+1}`,"Остатки • два условия",
+      `Найдите наименьшее натуральное число, дающее остаток ${m(r)} при делении на ${m(a)} и остаток ${m(s)} при делении на ${m(b)}.`,answer,
+      `Перечисляйте числа вида ${m(a+"k+"+r)} в возрастающем порядке и проверяйте второе условие. Первый подходящий кандидат — ${m(answer)}. Это обосновывает минимальность.`,
+      "Не достаточно найти подходящее число: оно должно быть наименьшим.",{type:"two_remainders",a,r,b,s});
+  });
+  const divisibilityProofs=[
+    ["even_product","Докажите, что произведение двух последовательных натуральных чисел делится на 2.","Два последовательных числа имеют разную чётность. Одно из них чётно, поэтому их произведение делится на 2.",["Рассмотрены произвольные последовательные числа.","Обосновано наличие чётного множителя.","Сделан вывод о делимости произведения."],{type:"even_product"}],
+    ["triple_product","Докажите, что произведение трёх последовательных натуральных чисел делится на 6.","Среди трёх последовательных чисел есть число, кратное 3, и есть чётное число. Поэтому произведение делится на 2 и на 3. Эти делители взаимно просты, значит, произведение делится на 6.",["Обосновано наличие множителя, кратного 3.","Обоснована чётность произведения.","Использована взаимная простота 2 и 3."],{type:"triple_product"}],
+    ["cube_difference",`Докажите, что ${m("n^3-n")} делится на 6 для любого натурального ${m("n")}.`,`Разложим: ${m("n^3-n=(n-1)n(n+1)")}. Это произведение трёх последовательных целых чисел. Оно делится на 2 и на 3, а значит, на 6. При ${m("n=1")} произведение равно нулю и также делится на 6.`,["Выполнено разложение на множители.","Доказана делимость на 2 и на 3.","Учтено, что ноль делится на 6."],{type:"cube_difference"}],
+    ["odd_square",`Докажите, что для любого нечётного натурального ${m("n")} число ${m("n^2-1")} делится на 8.`,`Пусть ${m("n=2k+1")}. Тогда ${m("n^2-1=4k(k+1)")}. Произведение ${m("k(k+1")} чётно, поэтому выражение делится на 8.`,["Нечётное число записано как 2k+1.","Получено 4k(k+1).","Обоснована чётность k(k+1)."],{type:"odd_square"}],
+    ["consecutive_coprime","Докажите, что два последовательных натуральных числа взаимно просты.",`Пусть ${m("d")} — их положительный общий делитель. Тогда ${m("d")} делит разность ${m("(n+1)-n=1")}, откуда ${m("d=1")}.`,["Введён произвольный общий положительный делитель.","Показано, что он делит разность 1.","Сделан вывод, что НОД равен 1."],{type:"consecutive_coprime"}]
+  ];
+  divisibilityProofs.forEach(([id,prompt,solution,rubric,audit])=>proof("divisibility",id,"Делимость • доказательство",prompt,solution,rubric,audit));
+
+  // 2. Decimal notation: 25 tasks.
+  [7,9,11,13,15].forEach((sum,i)=>{
+    const a=(sum+3)/2,b=(sum-3)/2;
+    integer("digits",`reverse_digits_${i+1}`,"Цифры • запись двузначного числа",
+      `Сумма цифр двузначного числа равна ${m(sum)}. Оно на 27 больше числа с переставленными цифрами. Найдите исходное число.`,10*a+b,
+      `Пусть число ${m("10a+b")}. Разность с ${m("10b+a")} равна ${m("9(a-b)=27")}, значит, ${m("a-b=3")}. Вместе с ${m("a+b="+sum)} это даёт ${m("a="+a+",\\ b="+b)}.`,
+      "Число 10a+b и сумма цифр a+b — разные величины.",{type:"reverse_digits",sum,difference:27});
+  });
+  [12,23,34,46,56].forEach((n,i)=>{
+    const x=(9-(10*n%9))%9;
+    integer("digits",`append_digit_${i+1}`,"Цифры • признак делимости",
+      `Какую цифру нужно приписать справа к числу ${m(n)}, чтобы результат делился на 9?`,x,
+      `Новое число равно ${m("10\\cdot"+n+"+x")}. Требуется ${m("(10\\cdot"+n+"+x)\\bmod9=0")}. Среди цифр от 0 до 9 подходит только ${m(x)}.`,
+      "Проверяйте, что найденное значение — цифра от 0 до 9.",{type:"append_digit",n,d:9});
+  });
+  [12,13,14,15,16].forEach((sum,i)=>{
+    const sample=first(100,999,n=>new Set(digits(n)).size===3&&digits(n).reduce((a,b)=>a+b,0)===sum&&n%4===0);
+    example("digits",`digit_example_${i+1}`,"Цифры • построение примера",
+      `Приведите пример трёхзначного числа с различными цифрами, сумма которых ${m(sum)}, делящегося на 4.`,[sample],"digit_example",
+      `Один из вариантов — ${m(sample)}. Его цифры различны, их сумма ${m(sum)}; последние две цифры образуют число, кратное 4. Возможны другие верные ответы.`,
+      "Для делимости на 4 проверяют число из двух последних цифр.",{sum});
+  });
+  [2,3,4,5,6].forEach((tens,i)=>{
+    const count=Array.from({length:10},(_,u)=>10*tens+u).filter(n=>n%6===0).length;
+    integer("digits",`count_digits_${i+1}`,"Цифры • чётность и делимость на 3",
+      `Сколько двузначных чисел с цифрой десятков ${m(tens)} делится на 6?`,count,
+      `Переберите цифру единиц от 0 до 9. Одновременно должны выполняться чётность числа и делимость суммы цифр на 3. Подходят ${Array.from({length:10},(_,u)=>10*tens+u).filter(n=>n%6===0).map(m).join(", ")}.`,
+      "Делимость на 6 равносильна делимости на 2 и на 3.",{type:"count_digits",tens});
+  });
+  [
+    ["reverse_difference",`Докажите, что разность двузначного числа ${m("10a+b")} и числа с переставленными цифрами делится на 9.`,`Разность ${m("(10a+b)-(10b+a)=9(a-b)")} имеет множитель 9. Даже если разность отрицательна или равна нулю, она делится на 9.`,["Числа записаны через разряды.","Разность преобразована в 9(a−b).","Не исключены равные цифры."],{type:"reverse_difference"}],
+    ["reverse_sum",`Докажите, что сумма двузначного числа ${m("10a+b")} и числа с переставленными цифрами делится на 11.`,`Сумма равна ${m("(10a+b)+(10b+a)=11(a+b)")}, поэтому делится на 11.`,["Оба числа записаны по разрядам.","Получен множитель 11.","Сформулирован вывод о делимости."],{type:"reverse_sum"}],
+    ["permutation_nine","Докажите, что два натуральных числа, полученные перестановкой одних и тех же цифр, дают одинаковые остатки при делении на 9.",`Любая степень 10 даёт остаток 1 при делении на 9, поэтому число и сумма его цифр имеют одинаковые остатки. При перестановке сумма цифр не меняется. Следовательно, остатки обоих чисел равны.`,["Использовано сравнение 10ᵏ с 1 по модулю 9.","Сумма цифр сохраняется при перестановке.","Сделан вывод для обоих чисел."],{type:"permutation_nine"}],
+    ["last_two_four","Докажите признак делимости на 4: натуральное число делится на 4 тогда и только тогда, когда число из двух последних цифр делится на 4.",`Запишем ${m("N=100q+r")}, где ${m("0\\le r<100")}. Число ${m("100q")} делится на 4. Поэтому ${m("N")} и ${m("r")} имеют одинаковые остатки по модулю 4. Это даёт обе стороны утверждения.`,["Выделены две последние цифры: N=100q+r.","Обоснована делимость 100q на 4.","Доказаны обе стороны «тогда и только тогда»."],{type:"last_two_four"}],
+    ["digit_sum_three",`Докажите, что трёхзначное число ${m("100a+10b+c")} делится на 3 тогда и только тогда, когда ${m("a+b+c")} делится на 3.`,`Разность ${m("(100a+10b+c)-(a+b+c)=99a+9b")} делится на 3. Значит, число и сумма цифр имеют одинаковые остатки при делении на 3, что доказывает обе стороны.`,["Вычислена разность числа и суммы цифр.","Показана её делимость на 3.","Обоснована эквивалентность."],{type:"digit_sum_three"}]
+  ].forEach(([id,prompt,solution,rubric,audit])=>proof("digits",id,"Цифры • доказательство",prompt,solution,rubric,audit));
+
+  // 3. Sets, cards, averages, and the pigeonhole principle: 25 tasks.
+  [3,4,5,6,7].forEach((d,i)=>{integer("sets",`pigeonhole_${i+1}`,"Наборы • принцип Дирихле",
+    `Какое наименьшее количество различных натуральных чисел нужно выбрать, чтобы среди них обязательно нашлись два с одинаковым остатком при делении на ${m(d)}?`,d+1,
+    `Остатков ${m(d)}. При ${m(d+1)} числах два попадают в один класс. Для ${m(d)} чисел гарантии нет: числа ${m("1,2,\\ldots,"+d)} дают все разные остатки.`,
+    "Минимальность требует и гарантии, и примера с меньшим количеством.",{type:"pigeonhole",d});
+  });
+  [3,4,5,6,7].forEach((k,i)=>{
+    const total=k*(k+3)/2,sample=Array.from({length:k},(_,j)=>j+2);
+    example("sets",`card_subset_${i+1}`,"Карточки • построение набора",
+      `На карточках числа от 1 до ${m(2*k)}. Выберите ${m(k)} различных карточек с суммой ${m(total)}. Введите числа через пробел.`,sample,"card_subset",
+      `Подходит набор ${m(sample.join(","))}: все числа различны, лежат в нужном диапазоне, а сумма ${m(total)}.`,
+      "Проверьте число элементов, различность, диапазон и сумму.",{k,max:2*k,total});
+  });
+  [3,4,5,6,7].forEach((n,i)=>{integer("sets",`avoid_pair_${i+1}`,"Наборы • пары с заданной суммой",
+    `Какое наибольшее количество чисел можно выбрать из ${m("1,2,\\ldots,"+2*n)}, чтобы никакие два выбранных числа не давали сумму ${m(2*n+1)}?`,n,
+    `Разобьём числа на ${m(n)} пар: ${m("(1,"+2*n+"),(2,"+(2*n-1)+"),\\ldots")}. Из каждой пары можно взять не более одного числа. Граница достигается на наборе ${m("1,2,\\ldots,"+n)}.`,
+    "Докажите верхнюю границу и приведите набор, который её достигает.",{type:"avoid_pair",n});
+  });
+  [[3,4],[4,5],[5,6],[6,7],[7,8]].forEach(([odd,even],i)=>{integer("sets",`same_parity_pairs_${i+1}`,"Наборы • чётность суммы",
+    `В наборе ${m(odd)} различных нечётных и ${m(even)} различных чётных чисел. Сколько неупорядоченных пар различных элементов имеют чётную сумму?`,odd*(odd-1)/2+even*(even-1)/2,
+    `Чётную сумму дают два нечётных или два чётных числа. Поэтому количество пар ${m("C_{"+odd+"}^{2}+C_{"+even+"}^{2}")}. Каждая пара считается один раз.`,
+    "Пара неупорядоченная: перестановка элементов не создаёт новую пару.",{type:"same_parity_pairs",odd,even});
+  });
+  [3,4,5,6,7].forEach((n,i)=>proof("sets",`forced_pair_${i+1}`,"Наборы • доказательство существования",
+    `Из чисел от 1 до ${m(2*n)} выбрали набор из ${m(n+1)} различных чисел. Докажите, что среди выбранных есть два с суммой ${m(2*n+1)}.`,
+    `Разобьём все числа на ${m(n)} непересекающихся пар с суммой ${m(2*n+1)}. Если из каждой пары взять не более одного числа, получится не более ${m(n)} чисел. Выбрано ${m(n+1)}, поэтому одна пара взята целиком.`,
+    ["Построено разбиение на пары с нужной суммой.","Обосновано, что все числа входят ровно в одну пару.","Применён принцип Дирихле или получено противоречие."],{type:"forced_pair",n}));
+
+  // 4. Constructions and counterexamples: 25 tasks, all valid answers accepted.
+  [2,3,4,5,6].forEach((d,i)=>example("examples",`gcd_lcm_pair_${i+1}`,"Пример • НОД и НОК",
+    `Приведите два различных натуральных числа с НОД ${m(d)} и НОК ${m(6*d)}. Введите оба числа через пробел.`,[2*d,3*d],"gcd_lcm_pair",
+    `Например, ${m(2*d)} и ${m(3*d)}: их НОД ${m(d)}, НОК ${m(6*d)}. Подходит также другая пара, удовлетворяющая обоим условиям.`,
+    "Проверяйте оба условия, а не только произведение чисел.",{d,lcm:6*d}));
+  [10,20,30,40,50].forEach((lo,i)=>{
+    let sample;for(let a=lo+1;a<=lo+20&&!sample;a++)for(let b=a+1;b<=lo+20;b++)if(!prime(a)&&!prime(b)&&gcd(a,b)===1){sample=[a,b];break;}
+    example("examples",`composite_coprime_${i+1}`,"Пример • составные взаимно простые числа",
+      `Приведите два различных составных взаимно простых числа, каждое больше ${m(lo)} и не больше ${m(lo+20)}.`,sample,"composite_coprime",
+      `Один пример — ${m(sample.join(","))}. Оба числа составные и их НОД равен 1. Значит, взаимно простые числа могут быть составными.`,
+      "Взаимная простота пары не означает, что каждое число простое.",{lo,hi:lo+20});
+  });
+  [4,8,9,12,16].forEach((d,i)=>{
+    const n=first(2,100,n=>n*n%d===0&&n%d!==0);
+    example("examples",`square_counterexample_${i+1}`,"Контрпример • делимость квадрата",
+      `Опровергните утверждение: «Если ${m("n^2")} делится на ${m(d)}, то ${m("n")} делится на ${m(d)}». Приведите натуральное ${m("n")} от 2 до 100.`,[n],"square_counterexample",
+      `Подходит ${m("n="+n)}: квадрат ${m(n*n)} делится на ${m(d)}, а само число — нет. Для опровержения общего утверждения достаточно одного такого случая.`,
+      "Контрпример должен удовлетворять условию и нарушать вывод.",{d});
+  });
+  [3,5,7,11,13].forEach((p,i)=>{
+    const n=first(2,100,n=>!prime(n*n+n+p));
+    example("examples",`polynomial_composite_${i+1}`,"Контрпример • простота значения",
+      `Найдите натуральное ${m("n")} от 2 до 100, при котором ${m("n^2+n+"+p)} — составное число.`,[n],"polynomial_composite",
+      `Например, ${m("n="+n)} даёт составное число ${m(n*n+n+p)}. Другой общий способ: взять ${m("n="+p)}, тогда значение ${m(p+"("+(p+2)+")")}.`,
+      "Для составности нужны два целых множителя, каждый больше 1.",{p});
+  });
+  [4,5,6,7,8].forEach((mean,i)=>example("examples",`progression_example_${i+1}`,"Пример • последовательность и среднее",
+    `Приведите три различные положительные целые числа в возрастающем порядке, образующие арифметическую прогрессию со средним арифметическим ${m(mean)}.`,[mean-1,mean,mean+1],"progression_example",
+    `Например, ${m([mean-1,mean,mean+1].join(","))}. Разности соседних членов равны 1; среднее трёх членов равно среднему члену ${m(mean)}.`,
+    "У трёх последовательных членов арифметической прогрессии среднее равно второму члену.",{mean}));
+
+  // 5. Bounds and attaining examples: 25 tasks.
+  [12,14,16,18,20].forEach((sum,i)=>integer("extrema",`max_product_${i+1}`,"Оценка • наибольшее произведение",
+    `Два натуральных числа имеют сумму ${m(sum)}. Найдите наибольшее значение их произведения.`,sum*sum/4,
+    `Пусть первое число ${m("x")}, второе ${m(sum+"-x")}. Произведение ${m("x("+sum+"-x)="+sum*sum/4+"-(x-"+sum/2+")^2")} не превосходит ${m(sum*sum/4)}. Равенство достигается при равных числах ${m(sum/2)}.`,
+    "После оценки обязательно укажите числа, на которых граница достигается.",{type:"max_product",sum}));
+  [11,13,15,17,19].forEach((sum,i)=>{
+    const a=Math.floor(sum/2),b=sum-a;
+    integer("extrema",`min_squares_${i+1}`,"Оценка • наименьшая сумма квадратов",
+      `Два натуральных числа имеют сумму ${m(sum)}. Найдите наименьшую сумму их квадратов.`,a*a+b*b,
+      `Если числа отличаются хотя бы на 2, уменьшение большего на 1 и увеличение меньшего на 1 уменьшает сумму квадратов. Значит, при минимуме числа различаются не более чем на 1. Здесь это ${m(a)} и ${m(b)}.`,
+      "При целочисленном ограничении равенство чисел может быть невозможно.",{type:"min_squares",sum});
+  });
+  [20,30,40,50,60].forEach((sum,i)=>{
+    let k=0;while((k+1)*(k+2)/2<=sum)k++;
+    const witness=[...Array.from({length:k-1},(_,j)=>j+1),sum-k*(k-1)/2];
+    integer("extrema",`max_distinct_count_${i+1}`,"Оценка • количество различных чисел",
+      `Сумма различных натуральных чисел равна ${m(sum)}. Какое наибольшее количество чисел может быть в наборе?`,k,
+      `Сумма ${m("k")} различных натуральных чисел не меньше ${m("1+2+\\cdots+k=\\frac{k(k+1)}2")}. Для ${m(k+1)} чисел эта граница уже больше ${m(sum)}. Набор ${m(witness.join(","))} состоит из ${m(k)} различных чисел и имеет нужную сумму.`,
+      "В решении нужны и невозможность большего количества, и подходящий набор.",{type:"max_distinct_count",sum});
+  });
+  [11,13,15,17,19].forEach((n,i)=>integer("extrema",`integer_solution_count_${i+1}`,"Целые числа • ограничение и перебор",
+    `Сколько пар натуральных чисел ${m("(x,y)")} удовлетворяют ${m("x+2y="+n)}?`,Math.floor((n-1)/2),
+    `Из ${m("x="+n+"-2y\\ge1")} следует ${m("1\\le y\\le"+Math.floor((n-1)/2))}. Каждое такое целое ${m("y")} даёт ровно одно положительное ${m("x")}.`,
+    "Здесь натуральные числа начинаются с 1: нулевые значения не подходят.",{type:"integer_solution_count",n}));
+  [10,12,14,16,18].forEach((sum,i)=>proof("extrema",`product_bound_${i+1}`,"Оценка • доказательство максимума",
+    `Два положительных действительных числа имеют сумму ${m(sum)}. Докажите, что их произведение не больше ${m(sum*sum/4)}, и укажите условие равенства.`,
+    `Пусть числа ${m("a,b")}. Из ${m("(a-b)^2\\ge0")} получаем ${m("(a+b)^2\\ge4ab")}. Поэтому ${m("ab\\le"+sum*sum/4)}. Равенство возможно тогда и только тогда, когда ${m("a=b="+sum/2)}.`,
+    ["Использована неотрицательность квадрата или равносильное преобразование.","Получена требуемая верхняя граница.","Указаны оба направления условия равенства."],{type:"product_bound",sum}));
+
+  if(out.length!==125)throw new Error("Expected 125 new number tasks");
+  QUESTIONS.push(...out);
+  MODULES.numbers={title:"Числа, последовательности и доказательства",desc:"Делимость и остатки, цифры, наборы и карточки, собственные примеры, контрпримеры и оценки. Подготовка к развёрнутым задачам о числах.",topics:{divisibility:"Делимость, НОД, НОК и остатки",digits:"Цифры и десятичная запись",sequences:"Последовательности и рекуррентные формулы",sets:"Числовые наборы и карточки",examples:"Примеры и контрпримеры",extrema:"Оценки, максимум и минимум"}};
+  const order={base:1,medium:2,high:3};
+  for(const topic of Object.keys(MODULES.numbers.topics))QUESTIONS.filter(q=>q.module==="numbers"&&q.topic===topic)
+    .sort((a,b)=>order[a.difficulty]-order[b.difficulty]||a.uid.localeCompare(b.uid)).forEach((q,i)=>q.sequenceIndex=i);
+})();
+
 const $ = id => document.getElementById(id);
 const STORAGE_KEY = "egeUnifiedTrainerProgress1";
 const HIDDEN_TOPIC_KEYS = new Set(["high"]);
@@ -2563,6 +2758,49 @@ function visibleTopicEntries(module){
 
 function visibleTopicKeys(module){
   return visibleTopicEntries(module).map(([topic])=>topic);
+}
+
+// Long division records the first occurrence of each remainder, so the
+// parentheses contain the exact shortest period, including leading zeroes.
+function rationalDecimal(numerator,denominator){
+  if(!Number.isSafeInteger(numerator)||!Number.isSafeInteger(denominator)||denominator===0)throw new Error("Expected an exact integer fraction");
+  const sign=(numerator<0)!==(denominator<0)&&numerator!==0?"-":"";
+  const a=BigInt(Math.abs(numerator)),b=BigInt(Math.abs(denominator));
+  const whole=a/b;let remainder=a%b;
+  if(remainder===0n)return sign+whole;
+  const seen=new Map(),digits=[];
+  while(remainder!==0n&&!seen.has(remainder)){
+    seen.set(remainder,digits.length);remainder*=10n;
+    digits.push(String(remainder/b));remainder%=b;
+  }
+  if(remainder===0n)return sign+whole+","+digits.join("");
+  const start=seen.get(remainder);
+  return sign+whole+","+digits.slice(0,start).join("")+"("+digits.slice(start).join("")+")";
+}
+
+function decimalToken(token){
+  const value=Number(token);
+  // Recover a simple fraction only within floating-point precision. Short
+  // finite decimals keep their supplied digits; arbitrary values are not rounded.
+  if(Number.isFinite(value)&&value>=0&&value<=1e12&&(token.split(".")[1]||"").length>=10){
+    let x=value,h0=0,h1=1,k0=1,k1=0;
+    const tolerance=4*Number.EPSILON*value;
+    for(let step=0;step<32;step++){
+      const a=Math.floor(x),h=a*h1+h0,k=a*k1+k0;
+      if(!Number.isSafeInteger(h)||!Number.isSafeInteger(k)||k>10000)break;
+      if(k>0&&Math.abs(h/k-value)<=tolerance)return rationalDecimal(h,k);
+      const fractional=x-a;if(fractional===0)break;
+      h0=h1;h1=h;k0=k1;k1=k;x=1/fractional;
+    }
+  }
+  return token.replace(".",",");
+}
+
+function formatDecimalText(text,tex=false){
+  return String(text).replace(/(?<![\d.])\d+\.\d+(?:e[+-]?\d+)?(?!\d|\.\d)/gi,token=>{
+    const formatted=decimalToken(token);
+    return tex?formatted.replace(",","{,}"):formatted;
+  });
 }
 
 function escapeHtml(s){
@@ -2622,8 +2860,9 @@ function formatRichText(text){
   let s=escapeHtml(String(text));
   const protectedChunks=[];
   s=s.replace(/\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]/g,function(m){
-    protectedChunks.push(m);return `@@MATH${protectedChunks.length-1}@@`;
+    protectedChunks.push(formatDecimalText(m,true));return `@@MATH${protectedChunks.length-1}@@`;
   });
+  s=formatDecimalText(s);
   s=s.replace(/(^|[\s:;,.!?—–\-])([A-Za-z0-9\\^_{}()[\]|+\-−*/=<>≤≥≠√π∞·]+(?:\s+[A-Za-z0-9\\^_{}()[\]|+\-−*/=<>≤≥≠√π∞·]+)*)(?=[$\s:;,.!?—–\-]|$)/g,
     function(match,prefix,body){
       const candidate=body.trim();
@@ -2635,8 +2874,8 @@ function formatRichText(text){
   return s;
 }
 
-function inlineTex(tex){ return `\\(${escapeHtml(tex)}\\)`; }
-function displayTex(tex){ return `<div class="math-block">\\[${escapeHtml(tex)}\\]</div>`; }
+function inlineTex(tex){ return `\\(${escapeHtml(formatDecimalText(tex,true))}\\)`; }
+function displayTex(tex){ return `<div class="math-block">\\[${escapeHtml(formatDecimalText(tex,true))}\\]</div>`; }
 
 function renderSegments(segments){
   if(!Array.isArray(segments)) return formatRichText(segments);
@@ -2683,6 +2922,7 @@ function normalizeProgress(raw){
       skill: typeof val.skill === "string" ? val.skill : "",
       correct: Number.isFinite(Number(val.correct)) ? Number(val.correct) : 0,
       wrong: Number.isFinite(Number(val.wrong)) ? Number(val.wrong) : 0,
+      selfReviewed: Number.isFinite(Number(val.selfReviewed)) ? Number(val.selfReviewed) : 0,
       lastSeen: val.lastSeen ?? null
     };
   }
@@ -2695,6 +2935,8 @@ function normalizeProgress(raw){
     p.mistakes.filter(x => typeof x === "string")
   )];
 
+  if(!p.proofDrafts||typeof p.proofDrafts!=="object"||Array.isArray(p.proofDrafts))p.proofDrafts={};
+  p.proofDrafts=Object.fromEntries(Object.entries(p.proofDrafts).filter(([uid,value])=>typeof value==="string").map(([uid,value])=>[uid,value.slice(0,12000)]));
   return p;
 }
 
@@ -2935,6 +3177,8 @@ function renderHome(){
   const oa=overallAccuracy(p);
   if($("overallAccuracy")) $("overallAccuracy").textContent=oa==null?"—":oa+"%";
 
+  $("assessmentNotice").hidden=!Object.values(p.weak||{}).some(item=>item.selfReviewed>0);
+
   const menu=$("sectionMenu");
   if(!menu) return;
 
@@ -3083,6 +3327,72 @@ function startQuiz(mode,scope={}){
   renderQuestion();
 }
 
+function parseIntegerResponse(raw){
+  const text=String(raw).trim().replace(/−/g,"-");
+  if(!text)return null;
+  const parts=text.replace(/[,;]/g," ").split(/\s+/);
+  if(parts.some(s=>!/^[-+]?\d+$/.test(s)))return null;
+  const values=parts.map(Number);
+  return values.every(Number.isSafeInteger)?values:null;
+}
+
+function validNumberExample(q,values){
+  const {rule,params:p}=q.response;
+  const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
+  const prime=n=>{if(n<2)return false;for(let d=2;d*d<=n;d++)if(n%d===0)return false;return true;};
+  switch(rule){
+    case "digit_example":{
+      if(values.length!==1||values[0]<100||values[0]>999)return false;
+      const ds=String(values[0]).split("").map(Number);
+      return new Set(ds).size===3&&ds.reduce((a,b)=>a+b,0)===p.sum&&values[0]%4===0;
+    }
+    case "card_subset":return values.length===p.k&&new Set(values).size===p.k&&values.every(n=>n>=1&&n<=p.max)&&values.reduce((a,b)=>a+b,0)===p.total;
+    case "gcd_lcm_pair":return values.length===2&&values.every(n=>n>=1&&n<=p.lcm)&&values[0]!==values[1]&&gcd(...values)===p.d&&values[0]*values[1]/p.d===p.lcm;
+    case "composite_coprime":return values.length===2&&values.every(n=>n>p.lo&&n<=p.hi&&!prime(n))&&values[0]!==values[1]&&gcd(...values)===1;
+    case "square_counterexample":return values.length===1&&values[0]>=2&&values[0]<=100&&values[0]**2%p.d===0&&values[0]%p.d!==0;
+    case "polynomial_composite":return values.length===1&&values[0]>=2&&values[0]<=100&&!prime(values[0]**2+values[0]+p.p);
+    case "progression_example":return values.length===3&&values.every(n=>n>=1&&n<=1000000)&&values[0]<values[1]&&values[1]<values[2]&&values[1]-values[0]===values[2]-values[1]&&values.reduce((a,b)=>a+b,0)===3*p.mean;
+    default:throw new Error("Unknown construction rule: "+rule);
+  }
+}
+
+function renderOpenResponse(q){
+  if(q.response.kind==="proof"){
+    $("answerArea").innerHTML=`<div class="open-response"><label for="proofInput">Ваше доказательство</label><p class="mini">Сначала запишите решение. Затем сравните его с образцом и отметьте выполненные критерии. Итог учитывает вашу самооценку.</p><textarea id="proofInput" rows="7" maxlength="12000" placeholder="Общий аргумент, обоснование каждого шага, вывод"></textarea><p id="responseError" class="response-error" role="alert"></p><button class="btn btn-primary" id="compareProofBtn" type="button">Сверить решение</button><div id="proofReview" hidden></div></div>`;
+    $("proofInput").value=loadProgress().proofDrafts?.[q.uid]||"";
+    $("proofInput").addEventListener("input",()=>{
+      const p=loadProgress();p.proofDrafts||={};p.proofDrafts[q.uid]=$("proofInput").value;saveProgress(p);
+    });
+    $("compareProofBtn").addEventListener("click",()=>{
+      if(!$("proofInput").value.trim()){
+        $("responseError").textContent="Сначала запишите своё рассуждение или попытку решения.";return;
+      }
+      $("responseError").textContent="";
+      $("proofReview").hidden=false;
+      $("proofReview").innerHTML=`<h3>Образец доказательства</h3><div>${feedbackHtml(q.explanation)}</div><h3 style="margin-top:18px">Критерии самопроверки</h3>${q.response.rubric.map((item,i)=>`<label class="proof-criterion"><input type="checkbox" id="proofCriterion${i}"><span>${formatRichText(item)}</span></label>`).join("")}<p class="mini">Допустим другой верный способ доказательства. Примеры сами по себе общего утверждения не доказывают.</p><div class="actions"><button class="btn btn-primary" id="proofOkBtn" type="button" disabled>Все критерии выполнены</button><button class="btn btn-secondary" id="proofRetryBtn" type="button">Нужна доработка</button></div>`;
+      $("proofReview").querySelectorAll('input[type="checkbox"]').forEach(input=>input.addEventListener("change",()=>{
+        $("proofOkBtn").disabled=![...$("proofReview").querySelectorAll('input[type="checkbox"]')].every(x=>x.checked);
+      }));
+      $("proofOkBtn").addEventListener("click",()=>completeAnswer(true,{selfAssessed:true}));
+      $("proofRetryBtn").addEventListener("click",()=>completeAnswer(false,{selfAssessed:true}));
+      $("compareProofBtn").disabled=true;
+      renderMath($("proofReview"));
+    });
+  }else{
+    const isExample=q.response.kind==="example";
+    $("answerArea").innerHTML=`<form id="openResponseForm" class="open-response"><label for="numberInput">${isExample?"Ваш пример":"Числовой ответ"}</label><input id="numberInput" type="text" ${isExample?"":"inputmode=\"numeric\""} autocomplete="off" maxlength="200" placeholder="${isExample?"Одно число или несколько чисел через пробел":"Введите целое число"}"><p class="mini">${isExample?"Можно ввести любой пример, удовлетворяющий всем условиям. Числа разделяйте пробелами, запятыми или точкой с запятой.":"Ответ проверяется автоматически."}</p><p id="responseError" class="response-error" role="alert"></p><button class="btn btn-primary" type="submit">Проверить ответ</button></form>`;
+    $("openResponseForm").addEventListener("submit",event=>{
+      event.preventDefault();if(state.answered)return;
+      const values=parseIntegerResponse($("numberInput").value);
+      if(!values||(!isExample&&values.length!==1)){
+        $("responseError").textContent=isExample?"Введите целые числа через пробел, запятую или точку с запятой.":"Введите одно целое число.";return;
+      }
+      $("responseError").textContent="";
+      completeAnswer(isExample?validNumberExample(q,values):values[0]===q.response.answer);
+    });
+  }
+}
+
 function renderQuestion(){
   state.answered=false;
   const q=state.queue[state.index];
@@ -3115,6 +3425,12 @@ function renderQuestion(){
   $("deferBtn").style.display="inline-block";
   $("deferBtn").disabled=state.index>=state.queue.length-1||state.deferred.includes(q.uid);
 
+  if(q.response){
+    renderOpenResponse(q);
+    renderMath($("quiz"));
+    return;
+  }
+
   const shuffled=shuffle(q.choices.map((choice,originalIndex)=>({choice,originalIndex})));
   $("answerArea").innerHTML=`<div class="choices">${
     shuffled.map(item=>`<button class="choice" data-original="${item.originalIndex}">${choiceHtml(item.choice,q)}</button>`).join("")
@@ -3129,7 +3445,6 @@ function renderQuestion(){
 
 function checkAnswer(originalIndex){
   if(state.answered) return;
-  state.answered=true;
   const q=state.queue[state.index];
   const buttons=$("answerArea").querySelectorAll(".choice");
 
@@ -3140,7 +3455,15 @@ function checkAnswer(originalIndex){
     if(idx===originalIndex && originalIndex!==q.correct) btn.classList.add("wrong");
   });
 
-  const ok=originalIndex===q.correct;
+  completeAnswer(originalIndex===q.correct);
+}
+
+function completeAnswer(ok,{selfAssessed=false}={}){
+  if(state.answered)return;
+  state.answered=true;
+  const q=state.queue[state.index];
+  $("answerArea").querySelectorAll("input,textarea,button").forEach(el=>el.disabled=true);
+  if(selfAssessed)state.selfAssessed=(state.selfAssessed||0)+1;
   if(ok) state.score++;
   else state.mistakes.push({uid:q.uid,skill:q.skill,module:q.module});
 
@@ -3148,6 +3471,7 @@ function checkAnswer(originalIndex){
   p.weak||={};p.mistakes||=[];
   p.weak[q.uid]||={skill:q.skill||"",correct:0,wrong:0,lastSeen:null};
   p.weak[q.uid].lastSeen=Date.now();
+  if(selfAssessed)p.weak[q.uid].selfReviewed=(p.weak[q.uid].selfReviewed||0)+1;
 
   if(ok){
     p.weak[q.uid].correct++;
@@ -3161,7 +3485,7 @@ function checkAnswer(originalIndex){
   saveProgress(p);
 
   $("feedback").className=`feedback show ${ok?"ok":"bad"}`;
-  $("feedbackTitle").textContent=ok?"✓ Верно":"✕ Ошибка";
+  $("feedbackTitle").textContent=selfAssessed?(ok?"✓ Вы отметили выполнение критериев":"Нужна доработка по вашей самооценке"):(ok?"✓ Верно":"✕ Ошибка");
   $("feedbackBody").innerHTML=feedbackHtml(q.explanation);
   $("feedbackTip").innerHTML="<b>Запомни:</b> "+feedbackHtml(q.tip);
   $("nextBtn").style.display="inline-block";
@@ -3193,6 +3517,8 @@ function finishQuiz(){
   saveProgress(p);
 
   showScreen("result");
+  $("scoreLabel").textContent=state.selfAssessed?"Выполнено с учётом самооценки":"Правильных ответов";
+  $("percentLabel").textContent=state.selfAssessed?"Доля выполненных заданий":"Точность";
   $("scoreBox").textContent=`${state.score} / ${state.queue.length}`;
   const pct=Math.round(state.score/state.queue.length*100);
   $("percentBox").textContent=pct+"%";
@@ -3201,9 +3527,10 @@ function finishQuiz(){
     pct>=90?"Формулы и конструкции уже близки к автоматизму.":
     pct>=70?"База уверенная, но отдельные навыки стоит повторить.":
     "Лучше сразу повторить ошибки и вернуться к слабым темам.";
+  if(state.selfAssessed)$("resultLead").textContent+=` Доказательств с вашей самооценкой: ${state.selfAssessed}. Их результат не является автоматической проверкой текста.`;
 
   if(!state.mistakes.length){
-    $("weakList").innerHTML='<div class="weak-item">Ошибок нет — все задания решены верно.</div>';
+    $("weakList").innerHTML='<div class="weak-item">Ошибок для повторения нет.</div>';
   }else{
     const uniq=[...new Map(state.mistakes.map(x=>[x.uid,x])).values()];
     $("weakList").innerHTML=uniq.map(x=>
@@ -3319,7 +3646,7 @@ function openTeacher(){
 
 
 function svgLabelText(value){
-  return String(value)
+  return formatDecimalText(value)
     .replace(/\\sqrt\{([^{}]+)\}/g,(_,radicand)=>`√${radicand.length===1?radicand:`(${radicand})`}`)
     .replace(/\\sqrt([A-Za-z0-9]+)/g,"√$1")
     .replace(/\\pi/g,"π")
