@@ -3556,20 +3556,22 @@ function renderHome(){
   const menu=$("sectionMenu");
   if(!menu) return;
 
-  menu.innerHTML=Object.entries(MODULES).map(([module,moduleData])=>{
+  const availableModules=new Set(pool.map(q=>q.module));
+  menu.innerHTML=Object.entries(MODULES).filter(([module])=>availableModules.has(module)).map(([module,moduleData])=>{
     const modulePool=pool.filter(q=>q.module===module);
+    const availableTopics=new Set(modulePool.map(q=>q.topic));
     const seen=modulePool.filter(q=>p.weak?.[q.uid]).length;
     const accuracy=moduleAccuracy(module,p,{category});
     const progress=seen
       ? `${seen} из ${modulePool.length} • ${accuracy}%`
-      : modulePool.length?`0 из ${modulePool.length}`:"Нет заданий по выбранной цели";
+      : `0 из ${modulePool.length}`;
     const submenuId=`submenu-${module}`;
-    const topicLinks=visibleTopicEntries(module).map(([topic,label])=>{
+    const topicLinks=visibleTopicEntries(module).filter(([topic])=>availableTopics.has(topic)).map(([topic,label])=>{
       const topicState=topicProgress(module,topic,p,{category});
       const topicAccuracy=topicState.accuracy==null?"":` • ${topicState.accuracy}%`;
-      return `<button class="section-link" type="button" data-module="${module}" data-topic="${topic}" ${topicState.total?"":"disabled"}>
+      return `<button class="section-link" type="button" data-module="${module}" data-topic="${topic}">
         ${escapeHtml(label)}
-        <span class="section-topic-progress">${topicState.total?`Пройдено ${topicState.seen} из ${topicState.total}${topicAccuracy}`:"Нет заданий по выбранной цели"}</span>
+        <span class="section-topic-progress">Пройдено ${topicState.seen} из ${topicState.total}${topicAccuracy}</span>
       </button>`;
     }).join("");
     return `<div class="section-item" data-module="${module}">
@@ -3582,7 +3584,7 @@ function renderHome(){
       </button>
       <div class="section-submenu" id="${submenuId}">
         <div class="section-submenu-title">${escapeHtml(moduleData.title)}</div>
-        <button class="section-link section-link-all" type="button" data-module="${module}" ${modulePool.length?"":"disabled"}>Все темы раздела</button>
+        <button class="section-link section-link-all" type="button" data-module="${module}">Все темы раздела</button>
         ${topicLinks}
       </div>
     </div>`;
