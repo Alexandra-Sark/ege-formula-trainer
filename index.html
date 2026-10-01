@@ -48,6 +48,16 @@ p{line-height:1.55}.lead{font-size:18px;color:var(--muted);max-width:840px}.mini
 .btn-ghost{background:white;border:1px solid var(--border);color:var(--text)}
 .btn-warn{background:var(--yellow-soft);color:#7b5700;border:1px solid #ecd698}
 .mode-grid,.module-grid,.topic-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+.category-picker{border:1px solid var(--border);border-radius:18px;padding:16px;margin:20px 0;background:#fafbff}
+.category-picker h3{margin-bottom:12px}
+.category-options{display:flex;gap:8px;flex-wrap:wrap}
+.category-choice[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.category-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}
+.category-stat{border:1px solid var(--border);border-radius:14px;padding:13px;background:#fff;min-width:0}
+.category-stat strong{display:block;margin-bottom:5px}
+.category-stat p{margin:4px 0}
+.section-link:disabled{opacity:.5;cursor:default}
+.teacher-panel .field[hidden]{display:none}
 .mode,.module-card,.topic-card{background:#fcfcff;border:1px solid var(--border);border-radius:18px;padding:17px}
 .module-card{min-height:190px;display:flex;flex-direction:column;justify-content:space-between}
 .module-count{display:none}
@@ -165,6 +175,7 @@ svg{width:100%;height:auto;display:block}
   .section-sidebar{position:static;order:-1;padding:17px;max-height:min(70vh,620px)}
   .section-submenu{position:static;width:auto;max-height:none;margin-top:6px;box-shadow:none;border-radius:14px}
   .desktop-hint{display:none}.mobile-hint{display:inline}
+  .category-stats{grid-template-columns:1fr}
   .section-item:hover .section-submenu,.section-item:focus-within .section-submenu{display:none}
   .section-item.open .section-submenu{display:grid!important}
 }
@@ -191,10 +202,21 @@ svg{width:100%;height:auto;display:block}
           <div class="stat"><span class="mini">Заданий в банке</span><b id="totalQuestions">2150</b></div>
           <div class="stat"><span class="mini">Пройдено тренировок</span><b id="sessions">0</b></div>
           <div class="stat"><span class="mini">Ошибок для повторения</span><b id="mistakeCount">0</b></div>
-          <div class="stat"><span class="mini">Общая точность</span><b id="overallAccuracy">—</b></div>
+          <div class="stat"><span class="mini" id="overallAccuracyLabel">Общая точность</span><b id="overallAccuracy">—</b></div>
         </div>
 
         <p class="mini" id="assessmentNotice" hidden>В статистике доказательств учтена ваша самооценка.</p>
+
+        <div class="category-picker">
+          <h3 id="categoryPickerLabel">Что тренируем</h3>
+          <div class="category-options" role="group" aria-labelledby="categoryPickerLabel">
+            <button type="button" class="btn btn-ghost category-choice" data-category="all" aria-pressed="true">Весь банк</button>
+            <button type="button" class="btn btn-ghost category-choice" data-category="formula" aria-pressed="false">Формулы</button>
+            <button type="button" class="btn btn-ghost category-choice" data-category="practice" aria-pressed="false">Практика</button>
+          </div>
+          <p class="mini" id="categoryDescription" role="status"></p>
+        </div>
+        <div id="categoryStats" class="category-stats" aria-label="Прогресс по цели тренировки"></div>
 
         <div class="mode-grid">
           <div class="mode">
@@ -204,12 +226,12 @@ svg{width:100%;height:auto;display:block}
           </div>
           <div class="mode">
             <h3>Все разделы</h3>
-            <p class="mini">10 случайных заданий из всех готовых разделов.</p>
+            <p class="mini">10 случайных заданий по выбранной цели из всех доступных разделов.</p>
             <button class="btn btn-secondary" id="allBtn">Тренироваться</button>
           </div>
           <div class="mode">
-            <h3>Освоить весь банк</h3>
-            <p class="mini">Следующие 25 ещё не пройденных заданий. Тренажёр постепенно проведёт по всему банку.</p>
+            <h3>Пройти задания по порядку</h3>
+            <p class="mini">Следующие 25 ещё не пройденных заданий по выбранной цели.</p>
             <button class="btn btn-secondary" id="solveAllBtn">Продолжить банк</button>
           </div>
           <div class="mode">
@@ -224,7 +246,7 @@ svg{width:100%;height:auto;display:block}
           </div>
           <div class="mode">
             <h3>Режим учителя</h3>
-            <p class="mini">Собрать тренировку по разделу, теме, уровню и количеству заданий.</p>
+            <p class="mini">Выбрать цель, формат ответа, разделы, темы и уровень.</p>
             <button class="btn btn-secondary" id="teacherBtn">Открыть</button>
           </div>
         </div>
@@ -252,6 +274,7 @@ svg{width:100%;height:auto;display:block}
         <div class="chip" id="modeChip"></div>
         <div class="chip" id="moduleChip"></div>
         <div class="chip" id="topicChip"></div>
+        <div class="chip" id="categoryChip"></div>
       </div>
 
       <div id="questionText" class="question"></div>
@@ -283,6 +306,7 @@ svg{width:100%;height:auto;display:block}
         <div class="result-box"><span class="mini" id="scoreLabel">Правильных ответов</span><h2 id="scoreBox"></h2></div>
         <div class="result-box"><span class="mini" id="percentLabel">Точность</span><h2 id="percentBox"></h2></div>
       </div>
+      <div id="resultCategoryStats" class="category-stats"></div>
 
       <h3>Задания для повторения</h3>
       <div id="weakList" class="weak-list"></div>
@@ -301,10 +325,10 @@ svg{width:100%;height:auto;display:block}
     </div>
     <div class="hero">
       <h1>Собрать тренировку</h1>
-      <p class="lead">Выберите содержание и уровень. Повышенные задания подключаются общим фильтром уровня, варианты ответов перемешиваются, а итог показывает ошибки ученика.</p>
+      <p class="lead">Выберите цель, формат ответа, темы и уровень. Для формул можно отдельно выбрать узнавание, условия применения, подстановку, работу с рисунком или типичную ошибку.</p>
       <div class="teacher-summary">
-        <div class="stat"><span class="mini">Выбрано разделов</span><b id="teacherSelectedModules">10</b></div>
-        <div class="stat"><span class="mini">Выбрано подразделов</span><b id="teacherSelectedTopics">68</b></div>
+        <div class="stat"><span class="mini">Выбрано разделов</span><b id="teacherSelectedModules">15</b></div>
+        <div class="stat"><span class="mini">Выбрано подразделов</span><b id="teacherSelectedTopics">71</b></div>
         <div class="stat"><span class="mini">Доступно заданий</span><b id="teacherTotal">2150</b></div>
       </div>
       <div class="teacher-selection-grid">
@@ -330,6 +354,9 @@ svg{width:100%;height:auto;display:block}
         </div>
       </div>
       <div class="teacher-panel">
+        <div class="field"><label for="teacherCategory">Цель тренировки</label><select id="teacherCategory"><option value="all">Весь банк</option><option value="formula">Формулы</option><option value="practice">Практика</option></select></div>
+        <div class="field"><label for="teacherAnswerFormat">Формат ответа</label><select id="teacherAnswerFormat"><option value="all">Все форматы</option><option value="choice">Выбор ответа</option><option value="integer">Ввод целого числа</option><option value="example">Собственный пример</option><option value="proof">Доказательство с самопроверкой</option></select></div>
+        <div class="field" id="teacherFormulaFocusField" hidden><label for="teacherFormulaFocus">Навык работы с формулой</label><select id="teacherFormulaFocus"><option value="all">Все навыки</option><option value="recall">Узнавание и преобразование</option><option value="applicability">Условия применения</option><option value="substitution">Подстановка в формулу</option><option value="diagram">Работа с рисунком</option><option value="error">Типичная ошибка</option></select></div>
         <div class="field"><label for="teacherLevel">Уровень</label><select id="teacherLevel"><option value="all">Все уровни</option><option value="base">Базовый</option><option value="medium">Средний</option><option value="high">Повышенный</option></select></div>
         <div class="field"><label for="teacherCount">Количество</label><select id="teacherCount"><option value="5">5 заданий</option><option value="10" selected>10 заданий</option><option value="25">25 заданий</option></select></div>
       </div>
@@ -2748,6 +2775,343 @@ for(const [module,moduleData] of Object.entries(MODULES)){
     .sort((a,b)=>order[a.difficulty]-order[b.difficulty]||a.uid.localeCompare(b.uid)).forEach((q,i)=>q.sequenceIndex=i);
 })();
 
+// Reviewed task goals. A formula in a problem statement alone does not make
+// it a formula drill. Keep stable UIDs, answers and historical progress intact.
+const FORMULA_FOCUS_BY_UID = {
+  "algebra:fsu_square_sum": "recall",
+  "algebra:fsu_square_diff": "recall",
+  "algebra:fsu_diff_squares": "recall",
+  "algebra:fsu_cube_sum": "recall",
+  "algebra:fsu_cube_diff": "recall",
+  "algebra:fsu_recognize": "recall",
+  "algebra:fsu_complete": "recall",
+  "algebra:pow_mult": "recall",
+  "algebra:pow_div": "recall",
+  "algebra:pow_power": "recall",
+  "algebra:pow_negative": "recall",
+  "algebra:pow_fraction": "applicability",
+  "algebra:pow_zero": "recall",
+  "algebra:pow_product_power": "recall",
+  "algebra:pow_numeric": "recall",
+  "algebra:pow_trap": "error",
+  "algebra:root_product": "recall",
+  "algebra:root_square": "recall",
+  "algebra:root_extract": "recall",
+  "algebra:root_fraction": "recall",
+  "algebra:root_nested_square": "recall",
+  "algebra:root_trap": "error",
+  "algebra:rat_cancel": "recall",
+  "algebra:rat_add_same": "recall",
+  "algebra:rat_common_den": "recall",
+  "algebra:rat_domain": "applicability",
+  "algebra:rat_factor_cancel": "recall",
+  "algebra:rat_sub": "recall",
+  "algebra:rat_trap": "error",
+  "algebra:log_def": "recall",
+  "algebra:log_one": "recall",
+  "algebra:log_base": "recall",
+  "algebra:log_product": "recall",
+  "algebra:log_quotient": "recall",
+  "algebra:log_power": "recall",
+  "algebra:log_change": "recall",
+  "algebra:log_trap_sum": "error",
+  "algebra:log_domain": "applicability",
+  "algebra:trig_identity": "recall",
+  "algebra:trig_tg": "recall",
+  "algebra:trig_sin30": "recall",
+  "algebra:trig_cos60": "recall",
+  "algebra:trig_sin45": "recall",
+  "algebra:trig_double_sin": "recall",
+  "algebra:trig_double_cos": "recall",
+  "algebra:trig_sum_sin": "recall",
+  "algebra:trig_sum_cos": "recall",
+  "algebra:trig_period": "recall",
+  "algebra:trig_tg_period": "recall",
+  "algebra:trig_trap": "error",
+  "functions:der_power": "recall",
+  "functions:der_sin": "recall",
+  "functions:der_cos": "recall",
+  "functions:der_product": "recall",
+  "functions:der_chain": "recall",
+  "functions:der_ln": "recall",
+  "functions:der_sqrt": "recall",
+  "functions:der_exp": "recall",
+  "functions:der_ax": "recall",
+  "functions:der_quotient": "recall",
+  "functions:der_chain_sqrt": "recall",
+  "functions:tr_right": "recall",
+  "functions:tr_up": "recall",
+  "functions:tr_reflect_x": "recall",
+  "functions:tr_reflect_y": "recall",
+  "functions:tr_abs_out": "recall",
+  "functions:tr_abs_in": "recall",
+  "functions:tr_vertical_stretch": "recall",
+  "functions:tr_vertical_compress": "recall",
+  "functions:tr_horizontal_compress": "recall",
+  "functions:tr_horizontal_stretch": "recall",
+  "functions:tr_combo_reflect_shift": "recall",
+  "functions:irr_left_shift": "recall",
+  "functions:irr_down_shift": "recall",
+  "functions:irr_square_root_square": "recall",
+  "functions:prop_root_domain": "applicability",
+  "functions:prop_fraction_domain": "applicability",
+  "functions:prop_log_domain": "applicability",
+  "functions:prop_exp_range": "applicability",
+  "functions:prop_even": "applicability",
+  "functions:prop_odd": "applicability",
+  "functions:prop_period_cos": "applicability",
+  "functions:irr_domain_2": "applicability",
+  "functions:irr_fraction_domain": "applicability",
+  "functions:irr_negative_inside": "applicability",
+  "functions:irr_square_inside": "applicability",
+  "functions:irr_domain_denominator_root": "applicability",
+  "functions:irr_monotonic": "applicability",
+  "functions:der_extremum_trap": "error",
+  "functions:graph_sqrt_domain_svg": "diagram",
+  "functions:graph_exp_decay": "diagram",
+  "planimetry:tri_pythagoras_6_8": "substitution",
+  "planimetry:tri_pythagoras_5_13": "substitution",
+  "planimetry:tri_area_height": "substitution",
+  "planimetry:tri_median_hyp": "substitution",
+  "planimetry:tri_angles_sum": "substitution",
+  "planimetry:tri_exterior": "substitution",
+  "planimetry:quad_rect_perim": "substitution",
+  "planimetry:quad_square_area": "substitution",
+  "planimetry:quad_para_area": "substitution",
+  "planimetry:quad_para_perim": "substitution",
+  "planimetry:quad_rhomb_area": "substitution",
+  "planimetry:quad_trap_area": "substitution",
+  "planimetry:quad_trap_midline": "substitution",
+  "planimetry:circ_central_arc": "substitution",
+  "planimetry:circ_inscribed_arc": "substitution",
+  "planimetry:circ_length": "substitution",
+  "planimetry:circ_area": "substitution",
+  "planimetry:circ_sector_area": "substitution",
+  "planimetry:circ_arc_length": "substitution",
+  "planimetry:coord_distance_3_4": "substitution",
+  "planimetry:coord_midpoint": "substitution",
+  "planimetry:coord_slope": "substitution",
+  "planimetry:coord_circle_equation": "substitution",
+  "planimetry:coord_origin_distance": "substitution",
+  "planimetry:area_similar_k2": "substitution",
+  "planimetry:area_similar_area9": "substitution",
+  "planimetry:area_same_height": "substitution",
+  "planimetry:area_same_base": "substitution",
+  "planimetry:area_median": "substitution",
+  "planimetry:area_para_diagonal": "substitution",
+  "planimetry:area_two_sides_angle": "substitution",
+  "planimetry:area_equilateral": "substitution",
+  "planimetry:area_inradius": "substitution",
+  "planimetry:area_circumradius": "substitution",
+  "planimetry:circ_diameter_angle": "diagram",
+  "planimetry:circ_tangent_radius": "diagram",
+  "planimetry:circ_cyclic_opposite": "diagram",
+  "stereometry:box_diag_3_4_12": "substitution",
+  "stereometry:box_volume_3_4_5": "substitution",
+  "stereometry:box_surface_2_3_4": "substitution",
+  "stereometry:cube_space_diag": "substitution",
+  "stereometry:cube_face_diag": "substitution",
+  "stereometry:prism_lateral_area": "substitution",
+  "stereometry:prism_height_from_volume": "substitution",
+  "stereometry:pyr_tri_volume": "substitution",
+  "stereometry:pyr_lateral_area": "substitution",
+  "stereometry:pyr_height_from_volume": "substitution",
+  "stereometry:pyr_base_area_from_volume": "substitution",
+  "stereometry:cyl_volume": "substitution",
+  "stereometry:cyl_lateral": "substitution",
+  "stereometry:cone_volume": "substitution",
+  "stereometry:cone_lateral": "substitution",
+  "stereometry:sphere_area": "substitution",
+  "stereometry:sphere_volume": "substitution",
+  "calculus:der_power_8": "recall",
+  "calculus:der_sqrt": "recall",
+  "calculus:der_inverse": "recall",
+  "calculus:der_exp": "recall",
+  "calculus:der_log": "recall",
+  "calculus:der_sin": "recall",
+  "calculus:der_cos": "recall",
+  "calculus:der_tg": "recall",
+  "calculus:der_ctg": "recall",
+  "calculus:der_product": "recall",
+  "calculus:der_quotient": "recall",
+  "calculus:der_chain_power": "recall",
+  "calculus:anti_power": "recall",
+  "calculus:anti_inverse_square": "recall",
+  "calculus:anti_sin": "recall",
+  "calculus:anti_cos": "recall",
+  "calculus:anti_exp": "recall",
+  "calculus:critical_not_extremum": "error",
+  "calculus:dgraph_no_extremum_touch": "error",
+  "probability:classical_balls_6": "recall",
+  "probability:classical_balls_7": "recall",
+  "probability:classical_balls_8": "recall",
+  "probability:classical_balls_9": "recall",
+  "probability:classical_balls_10": "recall",
+  "probability:classical_complement_1": "recall",
+  "probability:classical_complement_2": "recall",
+  "probability:classical_complement_3": "recall",
+  "probability:classical_complement_4": "recall",
+  "probability:classical_complement_5": "recall",
+  "probability:add_disjoint_5": "recall",
+  "probability:add_disjoint_6": "recall",
+  "probability:add_disjoint_7": "recall",
+  "probability:add_disjoint_8": "recall",
+  "probability:independent_both_6": "recall",
+  "probability:independent_both_7": "recall",
+  "probability:independent_both_8": "recall",
+  "probability:independent_both_9": "recall",
+  "probability:independent_both_10": "recall",
+  "probability:independent_at_least_1": "recall",
+  "probability:independent_at_least_2": "recall",
+  "probability:independent_at_least_3": "recall",
+  "probability:independent_at_least_4": "recall",
+  "probability:independent_at_least_5": "recall",
+  "probability:bernoulli_none_1": "recall",
+  "probability:bernoulli_none_2": "recall",
+  "probability:bernoulli_none_3": "recall",
+  "probability:bernoulli_none_4": "recall",
+  "probability:bernoulli_none_5": "recall",
+  "probability:bernoulli_exact_6": "recall",
+  "probability:bernoulli_exact_7": "recall",
+  "probability:bernoulli_exact_8": "recall",
+  "probability:bernoulli_exact_9": "recall",
+  "probability:bernoulli_exact_10": "recall",
+  "probability:high_total_probability_5": "recall",
+  "probability:high_total_probability_6": "recall",
+  "probability:high_total_probability_7": "recall",
+  "probability:high_total_probability_8": "recall",
+  "probability:high_trap_independent": "error",
+  "probability:high_trap_incompatible": "error",
+  "probability:high_trap_conditional": "error",
+  "probability:high_trap_at_least": "error",
+  "probability:high_trap_bayes": "error"
+};
+const FORMULA_FOCUS_BY_AUDIT = {
+  "algebra": {
+    "powers_product": "recall",
+    "trig_identity": "recall",
+    "square_sum": "substitution",
+    "extract_root": "substitution",
+    "log_power": "substitution"
+  },
+  "functions": {
+    "sqrt_domain_linear": "applicability",
+    "denominator_domain": "applicability",
+    "sqrt_domain": "applicability",
+    "sqrt_range_shift": "applicability",
+    "reflect_y": "recall",
+    "sqrt_graph_start": "recall"
+  },
+  "planimetry": {
+    "pythagorean_345": "substitution",
+    "rectangle_area": "substitution",
+    "circumference": "substitution",
+    "midpoint": "substitution",
+    "similar_area_ratio": "substitution",
+    "altitude_hypotenuse": "substitution"
+  },
+  "stereometry": {
+    "box_volume": "substitution",
+    "pyramid_volume": "substitution",
+    "cylinder_volume": "substitution",
+    "cube_space_diagonal": "substitution",
+    "similar_volume_ratio": "substitution"
+  },
+  "calculus": {
+    "power_derivative": "recall",
+    "power_antiderivative": "recall"
+  },
+  "applied": {
+    "ap_nth": "substitution",
+    "ap_sum": "substitution",
+    "gp_nth": "substitution",
+    "gp_sum_q2": "substitution",
+    "infinite_gp_half": "substitution"
+  },
+  "vectors": {
+    "vector_length": "substitution",
+    "vector_sum": "substitution",
+    "vector_difference": "substitution",
+    "vector_scale": "substitution",
+    "midpoint": "substitution",
+    "point_distance": "substitution",
+    "dot_product": "substitution"
+  },
+  "word_tasks": {
+    "percent_multiplier_formula": "recall"
+  },
+  "trigonometry": {
+    "trig_table_value": "recall",
+    "trig_reduction": "recall",
+    "trig_identity_cos": "recall",
+    "trig_identity_sin": "recall",
+    "trig_tg_ctg": "recall",
+    "trig_identity_tangent": "recall",
+    "trig_addition_formula": "recall",
+    "trig_double_sine": "recall",
+    "trig_double_cosine": "recall",
+    "trig_sum_difference": "recall",
+    "trig_product_formula": "recall",
+    "trig_degrees_to_radians": "substitution",
+    "trig_radians_to_degrees": "substitution",
+    "trig_identity_scaled": "substitution",
+    "trig_graph_amplitude": "substitution",
+    "trig_graph_period": "substitution",
+    "trig_graph_shift": "substitution",
+    "trig_quadrant_sign": "applicability",
+    "trig_graph_range": "applicability"
+  },
+  "economics": {
+    "compound_two_years_10": "substitution",
+    "simple_interest": "substitution",
+    "econ_deposit_simple": "substitution",
+    "econ_deposit_compound": "substitution",
+    "econ_inflation_compound": "substitution"
+  }
+};
+const CATEGORY_LABELS={all:"Весь банк",formula:"Формулы",practice:"Практика"};
+const FORMULA_FOCUS_LABELS={recall:"Узнавание и преобразование",applicability:"Условия применения",substitution:"Подстановка в формулу",diagram:"Работа с рисунком",error:"Типичная ошибка"};
+const ANSWER_FORMAT_LABELS={choice:"Выбор ответа",integer:"Ввод целого числа",example:"Собственный пример",proof:"Доказательство с самопроверкой"};
+
+function normalizeCategory(value){return ["formula","practice"].includes(value)?value:"all";}
+function formulaFocus(q){
+  if(q.response)return null;
+  return FORMULA_FOCUS_BY_UID[q.uid]||FORMULA_FOCUS_BY_AUDIT[q.module]?.[q.audit?.type]||null;
+}
+function taskCategory(q){return formulaFocus(q)?"formula":"practice";}
+function answerFormat(q){return q.response?.kind||"choice";}
+function taskMatches(q,scope={}){
+  const category=normalizeCategory(scope.category);
+  if(category!=="all"&&taskCategory(q)!==category)return false;
+  if(scope.answerFormat&&scope.answerFormat!=="all"&&answerFormat(q)!==scope.answerFormat)return false;
+  if(category==="formula"&&scope.formulaFocus&&scope.formulaFocus!=="all"&&formulaFocus(q)!==scope.formulaFocus)return false;
+  return true;
+}
+function currentStudyCategory(){return normalizeCategory(loadProgress().studyCategory);}
+function categorySummary(category,p=loadProgress()){
+  const pool=QUESTIONS.filter(q=>taskMatches(q,{category}));
+  let correct=0,wrong=0,seen=0,selfReviewed=0;
+  for(const q of pool){
+    const v=p.weak?.[q.uid];if(!v)continue;
+    if((v.correct||0)+(v.wrong||0)>0)seen++;
+    correct+=v.correct||0;wrong+=v.wrong||0;selfReviewed+=v.selfReviewed||0;
+  }
+  return {total:pool.length,seen,correct,wrong,selfReviewed,attempts:correct+wrong,accuracy:correct+wrong?Math.round(100*correct/(correct+wrong)):null};
+}
+function renderCategoryStats(p){
+  $("categoryStats").innerHTML=["formula","practice"].map(category=>{
+    const s=categorySummary(category,p);
+    return `<div class="category-stat"><strong>${CATEGORY_LABELS[category]}</strong><p class="mini">Пройдено ${s.seen} из ${s.total}</p><p class="mini">${s.accuracy===null?"Попыток пока нет":`${s.attempts} попыток • ${s.selfReviewed?"Выполнение с учётом самооценки":"Точность"}: ${s.accuracy}%`}</p>${s.selfReviewed?`<p class="mini">Самопроверок доказательств: ${s.selfReviewed}</p>`:""}</div>`;
+  }).join("");
+}
+function renderResultCategoryStats(){
+  const totals=state.categoryResults||{};
+  $("resultCategoryStats").innerHTML=["formula","practice"].filter(category=>totals[category]?.answered).map(category=>{
+    const s=totals[category],pct=Math.round(100*s.correct/s.answered);
+    return `<div class="category-stat"><strong>${CATEGORY_LABELS[category]}</strong><p class="mini">${s.selfReviewed?"Выполнено с учётом самооценки":"Правильных ответов"}: ${s.correct} из ${s.answered} • ${pct}%</p>${s.selfReviewed?`<p class="mini">Самопроверок доказательств: ${s.selfReviewed}</p>`:""}</div>`;
+  }).join("");
+}
+
 const $ = id => document.getElementById(id);
 const STORAGE_KEY = "egeUnifiedTrainerProgress1";
 const HIDDEN_TOPIC_KEYS = new Set(["high"]);
@@ -2910,6 +3274,7 @@ function normalizeProgress(raw){
 
   p.sessions = Number.isFinite(Number(p.sessions)) ? Number(p.sessions) : 0;
   p.migrated = Boolean(p.migrated);
+  p.studyCategory = normalizeCategory(p.studyCategory);
 
   if(!p.weak || typeof p.weak !== "object" || Array.isArray(p.weak)){
     p.weak = {};
@@ -3012,9 +3377,9 @@ function attemptsFor(q,p){
   return s ? (s.correct||0)+(s.wrong||0) : 0;
 }
 
-function moduleAccuracy(module,p){
+function moduleAccuracy(module,p,scope={}){
   const weak = (p && p.weak && typeof p.weak === "object") ? p.weak : {};
-  const currentUids = new Set(QUESTIONS.filter(q=>q.module===module).map(q=>q.uid));
+  const currentUids = new Set(QUESTIONS.filter(q=>q.module===module&&taskMatches(q,scope)).map(q=>q.uid));
   const entries = Object.entries(weak).filter(([uid]) => currentUids.has(uid));
   let c=0,w=0;
   for(const [,v] of entries){
@@ -3025,8 +3390,8 @@ function moduleAccuracy(module,p){
   return (c+w) ? Math.round(c/(c+w)*100) : null;
 }
 
-function topicProgress(module,topic,p=loadProgress()){
-  const pool=QUESTIONS.filter(q=>q.module===module&&q.topic===topic);
+function topicProgress(module,topic,p=loadProgress(),scope={}){
+  const pool=QUESTIONS.filter(q=>q.module===module&&q.topic===topic&&taskMatches(q,scope));
   let correct=0,wrong=0,seen=0;
   for(const q of pool){
     const item=p.weak?.[q.uid];
@@ -3172,30 +3537,39 @@ function renderHome(){
 
   if($("totalQuestions")) $("totalQuestions").textContent=QUESTIONS.length;
   if($("sessions")) $("sessions").textContent=p.sessions||0;
-  if($("mistakeCount")) $("mistakeCount").textContent=[...new Set(p.mistakes||[])].length;
+  const category=normalizeCategory(p.studyCategory);
+  const pool=QUESTIONS.filter(q=>taskMatches(q,{category}));
+  const eligibleIds=new Set(pool.map(q=>q.uid));
+  if($("mistakeCount")) $("mistakeCount").textContent=[...new Set(p.mistakes||[])].filter(uid=>category==="all"||eligibleIds.has(uid)).length;
 
-  const oa=overallAccuracy(p);
+  document.querySelectorAll(".category-choice").forEach(btn=>btn.setAttribute("aria-pressed",String(btn.dataset.category===category)));
+  const descriptions={all:"Все задания: можно смешивать формулы и применение.",formula:"Узнавание и преобразование формул, условия применения, короткая подстановка, работа с рисунком и типичные ошибки.",practice:"Решение задач, собственные примеры, контрпримеры и доказательства. Формат ответа указан в каждой карточке."};
+  $("categoryDescription").textContent=descriptions[category]+` Доступно заданий: ${pool.length}. Выбранная цель действует на тренировки и меню разделов.`;
+  renderCategoryStats(p);
+
+  const oa=category==="all"?overallAccuracy(p):categorySummary(category,p).accuracy;
+  $("overallAccuracyLabel").textContent=category==="all"?"Общая точность":category==="formula"?"Точность формул":"Выполнение практики";
   if($("overallAccuracy")) $("overallAccuracy").textContent=oa==null?"—":oa+"%";
 
-  $("assessmentNotice").hidden=!Object.values(p.weak||{}).some(item=>item.selfReviewed>0);
+  $("assessmentNotice").hidden=category==="formula"||!Object.values(p.weak||{}).some(item=>item.selfReviewed>0);
 
   const menu=$("sectionMenu");
   if(!menu) return;
 
   menu.innerHTML=Object.entries(MODULES).map(([module,moduleData])=>{
-    const modulePool=QUESTIONS.filter(q=>q.module===module);
+    const modulePool=pool.filter(q=>q.module===module);
     const seen=modulePool.filter(q=>p.weak?.[q.uid]).length;
-    const accuracy=moduleAccuracy(module,p);
+    const accuracy=moduleAccuracy(module,p,{category});
     const progress=seen
       ? `${seen} из ${modulePool.length} • ${accuracy}%`
-      : `0 из ${modulePool.length}`;
+      : modulePool.length?`0 из ${modulePool.length}`:"Нет заданий по выбранной цели";
     const submenuId=`submenu-${module}`;
     const topicLinks=visibleTopicEntries(module).map(([topic,label])=>{
-      const topicState=topicProgress(module,topic,p);
+      const topicState=topicProgress(module,topic,p,{category});
       const topicAccuracy=topicState.accuracy==null?"":` • ${topicState.accuracy}%`;
-      return `<button class="section-link" type="button" data-module="${module}" data-topic="${topic}">
+      return `<button class="section-link" type="button" data-module="${module}" data-topic="${topic}" ${topicState.total?"":"disabled"}>
         ${escapeHtml(label)}
-        <span class="section-topic-progress">Пройдено ${topicState.seen} из ${topicState.total}${topicAccuracy}</span>
+        <span class="section-topic-progress">${topicState.total?`Пройдено ${topicState.seen} из ${topicState.total}${topicAccuracy}`:"Нет заданий по выбранной цели"}</span>
       </button>`;
     }).join("");
     return `<div class="section-item" data-module="${module}">
@@ -3208,7 +3582,7 @@ function renderHome(){
       </button>
       <div class="section-submenu" id="${submenuId}">
         <div class="section-submenu-title">${escapeHtml(moduleData.title)}</div>
-        <button class="section-link section-link-all" type="button" data-module="${module}">Все темы раздела</button>
+        <button class="section-link section-link-all" type="button" data-module="${module}" ${modulePool.length?"":"disabled"}>Все темы раздела</button>
         ${topicLinks}
       </div>
     </div>`;
@@ -3219,78 +3593,49 @@ function renderHome(){
 
 function pickQuestions(mode,scope={}){
   const p=loadProgress();
-  if(mode==="all") return shuffle(QUESTIONS).slice(0,10);
-
+  scope={...scope,category:normalizeCategory(scope.category??p.studyCategory)};
+  const pool=QUESTIONS.filter(q=>taskMatches(q,scope));
+  if(mode==="teacher"){
+    const chosen=teacherPool(scope);
+    const count=Math.max(1,Math.min(Number(scope.count)||10,chosen.length));
+    if(scope.order==="sequential")return chosen.slice().sort((a,b)=>(a.sequenceIndex-b.sequenceIndex)||a.uid.localeCompare(b.uid)).slice(0,count);
+    return shuffle(chosen).slice(0,count);
+  }
   if(mode==="solveAll"){
-    const unseen=QUESTIONS.filter(q=>!p.weak?.[q.uid]);
-    return (unseen.length?unseen:QUESTIONS)
-      .slice()
-      .sort((a,b)=>(a.sequenceIndex-b.sequenceIndex)||a.uid.localeCompare(b.uid))
-      .slice(0,25);
+    const unseen=pool.filter(q=>!p.weak?.[q.uid]);
+    return (unseen.length?unseen:pool).slice().sort((a,b)=>(a.sequenceIndex-b.sequenceIndex)||a.uid.localeCompare(b.uid)).slice(0,25);
   }
-
-  if(mode==="module"){
-    return shuffle(QUESTIONS.filter(q=>q.module===scope.module)).slice(0,10);
-  }
-
+  if(mode==="module")return shuffle(pool.filter(q=>q.module===scope.module)).slice(0,10);
   if(mode==="topic"){
     const count=Math.max(1,Math.min(25,Number(scope.count)||10));
-    const pool=QUESTIONS.filter(q=>q.module===scope.module && q.topic===scope.topic);
-    if(scope.order==="sequential") return pool.slice().sort((a,b)=>a.sequenceIndex-b.sequenceIndex).slice(0,count);
-    return shuffle(pool).slice(0,count);
+    const chosen=pool.filter(q=>q.module===scope.module&&q.topic===scope.topic);
+    if(scope.order==="sequential")return chosen.slice().sort((a,b)=>a.sequenceIndex-b.sequenceIndex).slice(0,count);
+    return shuffle(chosen).slice(0,count);
   }
-
-  if(mode==="high"){
-    const pool=QUESTIONS.filter(q=>q.difficulty==="high");
-    return shuffle(pool).slice(0,10);
-  }
-
-  if(mode==="teacher"){
-    const pool=teacherPool(scope);
-    const count=Math.max(1,Math.min(Number(scope.count)||10,pool.length));
-    if(scope.order==="sequential") return pool.slice().sort((a,b)=>(a.sequenceIndex-b.sequenceIndex)||a.uid.localeCompare(b.uid)).slice(0,count);
-    return shuffle(pool).slice(0,count);
-  }
-
-  if(mode==="mistakes"){
-    const ids=[...new Set(p.mistakes||[])];
-    return shuffle(QUESTIONS.filter(q=>ids.includes(q.uid))).slice(0,10);
-  }
-
-  if(mode==="quick"){
-    const ids=[...new Set(p.mistakes||[])];
-    const mistakes=shuffle(QUESTIONS.filter(q=>ids.includes(q.uid))).slice(0,2);
-
-    const weakIds=Object.entries(p.weak||{})
-      .filter(([,v])=>(v.wrong||0)>(v.correct||0))
-      .map(([uid])=>uid);
-    const weak=shuffle(QUESTIONS.filter(q=>weakIds.includes(q.uid))).slice(0,2);
-
+  if(mode==="high")return shuffle(pool.filter(q=>q.difficulty==="high")).slice(0,10);
+  const ids=new Set(p.mistakes||[]);
+  if(mode==="mistakes")return shuffle(pool.filter(q=>ids.has(q.uid))).slice(0,10);
+  if(mode==="quick"||mode==="moduleQuick"){
+    const chosenPool=pool.filter(q=>mode!=="moduleQuick"||q.module===scope.module);
+    const mistakes=shuffle(chosenPool.filter(q=>ids.has(q.uid))).slice(0,2);
+    const weak=shuffle(chosenPool.filter(q=>{
+      const v=p.weak?.[q.uid];return v&&(v.wrong||0)>(v.correct||0);
+    })).slice(0,2);
     const chosen=uniqueByUid([...mistakes,...weak]);
-    const fill=shuffle(QUESTIONS.filter(q=>!chosen.some(c=>c.uid===q.uid)));
+    const fill=shuffle(chosenPool.filter(q=>!chosen.some(c=>c.uid===q.uid)));
     return [...chosen,...fill].slice(0,6);
   }
-
-  if(mode==="moduleQuick"){
-    const module=scope.module;
-    const ids=[...new Set(p.mistakes||[])];
-    const mistakes=shuffle(QUESTIONS.filter(q=>q.module===module && ids.includes(q.uid))).slice(0,2);
-    const weakIds=Object.entries(p.weak||{})
-      .filter(([uid,v])=>QUESTIONS.some(q=>q.uid===uid&&q.module===module) && (v.wrong||0)>(v.correct||0))
-      .map(([uid])=>uid);
-    const weak=shuffle(QUESTIONS.filter(q=>weakIds.includes(q.uid))).slice(0,2);
-    const chosen=uniqueByUid([...mistakes,...weak]);
-    const fill=shuffle(QUESTIONS.filter(q=>q.module===module && !chosen.some(c=>c.uid===q.uid)));
-    return [...chosen,...fill].slice(0,6);
-  }
-
-  return shuffle(QUESTIONS).slice(0,10);
+  return shuffle(pool).slice(0,10);
 }
 
 function modeLabel(mode,scope){
+  const label=baseModeLabel(mode);
+  return normalizeCategory(scope?.category)==="all"?label:label+" • "+CATEGORY_LABELS[normalizeCategory(scope.category)];
+}
+function baseModeLabel(mode){
   if(mode==="quick") return "5 минут перед уроком";
   if(mode==="all") return "Все разделы";
-  if(mode==="solveAll") return "Освоение полного банка";
+  if(mode==="solveAll") return "По порядку";
   if(mode==="high") return "Высокий балл";
   if(mode==="mistakes") return "Мои ошибки";
   if(mode==="module") return "Смешанная по разделу";
@@ -3313,15 +3658,16 @@ function showScreen(id){
 }
 
 function startQuiz(mode,scope={}){
+  scope={...scope,category:normalizeCategory(scope.category??currentStudyCategory())};
   previousScreenId = document.querySelector(".screen.active")?.id || "home";
   const queue=pickQuestions(mode,scope);
   if(!queue.length){
-    alert("Пока нет заданий для этого режима. Сначала решите несколько тренировок.");
+    alert(mode==="mistakes"?"По выбранной цели нет ошибок для повторения.":"Нет заданий с такими фильтрами. Измените цель или параметры тренировки.");
     return;
   }
   state={
     index:0,score:0,answered:false,mistakes:[],deferred:[],
-    mode,scope,queue,modeLabel:modeLabel(mode,scope)
+    mode,scope,queue,modeLabel:modeLabel(mode,scope),categoryResults:{}
   };
   showScreen("quiz");
   renderQuestion();
@@ -3402,6 +3748,7 @@ function renderQuestion(){
   $("modeChip").textContent=state.modeLabel;
   $("moduleChip").textContent=moduleLabel(q.module);
   $("topicChip").textContent=topicLabel(q.module,q.topic);
+  $("categoryChip").textContent=CATEGORY_LABELS[taskCategory(q)]+" • "+(formulaFocus(q)?FORMULA_FOCUS_LABELS[formulaFocus(q)]:ANSWER_FORMAT_LABELS[answerFormat(q)]);
 
   $("questionText").innerHTML="";
   $("formulaBox").innerHTML="";
@@ -3463,6 +3810,11 @@ function completeAnswer(ok,{selfAssessed=false}={}){
   state.answered=true;
   const q=state.queue[state.index];
   $("answerArea").querySelectorAll("input,textarea,button").forEach(el=>el.disabled=true);
+  state.categoryResults||={};
+  const category=taskCategory(q);
+  const summary=state.categoryResults[category]||={answered:0,correct:0,wrong:0,selfReviewed:0};
+  summary.answered++;summary[ok?"correct":"wrong"]++;
+  if(selfAssessed)summary.selfReviewed++;
   if(selfAssessed)state.selfAssessed=(state.selfAssessed||0)+1;
   if(ok) state.score++;
   else state.mistakes.push({uid:q.uid,skill:q.skill,module:q.module});
@@ -3528,6 +3880,7 @@ function finishQuiz(){
     pct>=70?"База уверенная, но отдельные навыки стоит повторить.":
     "Лучше сразу повторить ошибки и вернуться к слабым темам.";
   if(state.selfAssessed)$("resultLead").textContent+=` Доказательств с вашей самооценкой: ${state.selfAssessed}. Их результат не является автоматической проверкой текста.`;
+  renderResultCategoryStats();
 
   if(!state.mistakes.length){
     $("weakList").innerHTML='<div class="weak-item">Ошибок для повторения нет.</div>';
@@ -3601,6 +3954,9 @@ function populateTeacherTopics(){
 
 function teacherScope(order="random"){
   return {
+    category:$("teacherCategory").value,
+    answerFormat:$("teacherAnswerFormat").value,
+    formulaFocus:$("teacherFormulaFocus").value,
     modules:selectedTeacherModules(),
     topics:selectedTeacherTopics(),
     level:$("teacherLevel").value,
@@ -3615,6 +3971,7 @@ function teacherPool(scope=teacherScope()){
   if(!modules.size) return [];
   const includeHighBank=scope.level==="all"||scope.level==="high";
   return QUESTIONS.filter(q=>{
+    if(!taskMatches(q,scope)) return false;
     if(!modules.has(q.module)) return false;
     if(scope.level!=="all"&&q.difficulty!==scope.level) return false;
     if(HIDDEN_TOPIC_KEYS.has(q.topic)) return includeHighBank;
@@ -3623,6 +3980,10 @@ function teacherPool(scope=teacherScope()){
 }
 
 function updateTeacherPoolInfo(){
+  const formulasOnly=$("teacherCategory").value==="formula";
+  $("teacherFormulaFocusField").hidden=!formulasOnly;
+  $("teacherFormulaFocus").disabled=!formulasOnly;
+  if(!formulasOnly)$("teacherFormulaFocus").value="all";
   const modules=selectedTeacherModules();
   const topics=selectedTeacherTopics();
   const pool=teacherPool();
@@ -3632,14 +3993,17 @@ function updateTeacherPoolInfo(){
   $("teacherTotal").textContent=pool.length;
   const highBankIncluded=$("teacherLevel").value==="all"||$("teacherLevel").value==="high";
   $("teacherPoolInfo").textContent=pool.length
-    ? `В тренировку попадут задания из ${modules.length} разделов и ${topics.length} тематических подразделов • проверяемых навыков: ${skills.size}${highBankIncluded?" • повышенный банк добавлен фильтром уровня":""}`
-    : "Отметьте хотя бы один раздел и один подраздел с доступными заданиями или выберите повышенный уровень.";
+    ? `${CATEGORY_LABELS[normalizeCategory($("teacherCategory").value)]} • ${$("teacherAnswerFormat").value==="all"?"Все форматы":ANSWER_FORMAT_LABELS[$("teacherAnswerFormat").value]} • Доступно ${pool.length} заданий в ${new Set(pool.map(q=>q.module)).size} разделах • проверяемых навыков: ${skills.size}${highBankIncluded?" • повышенный банк добавлен фильтром уровня":""}`
+    : "Нет заданий с такими фильтрами. Измените цель, формат ответа, уровень или выбранные темы.";
   $("teacherStartBtn").disabled=!pool.length;
   $("teacherSequentialBtn").disabled=!pool.length;
 }
 
 function openTeacher(){
   previousScreenId="home";
+  $("teacherCategory").value=currentStudyCategory();
+  $("teacherAnswerFormat").value="all";
+  $("teacherFormulaFocus").value="all";
   populateTeacherModules();
   showScreen("teacherScreen");
 }
@@ -4984,6 +5348,11 @@ function renderGraph(type){
 
   return "";
 }
+
+document.querySelectorAll(".category-choice").forEach(btn=>btn.addEventListener("click",()=>{
+  const p=loadProgress();p.studyCategory=normalizeCategory(btn.dataset.category);saveProgress(p);renderHome();
+}));
+["teacherCategory","teacherAnswerFormat","teacherFormulaFocus"].forEach(id=>$(id).addEventListener("change",updateTeacherPoolInfo));
 
 $("quickBtn").addEventListener("click",()=>startQuiz("quick"));
 $("allBtn").addEventListener("click",()=>startQuiz("all"));
