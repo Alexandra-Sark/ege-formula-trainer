@@ -176,7 +176,7 @@ svg{width:100%;height:auto;display:block}
     <div class="home-layout">
       <div class="hero home-main">
         <h1>Единый тренажёр ЕГЭ</h1>
-        <p class="lead">Одна точка входа для ежедневной тренировки формул, алгебры, уравнений, геометрии, векторов, производных, вероятности, прогрессий, параметров, тригонометрии и экономических задач. Без регистрации: прогресс хранится в этом браузере.</p>
+        <p class="lead">Одна точка входа для ежедневной тренировки формул, алгебры, уравнений, геометрии, векторов, производных, вероятности, прогрессий, параметров, тригонометрии, экономических задач, закономерностей и оптимизации. Без регистрации: прогресс хранится в этом браузере.</p>
 
         <div class="stats">
           <div class="stat"><span class="mini">Заданий в банке</span><b id="totalQuestions">2025</b></div>
@@ -2462,6 +2462,97 @@ for(const [module,moduleData] of Object.entries(MODULES)){
 }
 
 
+// Give each applied model a single home. UIDs remain unchanged so stored
+// attempts and mistakes follow moved questions without a storage migration.
+(function organizeAppliedTopics(){
+  const affected=new Set(["applied","word_tasks","economics"]);
+  const word=(topic)=>["word_tasks",topic];
+  const econ=(topic)=>["economics",topic];
+  const optimize=(topic)=>["optimization",topic];
+  const routes={
+    high_ap_sum:["applied","arithmetic"],
+    infinite_gp_half:["applied","geometric"],
+    high_gp_middle:["applied","geometric"],
+    percent_up_down:word("percentages"),
+    high_recurrence_a5:["numbers","sequences"],
+    word_high_round_trip:word("motion"),
+    word_high_work:word("work"),
+    word_high_mixture:word("mixtures"),
+    word_high_percent_up_down:word("percentages"),
+    word_high_tariff:optimize("optimization"),
+    word_practical_scale:word("motion"),
+    word_practical_speed_conversion:word("motion"),
+    word_practical_tariff:optimize("models"),
+    word_practical_material:optimize("models"),
+    word_practical_packages:optimize("models"),
+    econ_profit_value:optimize("models"),
+    econ_target_price:optimize("models"),
+    econ_break_even:optimize("optimization"),
+    econ_profit_quadratic_max:optimize("optimization"),
+    econ_cost_comparison:optimize("optimization"),
+    econ_high_optimal_output:optimize("optimization"),
+    econ_high_interest_difference:econ("deposits"),
+    econ_high_annuity_overpayment:econ("annuity"),
+    econ_high_diff_total:econ("differentiated"),
+    econ_high_variable_loan:econ("annuity")
+  };
+  for(const q of QUESTIONS){
+    if(!affected.has(q.module))continue;
+    const sourceModule=q.module,sourceTopic=q.topic,type=q.audit?.type;
+    let target=routes[type];
+    if(!target&&sourceModule==="applied"){
+      if(["arithmetic","geometric"].includes(sourceTopic))target=["applied",sourceTopic];
+      else if(sourceTopic==="sequences")target=["numbers","sequences"];
+      else if(sourceTopic==="finance")target=["compound_two_years_10","simple_interest"].includes(type)?econ("deposits"):word("percentages");
+      else if(sourceTopic==="word_problems"){
+        if(type.startsWith("motion_"))target=word("motion");
+        else if(type.startsWith("work_"))target=word("work");
+        else if(type.startsWith("mixture_"))target=word("mixtures");
+      }
+    }else if(!target&&sourceModule==="word_tasks"&&["motion","work","mixtures","percentages"].includes(sourceTopic))target=word(sourceTopic);
+    else if(!target&&sourceModule==="economics"){
+      if(sourceTopic==="percentages")target=type==="econ_inflation_compound"?econ("deposits"):word("percentages");
+      else if(["deposits","annuity","differentiated"].includes(sourceTopic))target=econ(sourceTopic);
+    }
+    if(!target)throw new Error("Missing applied topic route: "+q.uid);
+    [q.module,q.topic]=target;
+
+    // Five percentage tasks repeated the same data and numerical goal in two
+    // modules. Keep one computation and make the other a choice of multiplier.
+    if(type==="econ_percent_up_down"){
+      const {initial,percent}=q.audit;
+      q.prompt=`Сумму \\(${initial}\\) рублей увеличили на \\(${percent}\\%\\), затем уменьшили на \\(${percent}\\%\\). Обозначим долю изменения через \\(r=\\frac{${percent}}{100}\\). Выберите общий множитель перехода от начальной суммы к конечной.`;
+      q.choices=["1-r^2","1","(1+r)^2","(1-r)^2"].map(value=>({kind:"tex",value}));
+      q.correct=0;
+      q.auditAnswer="1-r^2";
+      q.audit={type:"percent_multiplier_formula",initial,percent};
+      q.skill="Проценты • выбор модели последовательных изменений";
+      q.explanation=`Общий множитель \\((1+r)(1-r)=1-r^2\\). Увеличение и уменьшение применяются к разным суммам. При \\(r=\\frac{${percent}}{100}\\) конечная сумма равна \\(${initial*(10000-percent**2)/10000}\\) рублей.`;
+      q.tip="При последовательных процентных изменениях перемножайте множители каждого шага.";
+    }
+  }
+
+  MODULES.applied={title:"Прогрессии",desc:"Члены, разность, знаменатель, суммы и свойства арифметической и геометрической прогрессий.",topics:{arithmetic:"Арифметическая прогрессия",geometric:"Геометрическая прогрессия"}};
+  MODULES.word_tasks={title:"Текстовые задачи",desc:"Движение и единицы скорости, работа и производительность, смеси, проценты и отношения.",topics:{motion:"Движение и единицы скорости",work:"Работа и производительность",mixtures:"Смеси и сплавы",percentages:"Проценты и отношения"}};
+  MODULES.economics={title:"Экономические задачи",desc:"Вклады, капитализация и инфляция, кредиты с равными платежами и равными частями основного долга.",topics:{deposits:"Вклады, капитализация и инфляция",annuity:"Кредиты с равными платежами",differentiated:"Дифференцированные кредиты"}};
+  MODULES.numbers={title:"Числа и закономерности",desc:"Явные и рекуррентные последовательности, чередование знаков. Подготовка к задачам на закономерности и обоснование.",topics:{sequences:"Последовательности и рекуррентные формулы"}};
+  MODULES.optimization={title:"Модели и оптимизация",desc:"Стоимость и расход материалов, прибыль, безубыточность, сравнение тарифов и оптимальный выпуск.",topics:{models:"Стоимость, расход и прибыль",optimization:"Оптимизация и безубыточность"}};
+  const order={base:1,medium:2,high:3};
+  for(const [module,data] of Object.entries(MODULES)){
+    for(const topic of Object.keys(data.topics)){
+      const pool=QUESTIONS.filter(q=>q.module===module&&q.topic===topic);
+      if(pool.length<25)throw new Error("Too few questions in "+module+"/"+topic);
+      pool.sort((a,b)=>order[a.difficulty]-order[b.difficulty]||String(a.skill).localeCompare(String(b.skill),"ru"))
+        .forEach((q,index)=>q.sequenceIndex=index);
+    }
+  }
+  for(const q of QUESTIONS){
+    if(!MODULES[q.module]?.topics[q.topic])throw new Error("Question has no selectable topic: "+q.uid);
+    if(q.skill?.startsWith("Высокий балл • ")&&["applied","word_tasks","economics","numbers","optimization"].includes(q.module))
+      q.skill=MODULES[q.module].title+" • "+q.skill.slice("Высокий балл • ".length);
+  }
+})();
+
 const $ = id => document.getElementById(id);
 const STORAGE_KEY = "egeUnifiedTrainerProgress1";
 const HIDDEN_TOPIC_KEYS = new Set(["high"]);
@@ -2681,7 +2772,8 @@ function attemptsFor(q,p){
 
 function moduleAccuracy(module,p){
   const weak = (p && p.weak && typeof p.weak === "object") ? p.weak : {};
-  const entries = Object.entries(weak).filter(([uid]) => typeof uid === "string" && uid.startsWith(module+":"));
+  const currentUids = new Set(QUESTIONS.filter(q=>q.module===module).map(q=>q.uid));
+  const entries = Object.entries(weak).filter(([uid]) => currentUids.has(uid));
   let c=0,w=0;
   for(const [,v] of entries){
     if(!v || typeof v !== "object") continue;
@@ -2940,7 +3032,7 @@ function pickQuestions(mode,scope={}){
     const ids=[...new Set(p.mistakes||[])];
     const mistakes=shuffle(QUESTIONS.filter(q=>q.module===module && ids.includes(q.uid))).slice(0,2);
     const weakIds=Object.entries(p.weak||{})
-      .filter(([uid,v])=>uid.startsWith(module+":") && (v.wrong||0)>(v.correct||0))
+      .filter(([uid,v])=>QUESTIONS.some(q=>q.uid===uid&&q.module===module) && (v.wrong||0)>(v.correct||0))
       .map(([uid])=>uid);
     const weak=shuffle(QUESTIONS.filter(q=>weakIds.includes(q.uid))).slice(0,2);
     const chosen=uniqueByUid([...mistakes,...weak]);
