@@ -1,0 +1,11 @@
+{
+  "accountsReady": false,
+  "operator": null,
+  "documents": {
+    "terms": {
+      "file": "terms-2026-10-02.html",
+      "version": "2026-10-02",
+      "sha256": "a24159e43278173955446a901b1665d27c7665908f3924f34167ab25f3800450"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "ege-trainer-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {"node": ">=22"},
+  "scripts": {
+    "start": "node src/index.js",
+    "migrate": "node scripts/migrate.js",
+    "test": "node --test --test-concurrency=1 test/*.test.js",
+    "cleanup": "node scripts/cleanup.js"
+  },
+  "dependencies": {
+    "express": "5.2.1",
+    "nodemailer": "10.0.13",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {"@electric-sql/pglite": "0.5.8"}
+}

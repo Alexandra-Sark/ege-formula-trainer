@@ -1,0 +1,7 @@
+server/node_modules/
+server/.env
+server/.env.*
+!server/.env.example
+server/coverage/
+server/.test-data/
+server/secrets/
