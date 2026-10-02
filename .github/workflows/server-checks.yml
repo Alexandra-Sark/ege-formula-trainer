@@ -1,0 +1,38 @@
+name: Server and trainer checks
+on:
+  pull_request:
+    paths:
+      - 'server/**'
+      - 'index.html'
+      - 'tests/**'
+      - '.github/workflows/server-checks.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'server/**'
+      - 'index.html'
+      - 'tests/**'
+      - '.github/workflows/server-checks.yml'
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: npm ci
+        working-directory: server
+      - run: npm test
+        working-directory: server
+      - run: node tests/check_numeric.cjs
+      - run: python tests/check_exam_bank.py
+      - run: node tests/check_statistics.cjs
