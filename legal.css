@@ -1,0 +1,31 @@
+:root{--bg:#f5f7fb;--text:#172033;--muted:#586174;--accent:#4f63f6;--border:#e5e7eb}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#f7f9ff,var(--bg));color:var(--text);font:16px/1.65 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+a{color:#3447c5;overflow-wrap:anywhere;text-underline-offset:3px}
+a:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+.page{max-width:940px;margin:0 auto;padding:24px 18px 48px}
+.topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.brand{font-weight:800;text-decoration:none;color:var(--text)}
+.card{background:#fff;border:1px solid var(--border);border-radius:24px;padding:32px;box-shadow:0 14px 30px #17203314;min-width:0}
+h1,h2,h3{line-height:1.2;letter-spacing:-.025em}
+h1{font-size:clamp(28px,5vw,42px);margin:0 0 16px}
+h2{font-size:24px;margin:28px 0 12px}
+h3{font-size:21px;margin:28px 0 12px}
+p{margin:12px 0;overflow-wrap:anywhere}
+li+li{margin-top:8px}
+ul,ol{padding-left:24px}
+.muted{color:var(--muted)}
+.notice{border-left:4px solid var(--accent);border-radius:12px;background:#eef1ff;padding:16px 18px;margin:20px 0}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.button{display:inline-flex;justify-content:center;align-items:center;background:#eef1f7;border:1px solid var(--border);border-radius:14px;padding:12px 18px;font:inherit;font-weight:750;text-decoration:none;text-align:center;color:var(--text);white-space:normal}
+.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.button:disabled{cursor:default;background:#eef1f7;color:var(--muted)}
+.consents{border:1px solid var(--border);border-radius:16px;padding:18px;margin:20px 0}
+.consents legend{font-weight:750;padding:0 8px}
+.consent-row{display:flex;gap:12px;align-items:flex-start;margin:12px 0}
+.consent-row input{margin-top:6px;flex-shrink:0;width:18px;height:18px}
+.small{font-size:14px}
+footer{margin-top:20px;font-size:14px;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--border);margin:24px 0}
+@media(max-width:600px){.page{padding:16px 12px 32px}.card{padding:22px 18px;border-radius:18px}.actions .button{width:100%}.topbar{align-items:flex-start}}
+@media print{body{background:#fff}.page{max-width:none;padding:0}.card{border:0;padding:0;box-shadow:none}.topbar,.actions{display:none}}
