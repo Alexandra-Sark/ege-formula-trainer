@@ -41,6 +41,10 @@ p{line-height:1.55}.lead{font-size:18px;color:var(--muted);max-width:840px}.mini
 .stat{background:#fafbff;border:1px solid var(--border);border-radius:18px;padding:16px}
 .stat b{display:block;font-size:24px;margin-top:5px}
 .actions{display:flex;flex-wrap:wrap;gap:10px}
+.home-footer{margin-top:24px;padding:20px 0 0;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.home-footer p{margin:0;overflow-wrap:anywhere}
+.home-footer a.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;text-align:center;white-space:normal}
+.home-footer a:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 .btn{border:0;border-radius:14px;padding:13px 18px;font-weight:800;cursor:pointer;transition:.18s transform}
 .btn:hover{transform:translateY(-1px)}
 .btn-primary{background:var(--accent);color:white}
@@ -284,6 +288,13 @@ svg{width:100%;height:auto;display:block}
         <nav id="sectionMenu" class="section-menu"></nav>
       </aside>
     </div>
+    <footer class="home-footer" aria-label="Документы и регистрация">
+      <p class="mini">© 2026 Саркисова Александра Владимировна<br>Разработчик тренажёра</p>
+      <nav class="actions" aria-label="Информация о сайте">
+        <a class="btn btn-ghost" href="./terms.html" id="termsLink">Пользовательское соглашение</a>
+        <a class="btn btn-secondary" href="./register.html" id="registrationLink">О регистрации</a>
+      </nav>
+    </footer>
   </section>
 
   <section id="statisticsScreen" class="screen" aria-labelledby="statisticsTitle">
