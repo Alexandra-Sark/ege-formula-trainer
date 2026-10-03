@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Квиз по математическим формулам: заполни пропуск и сопоставь название с записью. Без вычислений, бесплатно и без регистрации.">
+  <title>Квиз по формулам — тренажёр ЕГЭ</title>
+  <link rel="stylesheet" href="./katex/katex.min.css">
+  <link rel="stylesheet" href="./formula-game.css">
+  <script defer src="./katex/katex.min.js"></script>
+  <script defer src="./formula-game-data.js"></script>
+  <script defer src="./formula-game.js"></script>
+</head>
+<body>
+<div class="game-app">
+  <header class="game-header"><a class="brand" href="./index.html">Формулы и конструкции ЕГЭ</a><a href="./index.html">← На главную</a></header>
+  <main>
+    <section id="setup" class="panel" aria-labelledby="setupTitle">
+      <div class="eyebrow">Игра на знание формул</div>
+      <h1 id="setupTitle">Квиз по формулам</h1>
+      <p class="lead">Вспомни запись, найди пропущенный элемент и собери пары. Только формулы — без вычислений и решения задач.</p>
+      <fieldset class="mode-picker"><legend>Выбери игру</legend>
+        <label class="mode-option"><input type="radio" name="gameMode" value="gap" checked><span><strong>Заполни формулу</strong><small>Выбери недостающий элемент из четырёх вариантов.</small></span></label>
+        <label class="mode-option"><input type="radio" name="gameMode" value="match"><span><strong>Найди пару</strong><small>Сопоставь название формулы с её записью.</small></span></label>
+        <label class="mode-option"><input type="radio" name="gameMode" value="mixed"><span><strong>Микс</strong><small>Чередуй пропуски и сопоставления.</small></span></label>
+      </fieldset>
+      <fieldset class="topic-picker"><legend>Какие формулы повторим?</legend><div id="topicChoices" class="topics"></div><button id="selectAll" class="text-button" type="button">Выбрать все темы</button></fieldset>
+      <p id="roundDescription" class="muted"></p>
+      <p class="rules">10 очков за формулу, узнанную с первой попытки. После ошибки можно попробовать снова. Игра без таймера — можно спокойно подумать.</p>
+      <div class="actions"><button id="startGame" class="button primary" type="button">Играть</button><span id="personalBest" class="muted"></span></div>
+      <p id="setupError" class="feedback" role="status"></p>
+      <noscript><p>Для игры включите JavaScript. <a href="./index.html">Вернуться к тренажёру</a>.</p></noscript>
+    </section>
+    <section id="play" class="panel" hidden aria-labelledby="playTitle">
+      <div class="play-top"><span id="roundCounter" class="eyebrow"></span><button id="leaveGame" class="text-button" type="button">Завершить игру</button></div>
+      <div class="scoreboard"><span>Очки <strong id="score">0</strong></span><span>Серия <strong id="streak">0</strong></span><span>Формулы <strong id="solved">0</strong></span></div>
+      <progress id="gameProgress" value="0" max="10" aria-label="Пройденные формулы"></progress>
+      <h2 id="playTitle" tabindex="-1"></h2>
+      <p id="playInstruction" class="muted"></p>
+      <div id="gameBoard"></div>
+      <p id="feedback" class="feedback" role="status" aria-live="polite" aria-atomic="true"></p>
+      <div class="actions next-actions"><button id="nextRound" class="button primary" type="button" hidden>Дальше →</button></div>
+    </section>
+    <section id="results" class="panel" hidden aria-labelledby="resultsTitle">
+      <div class="eyebrow">Раунд завершён</div><h1 id="resultsTitle" tabindex="-1">Отличная тренировка!</h1>
+      <p id="resultMessage" class="lead"></p><div id="resultStats" class="result-stats"></div>
+      <div id="reviewList"></div>
+      <div class="actions"><button id="playAgain" class="button primary" type="button">Ещё раз</button><button id="repeatMissed" class="button" type="button" hidden>Повторить ошибки</button><button id="changeGame" class="button" type="button">Выбрать игру и темы</button><a class="button" href="./index.html">На главную</a></div>
+      <p id="saveNotice" class="muted small"></p>
+    </section>
+  </main>
+  <footer>Результаты квиза сохраняются в этом браузере отдельно от статистики решения задач.<br>© 2026 Саркисова Александра Владимировна · <a href="./terms.html">Пользовательское соглашение</a></footer>
+</div>
+</body>
+</html>
