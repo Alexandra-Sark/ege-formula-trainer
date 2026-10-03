@@ -88,7 +88,7 @@
   function updateSetup() {
     const pool = selectedPool(), mode = selectedMode(), rounds = buildRounds(pool, mode);
     const total = rounds.flatMap(r => r.cards).length;
-    $('roundDescription').textContent = pool.length ? `${modeLabels[mode]}: раундов — ${rounds.length}, формул — ${total}. В выбранных темах доступно ${pool.length} формул.` : 'Выбери хотя бы одну тему.';
+    $('roundDescription').textContent = pool.length ? `${modeLabels[mode]}: раундов — ${rounds.length}, формул — ${total}. Формул в выбранных темах: ${pool.length}.` : 'Выбери хотя бы одну тему.';
     $('startGame').disabled = !total;
     $('setupError').textContent = '';
     $('selectAll').textContent = pool.length === formulas.length ? 'Снять выбор тем' : 'Выбрать все темы';
